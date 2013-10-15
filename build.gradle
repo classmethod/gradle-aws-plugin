@@ -94,3 +94,49 @@ uploadArchives {
 		}
 	}
 }
+
+// ======== IDE ========
+eclipse {
+	project {
+		buildCommand 'org.eclipse.jdt.core.javabuilder'
+		buildCommand 'org.springframework.ide.eclipse.core.springbuilder'
+		buildCommand 'net.sf.eclipsecs.core.CheckstyleNature'
+		buildCommand 'edu.umd.cs.findbugs.plugin.eclipse.findbugsNature'
+		natures 'org.eclipse.jdt.core.javanature',
+				'org.springsource.ide.eclipse.gradle.core.nature',
+				'org.springframework.ide.eclipse.core.springnature',
+				'net.sf.eclipsecs.core.CheckstyleBuilder',
+				'edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder'
+	}
+	classpath {
+		defaultOutputDir = file('build/classes')
+		containers = [
+			'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7',
+			'org.springsource.ide.eclipse.gradle.classpathcontainer'  // Gradle IDEのクラスパスコンテナ
+		]
+		file {
+			// .classpathファイルの出力時にクラスパスからJARエントリを除外する
+			whenMerged { classpath ->
+				classpath.configure classpath.entries.grep { entry ->
+					!(entry instanceof org.gradle.plugins.ide.eclipse.model.Library)
+				}
+				classpath.entries.findAll {
+					it instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder && it.path.startsWith("src/test/")
+				}*.output = "build/test-classes"
+			}
+		}
+		downloadSources = true
+		downloadJavadoc = true
+		/*
+		jdt {
+			file {
+				withProperties { properties ->
+					def rootProperties = new Properties()
+					new File(rootProject.projectDir, '.settings/org.eclipse.jdt.core.prefs').withReader { rootProperties.load it }
+					properties.putAll rootProperties.findAll { k, v -> k.startsWith 'org.eclipse.jdt.core.formatter' }
+				}
+			}
+		}
+		*/
+	}
+}
