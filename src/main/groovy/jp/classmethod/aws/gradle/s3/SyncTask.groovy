@@ -55,8 +55,34 @@ class SyncTask extends DefaultTask {
 			if (element.isDirectory() == false) {
 				def String relativePath = prefix + element.relativePath.toString()
 				def String key = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
-				println " => s3://${bucketName}/${key}"
-				s3.putObject(bucketName, key, element.file)
+				
+				String md5
+				FileInputStream fis = null
+				try {
+					fis = new FileInputStream(element.file)
+					md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
+				} finally {
+					if (fis != null) {
+						fis.close()
+					}
+				}
+				
+				boolean doUpload = false
+				try {
+					def metadata = s3.getObjectMetadata(bucketName, key)
+					if (metadata.ETag.equalsIgnoreCase(md5) == false) {
+						doUpload = true
+					}
+				} catch (AmazonS3Exception e) {
+					doUpload = true
+				}
+				
+				if (doUpload) {
+					println " => s3://${bucketName}/${key}"
+					s3.putObject(bucketName, key, element.file)
+				} else {
+					println " => s3://${bucketName}/${key} (SKIP)"
+				}
 			}
 		}
 	}

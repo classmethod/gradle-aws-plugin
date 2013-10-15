@@ -50,6 +50,7 @@ dependencies {
 	compile gradleApi()
 	compile 'org.codehaus.groovy:groovy-all:2.0.8'
 	compile "com.amazonaws:aws-java-sdk:${ext.awsJavaSdkVersion}"
+	compile 'commons-codec:commons-codec:1.8'
 	
 	// tests
 	testCompile "junit:junit:${ext.junitVersion}"
