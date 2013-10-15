@@ -1,6 +1,7 @@
 package jp.classmethod.aws.gradle.s3
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.tasks.TaskAction;
@@ -31,14 +32,17 @@ class SyncTask extends DefaultTask {
 	
 	def String bucketName
 	
-	def String prefix
+	def String prefix = ''
 	
 	def File source
 	
 	@TaskAction
 	def uploadAction() {
-		def prefix = this.prefix.startsWith('/') ? this.prefix.substring(1) : this.prefix
-		prefix += this.prefix.endsWith('/') ? '' : '/'
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! source) throw new GradleException("source is not specified")
+		
+		String prefix = this.prefix
+		prefix = prefix.startsWith('/') ? prefix.substring(1) : prefix
 		
 		upload(prefix)
 		delete(prefix)
@@ -49,8 +53,10 @@ class SyncTask extends DefaultTask {
 		println "uploading... ${source} to s3://${bucketName}/${prefix}"
 		project.fileTree(source).visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
-				println " => s3://${bucketName}/${prefix}${element.relativePath}"
-				s3.putObject(bucketName, prefix + element.relativePath, element.file)
+				def String relativePath = prefix + element.relativePath.toString()
+				def String key = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+				println " => s3://${bucketName}/${key}"
+				s3.putObject(bucketName, key, element.file)
 			}
 		}
 	}

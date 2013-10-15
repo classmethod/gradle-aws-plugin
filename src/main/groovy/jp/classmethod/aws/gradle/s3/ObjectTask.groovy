@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.*
 import com.amazonaws.services.s3.transfer.*
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 class AmazonS3FileUploadTask extends DefaultTask {
@@ -22,10 +23,16 @@ class AmazonS3FileUploadTask extends DefaultTask {
 	
 	def File file
 	
+	// == after did work
+	
 	def String resourceUrl
 	
 	@TaskAction
 	def upload() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! key) throw new GradleException("key is not specified")
+		if (! file) throw new GradleException("file is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		println "uploading... ${bucketName}/${key}"
 		s3.putObject(bucketName, key, file)
@@ -53,6 +60,10 @@ class AmazonS3ProgressiveFileUploadTask extends DefaultTask {
 	
 	@TaskAction
 	def upload() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! key) throw new GradleException("key is not specified")
+		if (! file) throw new GradleException("file is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		def s3mgr = new TransferManager(s3)
 		println "uploading... ${bucketName}/${key}"
@@ -85,6 +96,9 @@ class AmazonS3FileDeleteTask extends DefaultTask {
 	
 	@TaskAction
 	def delete() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! key) throw new GradleException("key is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		println "deleting... ${bucketName}/${key}"
 		s3.deleteObject(bucketName, key)
@@ -104,6 +118,8 @@ class AmazonS3DeleteAllFilesTask extends DefaultTask {
 	
 	@TaskAction
 	def delete() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		def prefix = this.prefix.startsWith('/') ? this.prefix.substring(1) : this.prefix
 		println "deleting... ${bucketName}/${prefix}"

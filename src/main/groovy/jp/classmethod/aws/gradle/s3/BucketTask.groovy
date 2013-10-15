@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.*
 import com.amazonaws.services.s3.transfer.*
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 
@@ -19,6 +20,8 @@ public class CreateBucketTask extends DefaultTask {
 	
 	@TaskAction
 	def createBucket() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		s3.createBucket(bucketName)
 		println "bucket $bucketName created"
@@ -36,6 +39,8 @@ public class DeleteBucketTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteBucket() {
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		
 		def AmazonS3Client s3 = project.aws.s3
 		s3.deleteBucket(bucketName)
 		println "bucket $bucketName deleted"
