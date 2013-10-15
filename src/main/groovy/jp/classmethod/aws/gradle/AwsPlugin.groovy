@@ -63,23 +63,4 @@ class AwsPluginExtension {
 		}
 		return client
 	}
-	
-	// TODO move to AwsCloudFormationPluginExtension
-	def Stack getCfnStack(String stackName) {
-		cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName)).stacks[0]
-	}
-	
-	// TODO move to AwsCloudFormationPluginExtension
-	def List<StackResource> getCfnStackResources(String stackName) {
-		cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
-	}
-	
-	// TODO move to AwsBeanstalkPluginExtension
-	def String getEbEnvironmentCNAME(String applicationName, String environmentName) {
-		def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-			.withApplicationName(applicationName)
-			.withEnvironmentNames(environmentName))
-		def EnvironmentDescription env = der.environments[0]
-		env.CNAME
-	}
 }

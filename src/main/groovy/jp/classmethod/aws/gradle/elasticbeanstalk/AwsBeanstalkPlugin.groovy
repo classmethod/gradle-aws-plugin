@@ -189,7 +189,8 @@ class AwsBeanstalkPluginExtension {
 	}
 	
 	def String getEbEnvironmentCNAME(String environmentName) {
-		def DescribeEnvironmentsResult der = project.aws.eb.describeEnvironments(new DescribeEnvironmentsRequest()
+		def AWSElasticBeanstalk eb = project.aws.eb
+		def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 			.withApplicationName(appName)
 			.withEnvironmentNames(environmentName))
 		def EnvironmentDescription env = der.environments[0]

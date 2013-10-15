@@ -1,5 +1,7 @@
 package jp.classmethod.aws.gradle.cloudformation
 
+import java.util.List;
+
 import groovy.lang.Closure
 import jp.classmethod.aws.gradle.AwsPlugin
 import jp.classmethod.aws.gradle.s3.*
@@ -118,5 +120,15 @@ class AwsCloudFormationPluginExtension {
 	
 	def stackParams(Map<String, String> stackParams) {
 		this.stackParams = stackParams
+	}
+	
+	def Stack getStack(String stackName) {
+		def AmazonCloudFormation cfn = project.aws.cfn
+		cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName)).stacks[0]
+	}
+	
+	def List<StackResource> getStackResources(String stackName) {
+		def AmazonCloudFormation cfn = project.aws.cfn
+		cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
 	}
 }
