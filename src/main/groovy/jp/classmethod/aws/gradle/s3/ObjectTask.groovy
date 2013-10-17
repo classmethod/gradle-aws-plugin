@@ -23,6 +23,8 @@ class AmazonS3FileUploadTask extends DefaultTask {
 	
 	def File file
 	
+	def boolean overwrite = true
+	
 	// == after did work
 	
 	def String resourceUrl
@@ -35,9 +37,26 @@ class AmazonS3FileUploadTask extends DefaultTask {
 		
 		def AmazonS3Client s3 = project.aws.s3
 		println "uploading... ${bucketName}/${key}"
-		s3.putObject(bucketName, key, file)
 		resourceUrl = s3.getResourceUrl(bucketName, key)
-		println "upload completed: $resourceUrl"
+		if (overwrite || exists() == false) {
+			s3.putObject(bucketName, key, file)
+			println "upload completed: $resourceUrl"
+		} else {
+			println "${bucketName}/${key} is already exists -- skipped"
+		}
+	}
+	
+	def boolean exists() {
+		def AmazonS3Client s3 = project.aws.s3
+		try {
+			ObjectMetadata objectMetadata = s3.getObjectMetadata(bucketName, key);
+			return true
+		} catch (AmazonS3Exception e) {
+			if (e.getStatusCode() == 404) {
+				return false
+			}
+			throw e;    // rethrow all S3 exceptions other than 404
+		}
 	}
 }
 
