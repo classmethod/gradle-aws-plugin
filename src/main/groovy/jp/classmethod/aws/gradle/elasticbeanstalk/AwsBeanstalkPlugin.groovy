@@ -131,6 +131,7 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 			t.mustRunAfter awsEbTerminateEnvironment
 			t.doFirst {
 				def envName = project.hasProperty('targetEbEnv') ? project.targetEbEnv : project.beanstalk.defaultEnv
+				envName = "${project.beanstalk.envPrefix}-${envName}"
 				
 				t.applicationName = project.beanstalk.appName
 				t.environmentName = envName
