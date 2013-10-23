@@ -36,6 +36,8 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 		def awsCfnUploadTemplate = project.task('awsCfnUploadTemplate', type: AmazonS3FileUploadTask) { AmazonS3FileUploadTask t ->
 			t.description = 'Upload cfn template file to the Amazon S3 bucket.'
 			t.doFirst {
+				t.file =  project.cloudFormation.templateFile
+				
 				def String extension = t.file.name.tokenize('.').last()
 				def String filename  = t.file.name.tokenize('/').last()
 				def String baseName  = filename.substring(0, filename.length() - extension.length() - 1)
@@ -44,18 +46,21 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 				t.bucketName = project.cloudFormation.templateBucket
 				t.key = "${project.cloudFormation.templateKeyPrefix}/${baseName}-${project.version}-${timestamp}.${extension}"
 			}
+			t.doLast {
+				project.cloudFormation.templateURL = t.resourceUrl
+			}
 		}
 		
 		def awsCfnMigrateStack = project.task('awsCfnMigrateStack', type: AmazonCloudFormationMigrateStackTask) { AmazonCloudFormationMigrateStackTask t ->
 			t.description 'Create/Migrate cfn stack'
-			t.dependsOn awsCfnUploadTemplate
+			t.mustRunAfter awsCfnUploadTemplate
 			t.doFirst {
 				t.stackName = project.cloudFormation.stackName
 				project.cloudFormation.stackParams.each {
 					t.cfnStackParams += new com.amazonaws.services.cloudformation.model.Parameter()
 						.withParameterKey(it.key).withParameterValue((String) it.value)
 				}
-				t.cfnTemplateUrl = awsCfnUploadTemplate.resourceUrl
+				t.cfnTemplateUrl = project.cloudFormation.templateURL
 			}
 		}
 		
@@ -115,6 +120,9 @@ class AwsCloudFormationPluginExtension {
 	def Project project
 	def String stackName
 	def Map<String, String> stackParams = [:]
+	def String templateURL
+	
+	def File templateFile
 	def String templateBucket
 	def String templateKeyPrefix
 	
