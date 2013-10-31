@@ -28,7 +28,9 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 	
 	@TaskAction
 	def createEnvironment() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		try {
 			def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 				.withApplicationName(applicationName)
@@ -75,7 +77,9 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 	
 	@TaskAction
 	def terminateEnvironment() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		if (environmentId == null) {
 			def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 				.withApplicationName(applicationName)

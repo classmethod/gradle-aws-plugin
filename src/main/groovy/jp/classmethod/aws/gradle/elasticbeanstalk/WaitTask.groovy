@@ -43,7 +43,8 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 				throw new GradleException('Timeout')
 			}
 
-			def AWSElasticBeanstalk eb = project.aws.eb
+			AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+			AWSElasticBeanstalk eb = ext.eb
 
 			try {
 				def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()

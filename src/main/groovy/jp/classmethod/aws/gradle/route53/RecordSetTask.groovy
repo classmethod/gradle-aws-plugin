@@ -22,7 +22,9 @@ class AmazonRoute53ChangeRecordSetTask extends DefaultTask {
 	
 	@TaskAction
 	def changeResourceRecordSets() {
-		def AmazonRoute53 r53 = project.aws.r53
+		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
+		AmazonRoute53 r53 = ext.r53
+		
 		try {
 			r53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
 				.withHostedZoneId(hostedZoneId)

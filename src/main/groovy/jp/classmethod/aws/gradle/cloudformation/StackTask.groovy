@@ -30,7 +30,8 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 		if (! stackName) throw new GradleException("stackName is not specified")
 		if (! cfnTemplateUrl) throw new GradleException("cfnTemplateUrl is not specified")
 		
-		def AmazonCloudFormation cfn = project.aws.cfn
+		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
+		AmazonCloudFormation cfn = ext.cfn
 		
 		try {
 			def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
@@ -85,7 +86,10 @@ class AmazonCloudFormationDeleteStackTask extends DefaultTask {
 	@TaskAction
 	def deleteStack() {
 		if (! stackName) throw new GradleException("stackName is not specified")
-		def AmazonCloudFormation cfn = project.aws.cfn
+		
+		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
+		AmazonCloudFormation cfn = ext.cfn
+		
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
 		println "delete stack $stackName requested"
 	}

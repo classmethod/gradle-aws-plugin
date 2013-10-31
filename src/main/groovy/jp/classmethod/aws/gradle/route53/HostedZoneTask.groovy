@@ -17,7 +17,8 @@ class CreateHostedZoneTask extends DefaultTask {
 	
 	@TaskAction
 	def createHostedZone() {
-		def AmazonRoute53 r53 = project.aws.r53
+		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
+		AmazonRoute53 r53 = ext.r53
 		
 		def String callerRef = callerReference == null ? InetAddress.getLocalHost().getHostName() : callerReference
 		println "callerRef = ${callerRef}"
@@ -47,7 +48,8 @@ class DeleteHostedZoneTask extends DefaultTask {
 	
 	@TaskAction
 	def createHostedZone() {
-		def AmazonRoute53 r53 = project.aws.r53
+		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
+		AmazonRoute53 r53 = ext.r53
 		
 		r53.deleteHostedZone(new DeleteHostedZoneRequest(hostedZoneId))
 	}

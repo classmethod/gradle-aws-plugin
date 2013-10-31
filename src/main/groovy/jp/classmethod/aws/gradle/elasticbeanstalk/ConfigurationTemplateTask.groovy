@@ -25,7 +25,9 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 	
 	@TaskAction
 	def createTemplate() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		
 		configurationTemplates.each {
 			def templateName = it.key
@@ -73,7 +75,9 @@ class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteTemplate() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
 			.withApplicationName(applicationName)
 			.withTemplateName(templateName))

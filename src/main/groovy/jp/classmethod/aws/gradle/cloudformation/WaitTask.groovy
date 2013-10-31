@@ -45,7 +45,8 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 	def waitStackForStatus() {
 		if (! stackName) throw new GradleException("stackName is not specified")
 		
-		def AmazonCloudFormation cfn = project.aws.cfn
+		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
+		AmazonCloudFormation cfn = ext.cfn
 
 		def start = System.currentTimeMillis()
 		while (true) {

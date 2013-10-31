@@ -2,6 +2,7 @@ package jp.classmethod.aws.gradle.elasticbeanstalk
 
 import groovy.lang.Closure
 import jp.classmethod.aws.gradle.AwsPlugin
+import jp.classmethod.aws.gradle.AwsPluginExtension
 import jp.classmethod.aws.gradle.s3.AmazonS3ProgressiveFileUploadTask
 
 import org.gradle.api.GradleException
@@ -162,13 +163,15 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 class AwsBeanstalkPluginExtension {
 	
 	public static final NAME = 'beanstalk'
+
+	Project project;
+		
+	@Lazy
+	def AWSElasticBeanstalk eb = {
+		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
+		aws.configureRegion(new AWSElasticBeanstalkClient(aws.credentialsProvider))
+	}()
 	
-	AwsBeanstalkPluginExtension(Project project) {
-		this.project = project
-		this.environments = project.container(EbEnvironmentExtension)
-	}
-	
-	def Project project
 	def String appName
 	def String appDesc = ''
 	def String appBucket
@@ -180,6 +183,11 @@ class AwsBeanstalkPluginExtension {
 	def String envPrefix
 	def boolean productionProtection = true
 	
+	AwsBeanstalkPluginExtension(Project project) {
+		this.project = project;
+		this.environments = project.container(EbEnvironmentExtension)
+	}
+	
 	
 	def environments(Closure closure) {
 		environments.configure(closure)
@@ -190,7 +198,6 @@ class AwsBeanstalkPluginExtension {
 	}
 	
 	def String getEbEnvironmentCNAME(String environmentName) {
-		def AWSElasticBeanstalk eb = project.aws.eb
 		def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 			.withApplicationName(appName)
 			.withEnvironmentNames(environmentName))
@@ -198,19 +205,7 @@ class AwsBeanstalkPluginExtension {
 		env.CNAME
 	}
 	
-	def List<String> getProductionEnvironmentNameCandidates() {
-		def Set<String> envs = environments.findAll { it.role == EnvironmentRole.PRODUCTION }.each { it.name }
-		def List<String> result = []
-		envs.each {
-			for (String suffix in envSuffixes) {
-				result += "${envPrefix}-${it.name}${suffix}".toString()
-			}
-		}
-		return result;
-	}
-	
 	def EnvironmentDescription[] getEnvironmentDescs(List<String> environmentNames = Collections.emptyList()) {
-		def AWSElasticBeanstalk eb = project.aws.eb
 		def DescribeEnvironmentsRequest req = new DescribeEnvironmentsRequest().withApplicationName(appName)
 		if (environmentNames.isEmpty() == false) {
 			req.setEnvironmentNames(environmentNames)

@@ -20,7 +20,8 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 	
 	@TaskAction
 	def createApplication() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
 		try {
 			eb.createApplication(new CreateApplicationRequest()
 				.withApplicationName(appName)
@@ -50,7 +51,8 @@ class AWSElasticBeanstalkDeleteApplicationTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteApplication() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
 		eb.deleteApplication(new DeleteApplicationRequest(applicationName))
 		println "application $applicationName deleted"
 	}

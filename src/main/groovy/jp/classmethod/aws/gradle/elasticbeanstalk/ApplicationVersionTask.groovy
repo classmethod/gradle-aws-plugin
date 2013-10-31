@@ -25,7 +25,9 @@ class AWSElasticBeanstalkCreateApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def createVersion() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		eb.createApplicationVersion(new CreateApplicationVersionRequest()
 			.withApplicationName(applicationName)
 			.withVersionLabel(versionLabel)
@@ -52,7 +54,9 @@ class AWSElasticBeanstalkDeleteApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteVersion() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+		
 		eb.deleteApplicationVersion(new DeleteApplicationVersionRequest()
 			.withApplicationName(applicationName)
 			.withVersionLabel(versionLabel)
@@ -75,7 +79,8 @@ class AWSElasticBeanstalkCleanupApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteVersion() {
-		def AWSElasticBeanstalk eb = project.aws.eb
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
 		
 		def Set<String> usingVersions = []
 		def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()

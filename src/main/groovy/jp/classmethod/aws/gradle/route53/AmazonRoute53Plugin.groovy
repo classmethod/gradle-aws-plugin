@@ -1,5 +1,8 @@
 package jp.classmethod.aws.gradle.route53
 
+import groovy.lang.Lazy;
+import jp.classmethod.aws.gradle.AwsPluginExtension
+
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -40,16 +43,22 @@ class AmazonRoute53PluginExtension {
 	
 	public static final NAME = 'route53'
 	
-	AmazonRoute53PluginExtension(Project project) {
-		this.project = project
-	}
+	Project project;
+		
+	@Lazy
+	def AmazonRoute53 r53 = {
+		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
+		aws.configureRegion(new AmazonRoute53Client(aws.credentialsProvider))
+	}()
 	
-	def Project project
 	def String hostedZone
 	def String callerReference
 	
+	AmazonRoute53PluginExtension(Project project) {
+		this.project = project;
+	}
+	
 	def String getHostedZoneId() {
-		def AmazonRoute53 r53 = project.aws.r53
 		def ListHostedZonesResult lhzr = r53.listHostedZones()
 		def HostedZone zone = lhzr.hostedZones.find { it.name == (hostedZone + ".") }
 		if (zone == null) {
@@ -60,7 +69,6 @@ class AmazonRoute53PluginExtension {
 	
 	def ResourceRecordSet getAssociatedResourceRecordSet(String hostname) {
 		def String resourceRecordName = hostname - hostedZone
-		def AmazonRoute53 r53 = project.aws.r53
 		def ListResourceRecordSetsResult lrrsr = r53.listResourceRecordSets(new ListResourceRecordSetsRequest(hostedZoneId)
 			.withStartRecordName(resourceRecordName))
 		lrrsr.resourceRecordSets.find { it.type == 'CNAME' || it.aliasTarget != null }
@@ -77,7 +85,6 @@ class AmazonRoute53PluginExtension {
 			.withAliasTarget(new AliasTarget(ldb.canonicalHostedZoneNameID, ldb.canonicalHostedZoneName)
 				.withEvaluateTargetHealth(false)))
 		
-		def AmazonRoute53 r53 = project.aws.r53
 		r53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
 			.withHostedZoneId(getHostedZoneId())
 			.withChangeBatch(new ChangeBatch().withChanges(changes)))

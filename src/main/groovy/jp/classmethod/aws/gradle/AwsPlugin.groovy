@@ -37,18 +37,15 @@ class AwsPluginExtension {
 	def String secretKey
 	def Region region
 	
-	@Lazy AmazonEC2 ec2            = { configureRegion(new AmazonEC2Client(credentialsProvider)) }();
-	@Lazy AmazonS3Client s3        = { configureRegion(new AmazonS3Client(credentialsProvider)) }();
-	@Lazy AmazonCloudFormation cfn = { configureRegion(new AmazonCloudFormationClient(credentialsProvider)) }();
-	@Lazy AWSElasticBeanstalk eb   = { configureRegion(new AWSElasticBeanstalkClient(credentialsProvider)) }();
-	@Lazy AmazonRoute53 r53        = { configureRegion(new AmazonRoute53Client(credentialsProvider)) }();
-	@Lazy AmazonElasticLoadBalancing elb = { configureRegion(new AmazonElasticLoadBalancingClient(credentialsProvider)) }();
+	@Lazy AmazonEC2 ec2     = { configureRegion(new AmazonEC2Client(credentialsProvider)) }();
+	@Lazy AmazonS3Client s3 = { configureRegion(new AmazonS3Client(credentialsProvider)) }();
 	
 	def void setRegion(String r) {
 		region = RegionUtils.getRegion(r)
 	}
+	
 	def void setRegion(Regions r) {
-		setRegion(r.name)
+		region = RegionUtils.getRegion(r.name)
 	}
 	
 	def AWSCredentialsProvider getCredentialsProvider() {
@@ -57,9 +54,11 @@ class AwsPluginExtension {
 			new DefaultAWSCredentialsProviderChain()
 	}
 	
-	def configureRegion(AmazonWebServiceClient client) {
-		if (region) {
+	def <T extends AmazonWebServiceClient> T configureRegion(T client) {
+		if (region != null) {
 			client.setRegion(region)
+		} else {
+			println "region is null"
 		}
 		return client
 	}

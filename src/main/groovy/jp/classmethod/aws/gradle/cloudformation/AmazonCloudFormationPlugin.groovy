@@ -3,7 +3,9 @@ package jp.classmethod.aws.gradle.cloudformation
 import java.util.List;
 
 import groovy.lang.Closure
+import groovy.lang.Lazy;
 import jp.classmethod.aws.gradle.AwsPlugin
+import jp.classmethod.aws.gradle.AwsPluginExtension;
 import jp.classmethod.aws.gradle.s3.*
 
 import org.gradle.api.GradleException
@@ -13,6 +15,7 @@ import org.gradle.api.Task
 
 import com.amazonaws.*
 import com.amazonaws.auth.*
+import com.amazonaws.auth.policy.actions.CloudFormationActions;
 import com.amazonaws.regions.*
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
@@ -113,11 +116,14 @@ class AwsCloudFormationPluginExtension {
 	
 	public static final NAME = 'cloudFormation'
 	
-	AwsCloudFormationPluginExtension(Project project) {
-		this.project = project
-	}
+	Project project;
 	
-	def Project project
+	@Lazy
+	def AmazonCloudFormation cfn = {
+		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
+		aws.configureRegion(new AmazonCloudFormationClient(aws.credentialsProvider))
+	}()
+	
 	def String stackName
 	def Map<String, String> stackParams = [:]
 	def String templateURL
@@ -126,17 +132,20 @@ class AwsCloudFormationPluginExtension {
 	def String templateBucket
 	def String templateKeyPrefix
 	
+	
+	AwsCloudFormationPluginExtension(Project project) {
+		this.project = project;
+	}
+
 	def stackParams(Map<String, String> stackParams) {
 		this.stackParams = stackParams
 	}
 	
 	def Stack getStack(String stackName) {
-		def AmazonCloudFormation cfn = project.aws.cfn
 		cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName)).stacks[0]
 	}
 	
 	def List<StackResource> getStackResources(String stackName) {
-		def AmazonCloudFormation cfn = project.aws.cfn
 		cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
 	}
 }
