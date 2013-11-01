@@ -1,0 +1,149 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+
+defaultTasks 'clean', 'build'
+
+group = 'jp.classmethod.aws'
+version = '0.1'
+ext {
+	artifactId = 'gradle-aws-plugin'
+	defaultEncoding = 'UTF-8'
+}
+
+// ======== ソースバンドル・Javadocバンドルの作成 ========
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+configurations {
+	deployerJars
+}
+
+// ======== 依存ライブラリ ========
+ext {
+	awsJavaSdkVersion = "1.6.3"
+	junitVersion = "4.+"
+	hamcrestVersion = "1.3"
+	mockitoCoreVersion = "1.9.5"
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile gradleApi()
+	compile 'org.codehaus.groovy:groovy-all:2.0.8'
+	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
+	compile 'commons-codec:commons-codec:1.8'
+	
+	// tests
+	testCompile "junit:junit:${ext.junitVersion}"
+	testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
+	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
+
+	deployerJars "org.springframework.build:aws-maven:4.7.0.RELEASE"
+}
+
+// ======== deploy artifacts ========
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			assert project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey'): "AWS credential is required"
+			def awsCredentials = [
+				userName: awsAccessKey,
+				passphrase: awsSecretKey
+			]
+
+			configuration = configurations.deployerJars
+			repository(url: "s3://public-maven.classmethod.info/release") {
+				authentication(awsCredentials)
+			}
+			snapshotRepository(url: "s3://public-maven.classmethod.info/snapshot") {
+				authentication(awsCredentials)
+			}
+		}
+	}
+}
+
+[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
+	pom.project {
+		inceptionYear '2013'
+		packaging 'jar'
+		licenses {
+			license {
+				name 'The Apache Software License, Version 2.0'
+				url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+				distribution 'repo'
+			}
+		}
+	}
+}
+
+// ======== wrapper ========
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '1.8'
+}
+
+// ======== IDE ========
+eclipse {
+	project {
+		buildCommand 'org.eclipse.jdt.core.javabuilder'
+		buildCommand 'org.springframework.ide.eclipse.core.springbuilder'
+		buildCommand 'net.sf.eclipsecs.core.CheckstyleNature'
+		buildCommand 'edu.umd.cs.findbugs.plugin.eclipse.findbugsNature'
+		natures 'org.eclipse.jdt.core.javanature',
+				'org.springsource.ide.eclipse.gradle.core.nature',
+				'org.springframework.ide.eclipse.core.springnature',
+				'net.sf.eclipsecs.core.CheckstyleBuilder',
+				'edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder'
+	}
+	classpath {
+		defaultOutputDir = file('build/classes')
+		containers = [
+			'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7',
+			'org.springsource.ide.eclipse.gradle.classpathcontainer'  // Gradle IDEのクラスパスコンテナ
+		]
+		file {
+			// .classpathファイルの出力時にクラスパスからJARエントリを除外する
+			whenMerged { classpath ->
+				classpath.configure classpath.entries.grep { entry ->
+					!(entry instanceof org.gradle.plugins.ide.eclipse.model.Library)
+				}
+				classpath.entries.findAll {
+					it instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder && it.path.startsWith("src/test/")
+				}*.output = "build/test-classes"
+			}
+		}
+		downloadSources = true
+		downloadJavadoc = true
+		/*
+		jdt {
+			file {
+				withProperties { properties ->
+					def rootProperties = new Properties()
+					new File(rootProject.projectDir, '.settings/org.eclipse.jdt.core.prefs').withReader { rootProperties.load it }
+					properties.putAll rootProperties.findAll { k, v -> k.startsWith 'org.eclipse.jdt.core.formatter' }
+				}
+			}
+		}
+		*/
+	}
+}
