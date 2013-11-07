@@ -37,40 +37,47 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 			def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
 			def Stack stack = describeStackResult.stacks[0]
 			if (stack == null) {
-				println "not exists"
-				throw new AmazonServiceException("not exists")
+				println "stack ${stackName} not found"
+				createStack(cfn)
 			} else if (stack.stackStatus == 'DELETE_COMPLETE') {
-				println "already exists"
-				throw new AmazonServiceException("already exists")
+				println "deleted stack ${stackName} already exists"
+				deleteStack(cfn)
+				createStack(cfn)
 			} else if (stableStatuses.contains(stack.stackStatus) == false) {
 				throw new org.gradle.api.GradleException('invalid status for update: ' + stack.stackStatus)
+			} else {
+				updateStack(cfn)
 			}
-			println 'update stack: ' + stackName
-			def updateStackResult = cfn.updateStack(new UpdateStackRequest()
+		} catch (AmazonServiceException e) {
+			if (e.message.contains("No updates are to be performed.") == false) {
+				throw e
+			}
+		}
+	}
+	
+	private updateStack(AmazonCloudFormation cfn) {
+		println "update stack: $stackName"
+		def updateStackResult = cfn.updateStack(new UpdateStackRequest()
 				.withStackName(stackName)
 				.withTemplateURL(cfnTemplateUrl)
 				.withParameters(cfnStackParams))
-			println 'update requested: ' + updateStackResult.stackId
-		} catch (AmazonServiceException e) {
-			if (e.message == 'No updates are to be performed.') {
-				// テンプレートに変化がなかった場合
-				println 'No updates are to be performed.'
-			} else {
-				if (e.message.endsWith('already exists')) {
-					println 'delete stack: ' + stackName
-					cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
-					println 'delete requested: ' + stackName
-					Thread.sleep(3000)
-				}
-				
-				println 'create stack: ' + stackName
-				def createStackResult = cfn.createStack(new CreateStackRequest()
-					.withStackName(stackName)
-					.withTemplateURL(cfnTemplateUrl)
-					.withParameters(cfnStackParams))
-				println 'create requested: ' + createStackResult.stackId
-			}
-		}
+		println "update requested: ${updateStackResult.stackId}"
+	}
+	
+	private deleteStack(AmazonCloudFormation cfn) {
+		println "delete stack: $stackName"
+		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
+		println "delete requested: $stackName"
+		Thread.sleep(3000)
+	}
+	
+	private createStack(AmazonCloudFormation cfn) {
+		println "create stack: $stackName"
+		def createStackResult = cfn.createStack(new CreateStackRequest()
+				.withStackName(stackName)
+				.withTemplateURL(cfnTemplateUrl)
+				.withParameters(cfnStackParams))
+		println "create requested: ${createStackResult.stackId}"
 	}
 }
 
