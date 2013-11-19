@@ -49,7 +49,12 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 				updateStack(cfn)
 			}
 		} catch (AmazonServiceException e) {
-			if (e.message.contains("No updates are to be performed.") == false) {
+			if (e.message.contains("does not exist")) {
+				println "stack ${stackName} not found"
+				createStack(cfn)
+			} else if (e.message.contains("No updates are to be performed.")) {
+				// ignore
+			} else {
 				throw e
 			}
 		}
