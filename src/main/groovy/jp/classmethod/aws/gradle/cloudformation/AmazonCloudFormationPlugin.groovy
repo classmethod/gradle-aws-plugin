@@ -59,6 +59,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.mustRunAfter awsCfnUploadTemplate
 			t.doFirst {
 				t.stackName = project.cloudFormation.stackName
+				t.capabilityIam = project.cloudFormation.capabilityIam
 				project.cloudFormation.stackParams.each {
 					t.cfnStackParams += new com.amazonaws.services.cloudformation.model.Parameter()
 						.withParameterKey(it.key).withParameterValue((String) it.value)
@@ -132,6 +133,7 @@ class AwsCloudFormationPluginExtension {
 	def String templateBucket
 	def String templateKeyPrefix
 	
+	def boolean capabilityIam
 	
 	AwsCloudFormationPluginExtension(Project project) {
 		this.project = project;
