@@ -7,7 +7,7 @@ apply plugin: 'maven'
 defaultTasks 'clean', 'build'
 
 group = 'jp.classmethod.aws'
-version = '0.3'
+version = '0.4'
 ext {
 	artifactId = 'gradle-aws-plugin'
 	defaultEncoding = 'UTF-8'

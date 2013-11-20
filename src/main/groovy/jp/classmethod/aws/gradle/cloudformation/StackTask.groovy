@@ -14,11 +14,13 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def stackName
+	def String stackName
 	
-	def cfnTemplateUrl
+	def String cfnTemplateUrl
 	
 	def cfnStackParams = []
+	
+	def boolean capabilityIam
 	
 	def List<String> stableStatuses = [
 		'CREATE_COMPLETE', 'ROLLBACK_COMPLETE', 'UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'
@@ -62,10 +64,14 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	
 	private updateStack(AmazonCloudFormation cfn) {
 		println "update stack: $stackName"
-		def updateStackResult = cfn.updateStack(new UpdateStackRequest()
+		UpdateStackRequest req = new UpdateStackRequest()
 				.withStackName(stackName)
 				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams))
+				.withParameters(cfnStackParams)
+		if (capabilityIam) {
+			req.setCapabilities(Capability.CAPABILITY_IAM)
+		}
+		def updateStackResult = cfn.updateStack(req)
 		println "update requested: ${updateStackResult.stackId}"
 	}
 	
@@ -78,10 +84,15 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	
 	private createStack(AmazonCloudFormation cfn) {
 		println "create stack: $stackName"
-		def createStackResult = cfn.createStack(new CreateStackRequest()
+		
+		CreateStackRequest req = new CreateStackRequest()
 				.withStackName(stackName)
 				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams))
+				.withParameters(cfnStackParams)
+		if (capabilityIam) {
+			req.setCapabilities(Capability.CAPABILITY_IAM)
+		}
+		def createStackResult = cfn.createStack(req)
 		println "create requested: ${createStackResult.stackId}"
 	}
 }
