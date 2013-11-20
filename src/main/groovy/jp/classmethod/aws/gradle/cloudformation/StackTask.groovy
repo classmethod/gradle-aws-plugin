@@ -69,7 +69,7 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 				.withTemplateURL(cfnTemplateUrl)
 				.withParameters(cfnStackParams)
 		if (capabilityIam) {
-			req.setCapabilities(Capability.CAPABILITY_IAM)
+			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def updateStackResult = cfn.updateStack(req)
 		println "update requested: ${updateStackResult.stackId}"
@@ -90,7 +90,7 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 				.withTemplateURL(cfnTemplateUrl)
 				.withParameters(cfnStackParams)
 		if (capabilityIam) {
-			req.setCapabilities(Capability.CAPABILITY_IAM)
+			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def createStackResult = cfn.createStack(req)
 		println "create requested: ${createStackResult.stackId}"
