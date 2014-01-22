@@ -98,6 +98,10 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 				t.environmentName = envName
 				t.templateName = env.configurationTemplate
 				t.versionLabel = awsEbCreateApplicationVersion.versionLabel
+				
+				if (project.beanstalk.tier) {
+					t.tier = project.beanstalk.tier
+				}
 			}
 		}
 		
@@ -177,6 +181,7 @@ class AwsBeanstalkPluginExtension {
 	def String appBucket
 	def String appKeyPrefix
 	def String keyName
+	def Tier tier
 	def Map<String, Closure<String>> configurationTemplates = [:]
 	def NamedDomainObjectContainer<EbEnvironmentExtension> environments
 	def String defaultEnv

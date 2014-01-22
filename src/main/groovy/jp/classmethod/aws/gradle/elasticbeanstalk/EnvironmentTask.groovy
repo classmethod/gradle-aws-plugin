@@ -26,17 +26,19 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 	
 	def String versionLabel
 	
+	def Tier tier = Tier.WebServer
+	
 	@TaskAction
 	def createEnvironment() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
 		try {
-			def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
+			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 				.withApplicationName(applicationName)
 				.withEnvironmentNames(environmentName))
 			
-			if(der.environments == null || der.environments.isEmpty()) {
+			if (der.environments == null || der.environments.isEmpty()) {
 				throw new AmazonClientException("no env")
 			}
 			
@@ -47,16 +49,21 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 				.withEnvironmentName(environmentName)
 				.withDescription(environmentDescription)
 				.withTemplateName(templateName)
-				.withVersionLabel(versionLabel))
+				.withVersionLabel(versionLabel)
+				.withTier(tier.toEnvironmentTier()))
 			println "environment $environmentName @ $applicationName (${environmentId}) updated"
 		} catch (AmazonClientException e) {
-			def CreateEnvironmentResult result = eb.createEnvironment(new CreateEnvironmentRequest()
+			CreateEnvironmentRequest req = new CreateEnvironmentRequest()
 				.withApplicationName(applicationName)
 				.withEnvironmentName(environmentName)
 				.withDescription(environmentDescription)
-				.withCNAMEPrefix(cnamePrefix)
 				.withTemplateName(templateName)
-				.withVersionLabel(versionLabel))
+				.withVersionLabel(versionLabel)
+				.withTier(tier.toEnvironmentTier())
+			if (tier == Tier.WebServer) {
+				req.withCNAMEPrefix(cnamePrefix)
+			}
+			CreateEnvironmentResult result = eb.createEnvironment(req)
 			println "environment $environmentName @ $applicationName (${result.environmentId}) created"
 		}
 	}
@@ -81,11 +88,11 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 		AWSElasticBeanstalk eb = ext.eb
 		
 		if (environmentId == null) {
-			def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
+			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 				.withApplicationName(applicationName)
 				.withEnvironmentNames(environmentName))
 			
-			if(der.environments == null || der.environments.isEmpty()) {
+			if (der.environments == null || der.environments.isEmpty()) {
 				println "environment $environmentName @ $applicationName not found"
 				return
 			}
