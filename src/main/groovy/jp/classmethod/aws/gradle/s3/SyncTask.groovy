@@ -9,32 +9,13 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
 
-class BulkUploadTask extends DefaultTask {
-
-	def String bucketName		def String prefix		def FileTree source		@TaskAction
-	def upload() {
-		def prefix = this.prefix.startsWith('/') ? this.prefix.substring(1) : this.prefix
-		prefix += this.prefix.endsWith('/') ? '' : '/'
-		
-		def AmazonS3Client s3 = project.aws.s3
-		
-		println "uploading... ${source} to s3://${bucketName}/${prefix}"
-		source.visit { FileTreeElement element ->
-			if (element.isDirectory() == false) {
-				println " => s3://${bucketName}/${prefix}${element.relativePath}"
-				s3.putObject(bucketName, prefix + element.relativePath, element.file)
-			}
-		}
-	}
-}
-
 class SyncTask extends DefaultTask {
 	
-	def String bucketName
+	String bucketName
 	
-	def String prefix = ''
+	String prefix = ''
 	
-	def File source
+	File source
 	
 	@TaskAction
 	def uploadAction() {
@@ -49,12 +30,12 @@ class SyncTask extends DefaultTask {
 	}
 	
 	private String upload(String prefix) {
-		def AmazonS3Client s3 = project.aws.s3
+		AmazonS3Client s3 = project.aws.s3
 		println "uploading... ${source} to s3://${bucketName}/${prefix}"
 		project.fileTree(source).visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
-				def String relativePath = prefix + element.relativePath.toString()
-				def String key = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+				String relativePath = prefix + element.relativePath.toString()
+				String key = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
 				
 				String md5
 				FileInputStream fis = null
@@ -88,8 +69,8 @@ class SyncTask extends DefaultTask {
 	}
 	
 	private delete(String prefix) {
-		def AmazonS3Client s3 = project.aws.s3
-		def String pathPrefix = source.toString()
+		AmazonS3Client s3 = project.aws.s3
+		String pathPrefix = source.toString()
 		pathPrefix += pathPrefix.endsWith('/') ? '' : '/'
 		s3.listObjects(bucketName, prefix).objectSummaries.each { S3ObjectSummary os ->
 			def File f = project.file(pathPrefix + os.key.substring(prefix.length()))

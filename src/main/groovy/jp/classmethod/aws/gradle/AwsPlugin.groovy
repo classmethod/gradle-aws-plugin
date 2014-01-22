@@ -33,9 +33,9 @@ class AwsPlugin implements Plugin<Project> {
 
 class AwsPluginExtension {
 	
-	def String accessKeyId
-	def String secretKey
-	def Region region
+	String accessKeyId
+	String secretKey
+	Region region
 	
 	@Lazy AmazonEC2 ec2     = { configureRegion(new AmazonEC2Client(credentialsProvider)) }();
 	@Lazy AmazonS3Client s3 = { configureRegion(new AmazonS3Client(credentialsProvider)) }();

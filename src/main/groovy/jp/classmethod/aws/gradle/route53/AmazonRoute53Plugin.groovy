@@ -46,38 +46,38 @@ class AmazonRoute53PluginExtension {
 	Project project;
 		
 	@Lazy
-	def AmazonRoute53 r53 = {
+	AmazonRoute53 r53 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
 		aws.configureRegion(new AmazonRoute53Client(aws.credentialsProvider))
 	}()
 	
-	def String hostedZone
-	def String callerReference
+	String hostedZone
+	String callerReference
 	
 	AmazonRoute53PluginExtension(Project project) {
 		this.project = project;
 	}
 	
-	def String getHostedZoneId() {
+	String getHostedZoneId() {
 		def ListHostedZonesResult lhzr = r53.listHostedZones()
 		def HostedZone zone = lhzr.hostedZones.find { it.name == (hostedZone + ".") }
 		if (zone == null) {
 			throw new GradleException("Hosted zone ${hostedZone} not found.")
 		}
-		zone.id
+		return zone.id
 	}
 	
-	def ResourceRecordSet getAssociatedResourceRecordSet(String hostname) {
-		def String resourceRecordName = hostname - hostedZone
-		def ListResourceRecordSetsResult lrrsr = r53.listResourceRecordSets(new ListResourceRecordSetsRequest(hostedZoneId)
+	ResourceRecordSet getAssociatedResourceRecordSet(String hostname) {
+		String resourceRecordName = hostname - hostedZone
+		ListResourceRecordSetsResult lrrsr = r53.listResourceRecordSets(new ListResourceRecordSetsRequest(hostedZoneId)
 			.withStartRecordName(resourceRecordName))
-		lrrsr.resourceRecordSets.find { it.type == 'CNAME' || it.aliasTarget != null }
+		return lrrsr.resourceRecordSets.find { it.type == 'CNAME' || it.aliasTarget != null }
 	}
 	
-	def void associateAsAlias(String hostname, LoadBalancerDescription ldb, ResourceRecordSet oldResourceRecordSet = null) {
-		def String resourceRecordName = hostname - hostedZone
+	void associateAsAlias(String hostname, LoadBalancerDescription ldb, ResourceRecordSet oldResourceRecordSet = null) {
+		String resourceRecordName = hostname - hostedZone
 		
-		def List<Change> changes = []
+		List<Change> changes = []
 		if (oldResourceRecordSet != null) {
 			changes += new Change(ChangeAction.DELETE, oldResourceRecordSet)
 		}
@@ -90,8 +90,8 @@ class AmazonRoute53PluginExtension {
 			.withChangeBatch(new ChangeBatch().withChanges(changes)))
 	}
 	
-	def void swapAlias(String hostname, List<LoadBalancerDescription> ldbs, ResourceRecordSet oldResourceRecordSet = null) {
-		def String oldDNSName = oldResourceRecordSet?.aliasTarget.dNSName.toLowerCase()
+	void swapAlias(String hostname, List<LoadBalancerDescription> ldbs, ResourceRecordSet oldResourceRecordSet = null) {
+		String oldDNSName = oldResourceRecordSet?.aliasTarget.dNSName.toLowerCase()
 		println "oldDNSName = $oldDNSName"
 		LoadBalancerDescription ldb = ldbs.find { (it.dNSName.toLowerCase() + '.') != oldDNSName }
 		println "newDNSName = ${ldb.dNSName.toLowerCase()}."

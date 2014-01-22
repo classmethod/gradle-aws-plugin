@@ -17,15 +17,15 @@ public class CreateBucketTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String bucketName
+	String bucketName
 	
-	def boolean ifNotExists
+	boolean ifNotExists
 	
 	@TaskAction
 	def createBucket() {
 		if (! bucketName) throw new GradleException("bucketName is not specified")
 		
-		def AmazonS3Client s3 = project.aws.s3
+		AmazonS3Client s3 = project.aws.s3
 		if (ifNotExists == false || exists() == false) {
 			s3.createBucket(bucketName)
 			println "bucket $bucketName created"
@@ -33,45 +33,12 @@ public class CreateBucketTask extends DefaultTask {
 	}
 	
 	def boolean exists() {
-		def AmazonS3Client s3 = project.aws.s3
+		AmazonS3Client s3 = project.aws.s3
 		try {
 			s3.getBucketLocation(bucketName)
-			true
+			return true
 		} catch (AmazonClientException e) {
-			false
-		}
-	}
-}
-
-public class DeleteBucketTask extends DefaultTask {
-	
-	{
-		description 'Create the Amazon S3 bucket.'
-		group = 'AWS'
-	}
-	
-	def String bucketName
-	
-	def boolean ifExists
-	
-	@TaskAction
-	def deleteBucket() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
-		
-		def AmazonS3Client s3 = project.aws.s3
-		if (ifExists == false || exists()) {
-			s3.deleteBucket(bucketName)
-			println "bucket $bucketName deleted"
-		}
-	}
-	
-	def boolean exists() {
-		def AmazonS3Client s3 = project.aws.s3
-		try {
-			s3.getBucketLocation(bucketName)
-			true
-		} catch (AmazonClientException e) {
-			false
+			return false
 		}
 	}
 }

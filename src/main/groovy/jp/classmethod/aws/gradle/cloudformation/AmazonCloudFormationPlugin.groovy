@@ -120,20 +120,20 @@ class AwsCloudFormationPluginExtension {
 	Project project;
 	
 	@Lazy
-	def AmazonCloudFormation cfn = {
+	AmazonCloudFormation cfn = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
 		aws.configureRegion(new AmazonCloudFormationClient(aws.credentialsProvider))
 	}()
 	
-	def String stackName
-	def Map<String, String> stackParams = [:]
-	def String templateURL
+	String stackName
+	Map<String, String> stackParams = [:]
+	String templateURL
 	
-	def File templateFile
-	def String templateBucket
-	def String templateKeyPrefix
+	File templateFile
+	String templateBucket
+	String templateKeyPrefix
 	
-	def boolean capabilityIam
+	boolean capabilityIam
 	
 	AwsCloudFormationPluginExtension(Project project) {
 		this.project = project;
@@ -143,11 +143,11 @@ class AwsCloudFormationPluginExtension {
 		this.stackParams = stackParams
 	}
 	
-	def Stack getStack(String stackName) {
-		cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName)).stacks[0]
+	Stack getStack(String stackName) {
+		return cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName)).stacks[0]
 	}
 	
-	def List<StackResource> getStackResources(String stackName) {
-		cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
+	List<StackResource> getStackResources(String stackName) {
+		return cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
 	}
 }

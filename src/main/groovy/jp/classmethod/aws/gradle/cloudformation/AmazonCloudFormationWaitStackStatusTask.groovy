@@ -14,9 +14,9 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String stackName
+	String stackName
 	
-	def List<String> successStatuses = [
+	List<String> successStatuses = [
 		'CREATE_COMPLETE',
 		'UPDATE_COMPLETE',
 		'ROLLBACK_COMPLETE',
@@ -24,7 +24,7 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 		'DELETE_COMPLETE',
 	]
 
-	def List<String> waitStatuses = [
+	List<String> waitStatuses = [
 		'CREATE_IN_PROGRESS',
 		'ROLLBACK_IN_PROGRESS',
 		'DELETE_IN_PROGRESS',
@@ -34,12 +34,12 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 		'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS'
 	]
 	
-	def int loopTimeout = 900 // sec
-	def int loopWait = 10 // sec
+	int loopTimeout = 900 // sec
+	int loopWait = 10 // sec
 	
-	def boolean found
+	boolean found
 	
-	def String lastStatus
+	String lastStatus
 	
 	@TaskAction
 	def waitStackForStatus() {
@@ -55,7 +55,7 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 			}
 			try {
 				def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
-				def Stack stack = describeStackResult.stacks[0]
+				Stack stack = describeStackResult.stacks[0]
 				if (stack == null) {
 					throw new GradleException("stack ${stackName} is not exists")
 				}

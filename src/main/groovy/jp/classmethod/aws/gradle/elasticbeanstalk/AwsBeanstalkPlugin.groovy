@@ -50,9 +50,9 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		def awsUploadWar = project.task('awsUploadWar', type: AmazonS3ProgressiveFileUploadTask) { AmazonS3ProgressiveFileUploadTask t ->
 			t.dependsOn(project.war)
 			t.doFirst {
-				def String extension = project.war.archiveName.tokenize('.').last()
-				def String baseName  = project.war.baseName
-				def String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+				String extension = project.war.archiveName.tokenize('.').last()
+				String baseName  = project.war.baseName
+				String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
 
 				t.bucketName = project.beanstalk.appBucket
 				t.key = "${project.beanstalk.appKeyPrefix}/${baseName}-${project.war.version}-${timestamp}.${extension}"
@@ -63,9 +63,9 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		def awsEbCreateApplicationVersion = project.task('awsEbCreateApplicationVersion', type: AWSElasticBeanstalkCreateApplicationVersionTask) { AWSElasticBeanstalkCreateApplicationVersionTask t ->
 			t.dependsOn([awsUploadWar, awsEbMigrateApplication])
 			t.doFirst {
-				def String extension = project.war.archiveName.tokenize('.').last()
-				def String baseName  = project.war.baseName
-				def String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+				String extension = project.war.archiveName.tokenize('.').last()
+				String baseName  = project.war.baseName
+				String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
 
 				t.applicationName = project.beanstalk.appName
 				t.versionLabel = "${baseName}-${project.war.version}-${timestamp}"
@@ -85,8 +85,8 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		def awsEbMigrateEnvironment = project.task('awsEbMigrateEnvironment', type: AWSElasticBeanstalkCreateEnvironmentTask) { AWSElasticBeanstalkCreateEnvironmentTask t ->
 			t.dependsOn([awsEbMigrateConfigurationTemplates, awsEbCreateApplicationVersion])
 			t.doFirst {
-				def String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : project.beanstalk.defaultEnv
-				def String envName = "${project.beanstalk.envPrefix}-${envKey}"
+				String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : project.beanstalk.defaultEnv
+				String envName = "${project.beanstalk.envPrefix}-${envKey}"
 				println "envKey = ${envKey} / envName = ${envName}"
 				
 				def EbEnvironmentExtension env = project.beanstalk.environments[envKey]
@@ -107,8 +107,8 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		
 		def awsEbTerminateEnvironment = project.task('awsEbTerminateEnvironment', type: AWSElasticBeanstalkTerminateEnvironmentTask) { AWSElasticBeanstalkTerminateEnvironmentTask t ->
 			t.doFirst {
-				def String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : project.beanstalk.defaultEnv
-				def String envName = "${project.beanstalk.envPrefix}-${envKey}"
+				String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : project.beanstalk.defaultEnv
+				String envName = "${project.beanstalk.envPrefix}-${envKey}"
 				println "envKey = ${envKey} / envName = ${envName}"
 				
 				def EbEnvironmentExtension env = project.beanstalk.environments[envKey]
@@ -171,22 +171,22 @@ class AwsBeanstalkPluginExtension {
 	Project project;
 		
 	@Lazy
-	def AWSElasticBeanstalk eb = {
+	AWSElasticBeanstalk eb = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
 		aws.configureRegion(new AWSElasticBeanstalkClient(aws.credentialsProvider))
 	}()
 	
-	def String appName
-	def String appDesc = ''
-	def String appBucket
-	def String appKeyPrefix
-	def String keyName
-	def Tier tier
-	def Map<String, Closure<String>> configurationTemplates = [:]
-	def NamedDomainObjectContainer<EbEnvironmentExtension> environments
-	def String defaultEnv
-	def String envPrefix
-	def boolean productionProtection = true
+	String appName
+	String appDesc = ''
+	String appBucket
+	String appKeyPrefix
+	String keyName
+	Tier tier
+	Map<String, Closure<String>> configurationTemplates = [:]
+	NamedDomainObjectContainer<EbEnvironmentExtension> environments
+	String defaultEnv
+	String envPrefix
+	boolean productionProtection = true
 	
 	AwsBeanstalkPluginExtension(Project project) {
 		this.project = project;
@@ -202,25 +202,25 @@ class AwsBeanstalkPluginExtension {
 		this.configurationTemplates = configurationTemplates
 	}
 	
-	def String getEbEnvironmentCNAME(String environmentName) {
-		def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
+	String getEbEnvironmentCNAME(String environmentName) {
+		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 			.withApplicationName(appName)
 			.withEnvironmentNames(environmentName))
-		def EnvironmentDescription env = der.environments[0]
-		env.CNAME
+		EnvironmentDescription env = der.environments[0]
+		return env.CNAME
 	}
 	
-	def EnvironmentDescription[] getEnvironmentDescs(List<String> environmentNames = Collections.emptyList()) {
-		def DescribeEnvironmentsRequest req = new DescribeEnvironmentsRequest().withApplicationName(appName)
+	EnvironmentDescription[] getEnvironmentDescs(List<String> environmentNames = Collections.emptyList()) {
+		DescribeEnvironmentsRequest req = new DescribeEnvironmentsRequest().withApplicationName(appName)
 		if (environmentNames.isEmpty() == false) {
 			req.setEnvironmentNames(environmentNames)
 		}
-		def DescribeEnvironmentsResult der = eb.describeEnvironments(req)
+		DescribeEnvironmentsResult der = eb.describeEnvironments(req)
 		return der.environments
 	}
 	
-	def String getElbName(EnvironmentDescription env) {
-		def String tmp = env.endpointURL
+	String getElbName(EnvironmentDescription env) {
+		String tmp = env.endpointURL
 		tmp = tmp.substring(0, tmp.indexOf('.'))
 		tmp = tmp.substring(0, tmp.lastIndexOf('-'))
 		return tmp
@@ -229,10 +229,10 @@ class AwsBeanstalkPluginExtension {
 
 class EbEnvironmentExtension implements Named {
 	
-	def String name
-	def String configurationTemplate
-	def String description = ''
-	def EnvironmentRole role
+	String name
+	String configurationTemplate
+	String description = ''
+	EnvironmentRole role
 	
 	EbEnvironmentExtension(String name) {
 		this.name = name
