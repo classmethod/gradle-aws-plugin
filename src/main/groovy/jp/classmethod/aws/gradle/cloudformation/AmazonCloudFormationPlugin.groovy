@@ -3,19 +3,20 @@ package jp.classmethod.aws.gradle.cloudformation
 import java.util.List;
 
 import groovy.lang.Closure
-import groovy.lang.Lazy;
+import groovy.lang.Lazy
 import jp.classmethod.aws.gradle.AwsPlugin
-import jp.classmethod.aws.gradle.AwsPluginExtension;
+import jp.classmethod.aws.gradle.AwsPluginExtension
 import jp.classmethod.aws.gradle.s3.*
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.internal.AbstractTask
 
 import com.amazonaws.*
 import com.amazonaws.auth.*
-import com.amazonaws.auth.policy.actions.CloudFormationActions;
+import com.amazonaws.auth.policy.actions.*
 import com.amazonaws.regions.*
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
@@ -30,27 +31,30 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 	void apply(Project project) {
 		project.configure(project) {
 			apply plugin: 'aws'
+			apply plugin: 'aws-s3'
 			project.extensions.create(AwsCloudFormationPluginExtension.NAME, AwsCloudFormationPluginExtension, project)
 			applyTasks(project)
 		}
 	}
 	
 	void applyTasks(final Project project) {
+		AwsCloudFormationPluginExtension cfnExt = project.extensions.getByType(AwsCloudFormationPluginExtension)
+		
 		def awsCfnUploadTemplate = project.task('awsCfnUploadTemplate', type: AmazonS3FileUploadTask) { AmazonS3FileUploadTask t ->
 			t.description = 'Upload cfn template file to the Amazon S3 bucket.'
 			t.doFirst {
-				t.file =  project.cloudFormation.templateFile
+				t.file =  cfnExt.templateFile
 				
 				def String extension = t.file.name.tokenize('.').last()
 				def String filename  = t.file.name.tokenize('/').last()
 				def String baseName  = filename.substring(0, filename.length() - extension.length() - 1)
 				def String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
 				
-				t.bucketName = project.cloudFormation.templateBucket
-				t.key = "${project.cloudFormation.templateKeyPrefix}/${baseName}-${project.version}-${timestamp}.${extension}"
+				t.bucketName = cfnExt.templateBucket
+				t.key = "${cfnExt.templateKeyPrefix}/${baseName}-${project.version}-${timestamp}.${extension}"
 			}
 			t.doLast {
-				project.cloudFormation.templateURL = t.resourceUrl
+				cfnExt.templateURL = t.resourceUrl
 			}
 		}
 		
@@ -58,13 +62,13 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.description 'Create/Migrate cfn stack'
 			t.mustRunAfter awsCfnUploadTemplate
 			t.doFirst {
-				t.stackName = project.cloudFormation.stackName
-				t.capabilityIam = project.cloudFormation.capabilityIam
-				project.cloudFormation.stackParams.each {
+				t.stackName = cfnExt.stackName
+				t.capabilityIam = cfnExt.capabilityIam
+				cfnExt.stackParams.each {
 					t.cfnStackParams += new com.amazonaws.services.cloudformation.model.Parameter()
 						.withParameterKey(it.key).withParameterValue((String) it.value)
 				}
-				t.cfnTemplateUrl = project.cloudFormation.templateURL
+				t.cfnTemplateUrl = cfnExt.templateURL
 			}
 		}
 		
@@ -72,7 +76,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.description 'Wait cfn stack for *_COMPLETE status.'
 			t.mustRunAfter awsCfnMigrateStack
 			t.doFirst {
-				t.stackName = project.cloudFormation.stackName
+				t.stackName = cfnExt.stackName
 			}
 		}
 		
@@ -81,7 +85,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.mustRunAfter awsCfnMigrateStack
 			t.successStatuses = [ 'CREATE_COMPLETE', 'UPDATE_COMPLETE' ]
 			t.doFirst {
-				t.stackName = project.cloudFormation.stackName
+				t.stackName = cfnExt.stackName
 			}
 		}
 		
@@ -93,7 +97,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 		def awsCfnDeleteStack = project.task('awsCfnDeleteStack', type: AmazonCloudFormationDeleteStackTask) { AmazonCloudFormationDeleteStackTask t ->
 			t.description 'Delete cfn stack'
 			t.doFirst {
-				t.stackName = project.cloudFormation.stackName
+				t.stackName = cfnExt.stackName
 			}
 		}
 		
@@ -102,7 +106,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.mustRunAfter awsCfnDeleteStack
 			t.successStatuses = [ 'DELETE_COMPLETE' ]
 			t.doFirst {
-				t.stackName = project.cloudFormation.stackName
+				t.stackName = cfnExt.stackName
 			}
 		}
 		
@@ -117,12 +121,15 @@ class AwsCloudFormationPluginExtension {
 	
 	public static final NAME = 'cloudFormation'
 	
-	Project project;
+	Project project
+	String accessKeyId
+	String secretKey
+	Region region
 	
 	@Lazy
 	AmazonCloudFormation cfn = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		aws.configureRegion(new AmazonCloudFormationClient(aws.credentialsProvider))
+		return aws.createClient(AmazonCloudFormationClient, region, accessKeyId, secretKey)
 	}()
 	
 	String stackName
@@ -139,7 +146,7 @@ class AwsCloudFormationPluginExtension {
 		this.project = project;
 	}
 
-	def stackParams(Map<String, String> stackParams) {
+	void stackParams(Map<String, String> stackParams) {
 		this.stackParams = stackParams
 	}
 	

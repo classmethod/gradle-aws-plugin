@@ -23,7 +23,9 @@ class AmazonEC2StopInstanceTask extends DefaultTask {
 	def createApplication() {
 		if (instanceIds.isEmpty()) return
 		
-		AmazonEC2 ec2 = project.aws.ec2
+		AmazonEC2PluginExtension ext = project.extensions.getByType(AmazonEC2PluginExtension)
+		AmazonEC2 ec2 = ext.ec2
+		
 		ec2.stopInstances(new StopInstancesRequest(instanceIds))
 		println "instance $instanceIds stop requested"
 	}

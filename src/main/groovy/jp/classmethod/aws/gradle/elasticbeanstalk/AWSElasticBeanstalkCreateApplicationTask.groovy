@@ -22,6 +22,7 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 	def createApplication() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
+		
 		try {
 			eb.createApplication(new CreateApplicationRequest()
 				.withApplicationName(appName)

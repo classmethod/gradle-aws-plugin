@@ -30,7 +30,9 @@ class SyncTask extends DefaultTask {
 	}
 	
 	private String upload(String prefix) {
-		AmazonS3Client s3 = project.aws.s3
+		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+		AmazonS3 s3 = ext.s3
+		
 		println "uploading... ${source} to s3://${bucketName}/${prefix}"
 		project.fileTree(source).visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
@@ -69,7 +71,9 @@ class SyncTask extends DefaultTask {
 	}
 	
 	private delete(String prefix) {
-		AmazonS3Client s3 = project.aws.s3
+		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+		AmazonS3 s3 = ext.s3
+		
 		String pathPrefix = source.toString()
 		pathPrefix += pathPrefix.endsWith('/') ? '' : '/'
 		s3.listObjects(bucketName, prefix).objectSummaries.each { S3ObjectSummary os ->

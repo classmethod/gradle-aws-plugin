@@ -43,8 +43,10 @@ class AmazonEC2WaitInstanceStatusTask extends DefaultTask {
 	@TaskAction
 	def waitStackForStatus() {
 		if (! instanceId) throw new GradleException("instanceId is not specified")
-		AmazonEC2 ec2 = project.aws.ec2
-
+		
+		AmazonEC2PluginExtension ext = project.extensions.getByType(AmazonEC2PluginExtension)
+		AmazonEC2 ec2 = ext.ec2
+		
 		def start = System.currentTimeMillis()
 		while (true) {
 			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {

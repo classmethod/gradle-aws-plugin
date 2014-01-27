@@ -28,7 +28,6 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		
 		configurationTemplates.each {
 			def templateName = it.key
 			def optionSettings = loadConfigurationOptions(it.value)

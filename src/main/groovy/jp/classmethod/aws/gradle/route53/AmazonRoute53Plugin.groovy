@@ -8,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 import com.amazonaws.*
+import com.amazonaws.regions.*
 import com.amazonaws.services.route53.*
 import com.amazonaws.services.route53.model.*
 import com.amazonaws.services.elasticloadbalancing.*
@@ -24,16 +25,14 @@ class AmazonRoute53Plugin implements Plugin<Project> {
 		}
 	}
 	
-	AmazonRoute53PluginExtension getExtension(Project project) {
-		project[AmazonRoute53PluginExtension.NAME]
-	}
-	
 	void applyTasks(final Project project) {
+		AmazonRoute53PluginExtension r53Ext = project.extensions.getByType(AmazonRoute53PluginExtension)
+		
 		def awsCfnUploadTemplate = project.task('awsR53CreateHostedZone', type: CreateHostedZoneTask) { CreateHostedZoneTask t ->
 			t.description = 'Create hostedZone.'
 			t.doFirst {
-				t.hostedZoneName = getExtension(project).hostedZone
-				t.callerReference = getExtension(project).callerReference
+				t.hostedZoneName = r53Ext.hostedZone
+				t.callerReference = r53Ext.callerReference
 			}
 		}
 	}
@@ -43,12 +42,15 @@ class AmazonRoute53PluginExtension {
 	
 	public static final NAME = 'route53'
 	
-	Project project;
+	Project project
+	String accessKeyId
+	String secretKey
+	Region region
 		
 	@Lazy
 	AmazonRoute53 r53 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		aws.configureRegion(new AmazonRoute53Client(aws.credentialsProvider))
+		return aws.createClient(AmazonRoute53Client, region, accessKeyId, secretKey)
 	}()
 	
 	String hostedZone
@@ -59,8 +61,8 @@ class AmazonRoute53PluginExtension {
 	}
 	
 	String getHostedZoneId() {
-		def ListHostedZonesResult lhzr = r53.listHostedZones()
-		def HostedZone zone = lhzr.hostedZones.find { it.name == (hostedZone + ".") }
+		ListHostedZonesResult lhzr = r53.listHostedZones()
+		HostedZone zone = lhzr.hostedZones.find { it.name == (hostedZone + ".") }
 		if (zone == null) {
 			throw new GradleException("Hosted zone ${hostedZone} not found.")
 		}

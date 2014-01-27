@@ -22,7 +22,9 @@ class AmazonEC2StartInstanceTask extends DefaultTask {
 	def createApplication() {
 		if (instanceIds.isEmpty()) return
 		
-		AmazonEC2 ec2 = project.aws.ec2
+		AmazonEC2PluginExtension ext = project.extensions.getByType(AmazonEC2PluginExtension)
+		AmazonEC2 ec2 = ext.ec2
+		
 		ec2.startInstances(new StartInstancesRequest(instanceIds))
 		println "instance $instanceIds start requested"
 	}

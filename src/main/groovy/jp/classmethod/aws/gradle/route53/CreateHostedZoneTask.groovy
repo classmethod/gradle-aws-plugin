@@ -29,6 +29,7 @@ class CreateHostedZoneTask extends DefaultTask {
 		if (comment != null) {
 			req.setHostedZoneConfig(new HostedZoneConfig().withComment(comment))
 		}
+		
 		try {
 			CreateHostedZoneResult chzr = r53.createHostedZone(req)
 			println "HostedZone ${hostedZoneName} - ${callerRef} is created."
