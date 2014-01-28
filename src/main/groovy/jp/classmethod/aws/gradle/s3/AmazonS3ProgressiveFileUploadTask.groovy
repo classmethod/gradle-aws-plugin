@@ -52,7 +52,7 @@ class AmazonS3ProgressiveFileUploadTask extends DefaultTask {
 			}
 		})
 		upload.waitForCompletion()
-		resourceUrl = ((AmazonS3Client) s3Ext.s3).getResourceUrl(bucketName, key)
+		resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, key)
 		println "upload completed: $resourceUrl"
 	}
 }

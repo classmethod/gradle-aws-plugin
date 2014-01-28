@@ -49,8 +49,10 @@ class AwsPluginExtension {
 		return new AWSCredentialsProviderChain(
 			new EnvironmentVariableCredentialsProvider(),
 			new SystemPropertiesCredentialsProvider(),
-			new StaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretKey)),
-			new StaticCredentialsProvider(new BasicAWSCredentials(this.accessKeyId, this.secretKey))
+			new StaticCredentialsProvider((accessKeyId && secretKey) ?
+				new BasicAWSCredentials(accessKeyId, secretKey) : null),
+			new StaticCredentialsProvider((this.accessKeyId && this.secretKey) ?
+				new BasicAWSCredentials(this.accessKeyId, this.secretKey) : null)
 		)
 	}
 	

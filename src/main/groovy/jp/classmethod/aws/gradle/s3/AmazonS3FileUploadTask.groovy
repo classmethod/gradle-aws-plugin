@@ -35,12 +35,12 @@ class AmazonS3FileUploadTask extends DefaultTask {
 		if (! key) throw new GradleException("key is not specified")
 		if (! file) throw new GradleException("file is not specified")
 		
-		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-		AmazonS3 s3 = ext.s3
-		
-		println "uploading... ${bucketName}/${key}"
-		resourceUrl = ((AmazonS3Client) s3Ext.s3).getResourceUrl(bucketName, key)
 		if (overwrite || exists() == false) {
+			AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+			AmazonS3 s3 = ext.s3
+					
+			println "uploading... ${bucketName}/${key}"
+			resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, key)
 			s3.putObject(bucketName, key, file)
 			println "upload completed: $resourceUrl"
 		} else {
