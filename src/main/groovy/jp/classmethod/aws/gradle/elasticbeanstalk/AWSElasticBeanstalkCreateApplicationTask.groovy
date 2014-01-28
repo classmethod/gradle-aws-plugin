@@ -22,6 +22,7 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 	def createApplication() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
+		
 		try {
 			eb.createApplication(new CreateApplicationRequest()
 				.withApplicationName(appName)
@@ -39,22 +40,3 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 		}
 	}
 }
-
-class AWSElasticBeanstalkDeleteApplicationTask extends DefaultTask {
-	
-	{
-		description 'Delete ElasticBeanstalk Application.'
-		group = 'AWS'
-	}
-	
-	def String applicationName
-	
-	@TaskAction
-	def deleteApplication() {
-		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
-		AWSElasticBeanstalk eb = ext.eb
-		eb.deleteApplication(new DeleteApplicationRequest(applicationName))
-		println "application $applicationName deleted"
-	}
-}
-

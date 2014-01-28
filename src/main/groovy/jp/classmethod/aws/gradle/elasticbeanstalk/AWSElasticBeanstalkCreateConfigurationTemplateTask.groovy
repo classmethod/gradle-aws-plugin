@@ -15,19 +15,18 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String applicationName
+	String applicationName
 	
-	def String templateDescription = ''
+	String templateDescription = ''
 	
-	def Map<String, Closure<String>> configurationTemplates = [:]
+	Map<String, Closure<String>> configurationTemplates = [:]
 	
-	def solutionStackName = '64bit Amazon Linux running Tomcat 7'
+	String solutionStackName = '64bit Amazon Linux running Tomcat 7'
 	
 	@TaskAction
 	def createTemplate() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
-		
 		
 		configurationTemplates.each {
 			def templateName = it.key
@@ -61,27 +60,3 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 		return options
 	}
 }
-
-class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends DefaultTask {
-	
-	{
-		description 'Delete ElasticBeanstalk Configuration Templates.'
-		group = 'AWS'
-	}
-	
-	def String applicationName
-	
-	def String templateName
-	
-	@TaskAction
-	def deleteTemplate() {
-		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
-		AWSElasticBeanstalk eb = ext.eb
-		
-		eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
-			.withApplicationName(applicationName)
-			.withTemplateName(templateName))
-		println "configuration template $templateName @ $applicationName deleted"
-	}
-}
-	

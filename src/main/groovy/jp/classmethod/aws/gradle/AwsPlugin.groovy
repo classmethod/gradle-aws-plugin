@@ -6,17 +6,6 @@ import org.gradle.api.Project
 import com.amazonaws.*
 import com.amazonaws.auth.*
 import com.amazonaws.regions.*
-import com.amazonaws.services.s3.*
-import com.amazonaws.services.s3.model.*
-import com.amazonaws.services.cloudformation.*
-import com.amazonaws.services.cloudformation.model.*
-import com.amazonaws.services.ec2.*
-import com.amazonaws.services.ec2.model.*
-import com.amazonaws.services.elasticbeanstalk.*
-import com.amazonaws.services.elasticbeanstalk.model.*
-import com.amazonaws.services.elasticloadbalancing.*
-import com.amazonaws.services.route53.*
-import com.amazonaws.services.route53.model.*
 import com.amazonaws.internal.StaticCredentialsProvider
 
 /**
@@ -26,20 +15,28 @@ class AwsPlugin implements Plugin<Project> {
 	
 	void apply(Project project) {
 		project.configure(project) {
-			project.extensions.create('aws', AwsPluginExtension)
+			project.extensions.create(AwsPluginExtension.NAME, AwsPluginExtension, project)
 		}
 	}
 }
 
 class AwsPluginExtension {
 	
-	def String accessKeyId
-	def String secretKey
-	def Region region
+	public static final NAME = 'aws'
 	
-	@Lazy AmazonEC2 ec2     = { configureRegion(new AmazonEC2Client(credentialsProvider)) }();
-	@Lazy AmazonS3Client s3 = { configureRegion(new AmazonS3Client(credentialsProvider)) }();
+	Project project;
 	
+	String accessKeyId
+	
+	String secretKey
+	
+	Region region = Region.getRegion(Regions.US_EAST_1)
+	
+	
+	AwsPluginExtension(Project project) {
+		this.project = project;
+	}
+
 	def void setRegion(String r) {
 		region = RegionUtils.getRegion(r)
 	}
@@ -48,18 +45,23 @@ class AwsPluginExtension {
 		region = RegionUtils.getRegion(r.name)
 	}
 	
-	def AWSCredentialsProvider getCredentialsProvider() {
-		(accessKeyId && secretKey) ?
-			new StaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretKey)) :
-			new DefaultAWSCredentialsProviderChain()
+	def AWSCredentialsProvider newCredentialsProvider(String accessKeyId, String secretKey) {
+		return new AWSCredentialsProviderChain(
+			new EnvironmentVariableCredentialsProvider(),
+			new SystemPropertiesCredentialsProvider(),
+			new StaticCredentialsProvider((accessKeyId && secretKey) ?
+				new BasicAWSCredentials(accessKeyId, secretKey) : null),
+			new StaticCredentialsProvider((this.accessKeyId && this.secretKey) ?
+				new BasicAWSCredentials(this.accessKeyId, this.secretKey) : null)
+		)
 	}
 	
-	def <T extends AmazonWebServiceClient> T configureRegion(T client) {
-		if (region != null) {
-			client.setRegion(region)
-		} else {
-			println "region is null"
+	def <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, Region region = null, String accessKeyId = null, String secretKey = null) {
+		if (region == null) {
+			if (this.region == null) throw new IllegalStateException('default region is null')
+			region = this.region
 		}
-		return client
+		
+		return region.createClient(serviceClass, newCredentialsProvider(accessKeyId, secretKey), null)
 	}
 }
