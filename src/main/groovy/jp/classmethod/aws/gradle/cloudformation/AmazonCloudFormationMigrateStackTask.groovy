@@ -14,15 +14,15 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String stackName
+	String stackName
 	
-	def String cfnTemplateUrl
+	String cfnTemplateUrl
 	
 	def cfnStackParams = []
 	
-	def boolean capabilityIam
+	boolean capabilityIam
 	
-	def List<String> stableStatuses = [
+	List<String> stableStatuses = [
 		'CREATE_COMPLETE', 'ROLLBACK_COMPLETE', 'UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'
 	]
 	
@@ -37,7 +37,7 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 		
 		try {
 			def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
-			def Stack stack = describeStackResult.stacks[0]
+			Stack stack = describeStackResult.stacks[0]
 			if (stack == null) {
 				println "stack ${stackName} not found"
 				createStack(cfn)
@@ -97,23 +97,3 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	}
 }
 
-class AmazonCloudFormationDeleteStackTask extends DefaultTask {
-	
-	{
-		description 'Delete cfn stack.'
-		group = 'AWS'
-	}
-	
-	def stackName
-	
-	@TaskAction
-	def deleteStack() {
-		if (! stackName) throw new GradleException("stackName is not specified")
-		
-		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
-		AmazonCloudFormation cfn = ext.cfn
-		
-		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
-		println "delete stack $stackName requested"
-	}
-}

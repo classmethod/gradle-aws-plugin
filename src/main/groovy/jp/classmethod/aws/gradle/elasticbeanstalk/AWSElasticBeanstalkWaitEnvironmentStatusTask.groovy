@@ -15,43 +15,43 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String applicationName
+	String applicationName
 	
-	def String environmentName
+	String environmentName
 	
-	def List<String> successStatuses = [
+	List<String> successStatuses = [
 		'Ready',
 		'Terminated'
 	]
 
-	def List<String> waitStatuses = [
+	List<String> waitStatuses = [
 		'Launching',
 		'Updating',
 		'Terminating'
 	]
 	
-	def int loopTimeout = 900 // sec
-	def int loopWait = 10 // sec
+	int loopTimeout = 900 // sec
+	int loopWait = 10 // sec
 	
 	@TaskAction
 	def waitEnvironmentForStatus() {
 		if (! applicationName) throw new GradleException("applicationName is not specified")
 		
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
+
 		def start = System.currentTimeMillis()
 		while (true) {
 			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException('Timeout')
 			}
 
-			AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
-			AWSElasticBeanstalk eb = ext.eb
-
 			try {
-				def DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
+				DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 					.withApplicationName(applicationName)
 					.withEnvironmentNames(environmentName))
 				
-				if(der.environments == null || der.environments.isEmpty()) {
+				if (der.environments == null || der.environments.isEmpty()) {
 					println "environment $environmentName @ $applicationName not found"
 					return
 				}

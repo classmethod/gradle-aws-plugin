@@ -14,19 +14,19 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String applicationName
+	String applicationName
 	
-	def String environmentName
+	String environmentName
 	
-	def String environmentDescription = ''
+	String environmentDescription = ''
 	
-	def String cnamePrefix = java.util.UUID.randomUUID().toString()
+	String cnamePrefix = java.util.UUID.randomUUID().toString()
 	
-	def String templateName
+	String templateName
 	
-	def String versionLabel
+	String versionLabel
 	
-	def Tier tier = Tier.WebServer
+	Tier tier = Tier.WebServer
 	
 	@TaskAction
 	def createEnvironment() {
@@ -65,51 +65,6 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 			}
 			CreateEnvironmentResult result = eb.createEnvironment(req)
 			println "environment $environmentName @ $applicationName (${result.environmentId}) created"
-		}
-	}
-}
-
-class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
-	
-	{
-		description 'Terminate(Delete) ElasticBeanstalk Environment.'
-		group = 'AWS'
-	}
-	
-	def String applicationName
-	
-	def String environmentName
-	
-	def String environmentId
-	
-	@TaskAction
-	def terminateEnvironment() {
-		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
-		AWSElasticBeanstalk eb = ext.eb
-		
-		if (environmentId == null) {
-			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-				.withApplicationName(applicationName)
-				.withEnvironmentNames(environmentName))
-			
-			if (der.environments == null || der.environments.isEmpty()) {
-				println "environment $environmentName @ $applicationName not found"
-				return
-			}
-			
-			environmentId = der.environments[0].environmentId
-		}
-		
-		try {
-			eb.terminateEnvironment(new TerminateEnvironmentRequest()
-				.withEnvironmentId(environmentId)
-				.withEnvironmentName(environmentName))
-			println "environment $environmentName @ $applicationName (${environmentId}) termination requested"
-		} catch (AmazonServiceException e) {
-			if (e.message.contains('No Environment found') == false) {
-				throw e
-			}
-			println "environment $environmentName @ $applicationName (${environmentId}) not found"
 		}
 	}
 }

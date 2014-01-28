@@ -1,31 +1,31 @@
-package jp.classmethod.aws.gradle.ec2
+package jp.classmethod.aws.gradle.s3
 
 import groovy.lang.Lazy;
 import jp.classmethod.aws.gradle.AwsPluginExtension
 
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+import com.amazonaws.*
 import com.amazonaws.regions.*
-import com.amazonaws.services.ec2.*
-import com.amazonaws.services.ec2.model.*
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
 
 
-class AmazonEC2Plugin implements Plugin<Project> {
+class AmazonS3Plugin implements Plugin<Project> {
 	
 	void apply(Project project) {
 		project.configure(project) {
 			apply plugin: 'aws'
-			project.extensions.create(AmazonEC2PluginExtension.NAME, AmazonEC2PluginExtension, project)
+			project.extensions.create(AmazonS3PluginExtension.NAME, AmazonS3PluginExtension, project)
 		}
 	}
 }
 
-class AmazonEC2PluginExtension {
+class AmazonS3PluginExtension {
 	
-	public static final NAME = 'ec2'
+	public static final NAME = 's3'
 	
 	Project project
 	String accessKeyId
@@ -33,12 +33,12 @@ class AmazonEC2PluginExtension {
 	Region region
 		
 	@Lazy
-	AmazonEC2 ec2 = {
+	AmazonS3 s3 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonEC2Client, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonS3Client, region, accessKeyId, secretKey)
 	}()
 	
-	AmazonEC2PluginExtension(Project project) {
+	AmazonS3PluginExtension(Project project) {
 		this.project = project;
 	}
 }

@@ -14,27 +14,22 @@ class AmazonRoute53ChangeRecordSetTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def String hostedZoneId
+	String hostedZoneId
 	
-	def String rrsName
+	String rrsName
 	
-	def String resourceRecord
+	String resourceRecord
 	
 	@TaskAction
 	def changeResourceRecordSets() {
 		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
 		AmazonRoute53 r53 = ext.r53
 		
-		try {
-			r53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
-				.withHostedZoneId(hostedZoneId)
-				.withChangeBatch(new ChangeBatch()
-					.withChanges(new Change(ChangeAction.CREATE, new ResourceRecordSet(rrsName, RRType.CNAME)
-						.withResourceRecords(new ResourceRecord(resourceRecord))))))	
-			println "change $hostedZoneId requested"
-		} catch (AmazonClientException e) {
-			throw e
-		}
+		r53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
+			.withHostedZoneId(hostedZoneId)
+			.withChangeBatch(new ChangeBatch()
+				.withChanges(new Change(ChangeAction.CREATE, new ResourceRecordSet(rrsName, RRType.CNAME)
+					.withResourceRecords(new ResourceRecord(resourceRecord))))))	
+		println "change $hostedZoneId requested"
 	}
 }
-
