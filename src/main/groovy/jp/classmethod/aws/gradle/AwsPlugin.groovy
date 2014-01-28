@@ -47,7 +47,6 @@ class AwsPluginExtension {
 	
 	def AWSCredentialsProvider newCredentialsProvider(String accessKeyId, String secretKey) {
 		return new AWSCredentialsProviderChain(
-			new SystemPropertiesCredentialsProvider(),
 			new StaticCredentialsProvider((accessKeyId && secretKey) ?
 				new BasicAWSCredentials(accessKeyId, secretKey) : null),
 			new StaticCredentialsProvider((this.accessKeyId && this.secretKey) ?
