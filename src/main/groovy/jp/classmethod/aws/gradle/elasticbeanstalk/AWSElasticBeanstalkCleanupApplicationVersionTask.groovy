@@ -19,7 +19,7 @@ class AWSElasticBeanstalkCleanupApplicationVersionTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
 	boolean deleteSourceBundle = true
 
@@ -29,30 +29,25 @@ class AWSElasticBeanstalkCleanupApplicationVersionTask extends DefaultTask {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		Set<String> usingVersions = []
 		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-			.withApplicationName(applicationName))
-		for (EnvironmentDescription ed in der.environments) {
-			usingVersions += ed.versionLabel
-//			println "version ${ed.versionLabel} is using"
-		}
+			.withApplicationName(appName))
+		List<String> usingVersions = der.environments.collect { EnvironmentDescription ed -> ed.versionLabel }
 		
-		List<String> versionLabelsToDelete = []
 		DescribeApplicationVersionsResult davr = eb.describeApplicationVersions(new DescribeApplicationVersionsRequest()
-			.withApplicationName(applicationName))
-		for (ApplicationVersionDescription avd in davr.applicationVersions) {
-			if (usingVersions.contains(avd.versionLabel) == false
-					&& avd.versionLabel.contains('-SNAPSHOT-')) {
-				versionLabelsToDelete += avd.versionLabel
-			}
+			.withApplicationName(appName))
+		List<String> versionLabelsToDelete = davr.applicationVersions.grep { ApplicationVersionDescription avd ->
+			usingVersions.contains(avd.versionLabel) == false && avd.versionLabel.contains('-SNAPSHOT-')
+		}.collect { ApplicationVersionDescription avd ->
+			avd.versionLabel
 		}
 		
-		for (String versionLabel in versionLabelsToDelete) {
-			println "version ${versionLabel} deleted"
+		versionLabelsToDelete.each { String versionLabel ->
+			logger.info "version ${versionLabel} deleted"
 			eb.deleteApplicationVersion(new DeleteApplicationVersionRequest()
-				.withApplicationName(applicationName)
+				.withApplicationName(appName)
 				.withVersionLabel(versionLabel)
 				.withDeleteSourceBundle(deleteSourceBundle))
+
 		}
 	}
 }

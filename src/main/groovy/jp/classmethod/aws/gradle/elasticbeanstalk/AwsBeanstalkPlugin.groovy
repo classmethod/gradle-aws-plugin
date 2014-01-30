@@ -1,5 +1,9 @@
 package jp.classmethod.aws.gradle.elasticbeanstalk
 
+import groovy.lang.Closure;
+
+import java.util.logging.Logger;
+
 import jp.classmethod.aws.gradle.AwsPluginExtension
 import jp.classmethod.aws.gradle.s3.AmazonS3ProgressiveFileUploadTask
 
@@ -9,6 +13,7 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.util.Configurable;
 
 import com.amazonaws.*
 import com.amazonaws.auth.*
@@ -27,7 +32,6 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		project.configure(project) {
 			apply plugin: 'aws'
 			apply plugin: 'aws-s3'
-			apply plugin: 'war'
 			project.extensions.create(AwsBeanstalkPluginExtension.NAME, AwsBeanstalkPluginExtension, project)
 			applyTasks(project)
 		}
@@ -44,98 +48,74 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		}
 		
 		def awsUploadWar = project.task('awsUploadWar', type: AmazonS3ProgressiveFileUploadTask) { AmazonS3ProgressiveFileUploadTask t ->
-			t.dependsOn(project.war)
+			if (project.hasProperty('war')) {
+				t.dependsOn(project.war)
+			}
+			t.onlyIf { ebExt.version.file != null || project.hasProperty('war') }
 			t.doFirst {
-				String extension = project.war.archiveName.tokenize('.').last()
-				String baseName  = project.war.baseName
-				String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
-
-				t.bucketName = ebExt.appBucket
-				t.key = "${ebExt.appKeyPrefix}/${baseName}-${project.war.version}-${timestamp}.${extension}"
-				t.file = project.war.archivePath
+				t.bucketName = ebExt.version.bucket
+				t.key = ebExt.version.key
+				if (project.hasProperty('war') && ebExt.version.file == null) {
+					t.file = project.war.archivePath
+				} else {
+					t.file = ebExt.version.file
+				}
 			}
 		}
 		
 		def awsEbCreateApplicationVersion = project.task('awsEbCreateApplicationVersion', type: AWSElasticBeanstalkCreateApplicationVersionTask) { AWSElasticBeanstalkCreateApplicationVersionTask t ->
-			t.dependsOn([awsUploadWar, awsEbMigrateApplication])
+			def dependency = [awsEbMigrateApplication]
+			if (awsUploadWar) { dependency += awsUploadWar }
+			t.dependsOn(dependency)
+			
 			t.doFirst {
-				String extension = project.war.archiveName.tokenize('.').last()
-				String baseName  = project.war.baseName
-				String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
-
-				t.applicationName = ebExt.appName
-				t.versionLabel = "${baseName}-${project.war.version}-${timestamp}"
-				t.bucketName = ebExt.appBucket
-				t.key = awsUploadWar.key
+				t.appName = ebExt.appName
+				t.versionLabel = ebExt.version.getLabel()
+				t.bucketName = ebExt.version.bucket
+				t.key = ebExt.version.getKey()
 			}
 		}
 		
 		def awsEbMigrateConfigurationTemplates = project.task('awsEbMigrateConfigurationTemplates', type: AWSElasticBeanstalkCreateConfigurationTemplateTask) { AWSElasticBeanstalkCreateConfigurationTemplateTask t ->
 			t.dependsOn awsEbMigrateApplication
 			t.doFirst {
-				t.applicationName = ebExt.appName
+				t.appName = ebExt.appName
 				t.configurationTemplates = ebExt.configurationTemplates
 			}
 		}
-
+		
 		def awsEbMigrateEnvironment = project.task('awsEbMigrateEnvironment', type: AWSElasticBeanstalkCreateEnvironmentTask) { AWSElasticBeanstalkCreateEnvironmentTask t ->
 			t.dependsOn([awsEbMigrateConfigurationTemplates, awsEbCreateApplicationVersion])
 			t.doFirst {
-				String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : ebExt.defaultEnv
-				String envName = "${ebExt.envPrefix}-${envKey}"
-				println "envKey = ${envKey} / envName = ${envName}"
-				
-				def EbEnvironmentExtension env = ebExt.environments[envKey]
-				if (ebExt.productionProtection && env.role == EnvironmentRole.PRODUCTION) {
-					throw new GradleException('You can\'t migrate PRODUCTION environment')
-				}
-				
-				t.applicationName = ebExt.appName
-				t.environmentName = envName
-				t.templateName = env.configurationTemplate
-				t.versionLabel = awsEbCreateApplicationVersion.versionLabel
-				
-				if (ebExt.tier) {
-					t.tier = ebExt.tier
-				}
+				t.appName = ebExt.appName
+				t.envName = ebExt.environment.envName
+				t.envDesc = ebExt.environment.envDesc
+				t.templateName = ebExt.environment.templateName
+				t.versionLabel = ebExt.environment.versionLabel
+				t.tier = ebExt.tier ?: Tier.WebServer
 			}
 		}
 		
 		def awsEbTerminateEnvironment = project.task('awsEbTerminateEnvironment', type: AWSElasticBeanstalkTerminateEnvironmentTask) { AWSElasticBeanstalkTerminateEnvironmentTask t ->
 			t.doFirst {
-				String envKey = project.hasProperty('targetEbEnv') ? project.targetEbEnv : ebExt.defaultEnv
-				String envName = "${ebExt.envPrefix}-${envKey}"
-				println "envKey = ${envKey} / envName = ${envName}"
-				
-				def EbEnvironmentExtension env = ebExt.environments[envKey]
-				if (ebExt.productionProtection && env.role == EnvironmentRole.PRODUCTION) {
-					throw new GradleException('You can\'t terminate PRODUCTION environment')
-				}
-				
-				t.applicationName = ebExt.appName
-				t.environmentName = envName
+				t.appName = ebExt.appName
+				t.envName = ebExt.environment.envName
 			}
 		}
 		
 		project.task('awsEbWaitEnvironmentReady', type: AWSElasticBeanstalkWaitEnvironmentStatusTask) { AWSElasticBeanstalkWaitEnvironmentStatusTask t ->
 			t.mustRunAfter awsEbMigrateEnvironment
 			t.doFirst {
-				def envName = project.hasProperty('targetEbEnv') ? project.targetEbEnv : ebExt.defaultEnv
-				envName = "${ebExt.envPrefix}-${envName}"
-
-				t.applicationName = ebExt.appName
-				t.environmentName = envName
+				t.appName = ebExt.appName
+				t.envName = ebExt.environment.envName
 			}
 		}
 		
 		def awsEbWaitEnvironmentTerminated = project.task('awsEbWaitEnvironmentTerminated', type: AWSElasticBeanstalkWaitEnvironmentStatusTask) { AWSElasticBeanstalkWaitEnvironmentStatusTask t ->
 			t.mustRunAfter awsEbTerminateEnvironment
 			t.doFirst {
-				def envName = project.hasProperty('targetEbEnv') ? project.targetEbEnv : ebExt.defaultEnv
-				envName = "${ebExt.envPrefix}-${envName}"
-				
-				t.applicationName = ebExt.appName
-				t.environmentName = envName
+				t.appName = ebExt.appName
+				t.envName = ebExt.environment.envName
 				t.successStatuses = [ 'Terminated' ]
 				t.waitStatuses += 'Ready'
 			}
@@ -147,14 +127,14 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 		
 		project.task('awsEbCleanupApplicationVersions', type: AWSElasticBeanstalkCleanupApplicationVersionTask) { AWSElasticBeanstalkCleanupApplicationVersionTask t ->
 			t.doFirst {
-				t.applicationName = ebExt.appName
+				t.appName = ebExt.appName
 			}
 		}
 		
 		project.task('awsEbDeleteApplication', type: AWSElasticBeanstalkDeleteApplicationTask) { AWSElasticBeanstalkDeleteApplicationTask t ->
 			t.dependsOn awsEbTerminateEnvironmentAndWaitTerminated
 			t.doFirst {
-				t.applicationName = ebExt.appName
+				t.appName = ebExt.appName
 			}
 		}
 	}
@@ -177,28 +157,32 @@ class AwsBeanstalkPluginExtension {
 	
 	String appName
 	String appDesc = ''
-	String appBucket
-	String appKeyPrefix
-	String keyName
-	Tier tier
-	Map<String, Closure<String>> configurationTemplates = [:]
-	NamedDomainObjectContainer<EbEnvironmentExtension> environments
-	String defaultEnv
-	String envPrefix
-	boolean productionProtection = true
+	
+	EbAppVersionExtension version
+	def version(Closure closure) {
+		closure.resolveStrategy = Closure.DELEGATE_FIRST
+		closure.delegate = version
+		closure.call()
+	}
+	
+	NamedDomainObjectContainer<EbConfigurationTemplateExtension> configurationTemplates
+	def configurationTemplates(Closure cl) {
+		configurationTemplates.configure(cl)
+	}
+	
+	EbEnvironmentExtension environment
+	def environment(Closure closure) {
+		environment.configure(closure)
+	}
+	
+	Tier tier = Tier.WebServer
 	
 	
 	AwsBeanstalkPluginExtension(Project project) {
 		this.project = project;
-		this.environments = project.container(EbEnvironmentExtension)
-	}
-	
-	def environments(Closure closure) {
-		environments.configure(closure)
-	}
-	
-	def configurationTemplates(Map<String, Closure<String>> configurationTemplates) {
-		this.configurationTemplates = configurationTemplates
+		this.version = project.container(EbAppVersionExtension)
+		this.configurationTemplates = project.container(EbConfigurationTemplateExtension)
+		this.environment = project.container(EbEnvironmentExtension)
 	}
 	
 	String getEbEnvironmentCNAME(String environmentName) {
@@ -219,23 +203,64 @@ class AwsBeanstalkPluginExtension {
 	}
 	
 	String getElbName(EnvironmentDescription env) {
-		String tmp = env.endpointURL
-		tmp = tmp.substring(0, tmp.indexOf('.'))
-		tmp = tmp.substring(0, tmp.lastIndexOf('-'))
-		return tmp
+		String elbName = env.endpointURL
+		elbName = elbName.substring(0, elbName.indexOf('.'))
+		elbName = elbName.substring(0, elbName.lastIndexOf('-'))
+		return elbName
 	}
 }
 
-class EbEnvironmentExtension implements Named {
+class EbAppVersionExtension {
+	
+	def label
+	String description = ''
+	String bucket
+	def key
+	File file
+	
+	String getLabel() {
+		if (label instanceof String) return label
+		if (label instanceof Closure<String>) return label.call()
+		return label?.toString()
+	}
+	
+	String getKey() {
+		if (key instanceof String) return key
+		if (key instanceof Closure<String>) return key.call()
+		return key?.toString()
+	}
+}
+
+class EbEnvironmentExtension implements Configurable<Void> {
+	
+	String envName
+	String envDesc = ''
+	String templateName
+	String versionLabel
+	
+	@Override
+	public Void configure(Closure<?> closure) {
+		closure.resolveStrategy = Closure.DELEGATE_FIRST
+		closure.delegate = this
+		closure.call()
+		return null
+	}
+}
+
+class EbConfigurationTemplateExtension implements Named {
 	
 	String name
-	String configurationTemplate
-	String description = ''
-	EnvironmentRole role
+	String desc
+	def private optionSettings
+	String solutionStackName
 	
-	EbEnvironmentExtension(String name) {
+	EbConfigurationTemplateExtension(String name) {
 		this.name = name
 	}
+	
+	String getOptionSettings() {
+		if (optionSettings instanceof String) return optionSettings
+		if (optionSettings instanceof Closure<String>) return optionSettings.call()
+		return optionSettings?.toString()
+	}
 }
-
-enum EnvironmentRole { PRODUCTION, STAGING, DEVELOPMENT }

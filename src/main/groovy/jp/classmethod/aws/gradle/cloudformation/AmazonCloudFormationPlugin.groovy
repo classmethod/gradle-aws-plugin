@@ -45,10 +45,10 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.doFirst {
 				t.file =  cfnExt.templateFile
 				
-				def String extension = t.file.name.tokenize('.').last()
-				def String filename  = t.file.name.tokenize('/').last()
-				def String baseName  = filename.substring(0, filename.length() - extension.length() - 1)
-				def String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+				String extension = t.file.name.tokenize('.').last()
+				String filename  = t.file.name.tokenize('/').last()
+				String baseName  = filename.substring(0, filename.length() - extension.length() - 1)
+				String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
 				
 				t.bucketName = cfnExt.templateBucket
 				t.key = "${cfnExt.templateKeyPrefix}/${baseName}-${project.version}-${timestamp}.${extension}"

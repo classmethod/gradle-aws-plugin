@@ -14,7 +14,7 @@ class AWSElasticBeanstalkCreateApplicationVersionTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
 	String versionLabel
 	
@@ -28,10 +28,17 @@ class AWSElasticBeanstalkCreateApplicationVersionTask extends DefaultTask {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		eb.createApplicationVersion(new CreateApplicationVersionRequest()
-			.withApplicationName(applicationName)
-			.withVersionLabel(versionLabel)
-			.withSourceBundle(new S3Location(bucketName, key)))
-		println "version ${versionLabel} created"
+		try {
+			eb.createApplicationVersion(new CreateApplicationVersionRequest()
+				.withApplicationName(appName)
+				.withVersionLabel(versionLabel)
+				.withSourceBundle(new S3Location(bucketName, key)))
+			logger.info "version $versionLabel @ $appName created"
+		} catch(AmazonServiceException e) {
+			if (e.getMessage().endsWith('already exists.') == false) {
+				throw e
+			}
+			logger.warn "version $versionLabel @ $appName already exists."
+		}
 	}
 }

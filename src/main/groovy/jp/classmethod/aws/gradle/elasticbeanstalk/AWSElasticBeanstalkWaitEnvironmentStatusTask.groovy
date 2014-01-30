@@ -15,9 +15,9 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
-	String environmentName
+	String envName
 	
 	List<String> successStatuses = [
 		'Ready',
@@ -35,7 +35,7 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 	
 	@TaskAction
 	def waitEnvironmentForStatus() {
-		if (! applicationName) throw new GradleException("applicationName is not specified")
+		if (! appName) throw new GradleException("applicationName is not specified")
 		
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
@@ -48,25 +48,25 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 
 			try {
 				DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-					.withApplicationName(applicationName)
-					.withEnvironmentNames(environmentName))
+					.withApplicationName(appName)
+					.withEnvironmentNames(envName))
 				
 				if (der.environments == null || der.environments.isEmpty()) {
-					println "environment $environmentName @ $applicationName not found"
+					println "environment $envName @ $appName not found"
 					return
 				}
 				
-				EnvironmentDescription env = der.environments[0]
+				EnvironmentDescription ed = der.environments[0]
 				
-				if (successStatuses.contains(env.status)) {
-					println "Status of environment ${environmentName} @ $applicationName is now ${env.status}."
+				if (successStatuses.contains(ed.status)) {
+					println "Status of environment ${envName} @ $appName is now ${ed.status}."
 					break
-				} else if (waitStatuses.contains(env.status)) {
-					println "Status of environment ${environmentName} @ $applicationName is ${env.status}..."
+				} else if (waitStatuses.contains(ed.status)) {
+					println "Status of environment ${envName} @ $appName is ${ed.status}..."
 					Thread.sleep(loopWait * 1000)
 				} else {
 					// waitStatusesでもsuccessStatusesないステータスはfailとする
-					throw new GradleException("Status of environment ${environmentName} @ $applicationName is ${env.status}.  It seems to be failed.")
+					throw new GradleException("Status of environment ${envName} @ $appName is ${ed.status}.  It seems to be failed.")
 				}
 			} catch (AmazonServiceException e) {
 				throw new GradleException(e)

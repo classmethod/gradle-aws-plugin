@@ -4,6 +4,7 @@ import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult
+import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription
 import com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -16,40 +17,41 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
-	String environmentName
+	String envName
 	
-	String environmentId
+	String envId
 	
 	@TaskAction
 	def terminateEnvironment() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		if (environmentId == null) {
+		if (envId == null) {
 			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-				.withApplicationName(applicationName)
-				.withEnvironmentNames(environmentName))
+				.withApplicationName(appName)
+				.withEnvironmentNames(envName))
 			
 			if (der.environments == null || der.environments.isEmpty()) {
-				println "environment $environmentName @ $applicationName not found"
+				println "environment $envName @ $appName not found"
 				return
 			}
 			
-			environmentId = der.environments[0].environmentId
+			EnvironmentDescription ed = der.environments[0]
+			envId = ed.environmentId
 		}
 		
 		try {
 			eb.terminateEnvironment(new TerminateEnvironmentRequest()
-				.withEnvironmentId(environmentId)
-				.withEnvironmentName(environmentName))
-			println "environment $environmentName @ $applicationName (${environmentId}) termination requested"
+				.withEnvironmentId(envId)
+				.withEnvironmentName(envName))
+			println "environment $envName (${envId}) @ $appName termination requested"
 		} catch (AmazonServiceException e) {
 			if (e.message.contains('No Environment found') == false) {
 				throw e
 			}
-			println "environment $environmentName @ $applicationName (${environmentId}) not found"
+			println "environment $envName (${envId}) @ $appName not found"
 		}
 	}
 }

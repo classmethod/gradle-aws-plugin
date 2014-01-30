@@ -15,46 +15,46 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
-	String templateDescription = ''
+	Collection<EbConfigurationTemplateExtension> configurationTemplates = []
 	
-	Map<String, Closure<String>> configurationTemplates = [:]
-	
-	String solutionStackName = '64bit Amazon Linux running Tomcat 7'
+	String defaultSolutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
 	
 	@TaskAction
 	def createTemplate() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		configurationTemplates.each {
-			def templateName = it.key
-			def optionSettings = loadConfigurationOptions(it.value)
+		configurationTemplates.each { EbConfigurationTemplateExtension config ->
+			String templateName = config.name
+			String templateDesc = config.desc
+			String solutionStackName = config.solutionStackName ?: defaultSolutionStackName
+			ConfigurationOptionSetting[] optionSettings = loadConfigurationOptions(config.optionSettings)
 			
 			try {
 				eb.createConfigurationTemplate(new CreateConfigurationTemplateRequest()
-					.withApplicationName(applicationName)
+					.withApplicationName(appName)
 					.withTemplateName(templateName)
-					.withDescription(templateDescription)
+					.withDescription(templateDesc)
 					.withSolutionStackName(solutionStackName)
 					.withOptionSettings(optionSettings))
-				println "configuration template $templateName @ $applicationName created"
+				println "configuration template $templateName @ $appName created"
 			} catch (AmazonClientException e) {
 				eb.updateConfigurationTemplate(new UpdateConfigurationTemplateRequest()
-					.withApplicationName(applicationName)
+					.withApplicationName(appName)
 					.withTemplateName(templateName)
-					.withDescription(templateDescription)
+					.withDescription(templateDesc)
 					.withOptionSettings(optionSettings))
 				// TODO withOptionsToRemove ?
-				println "configuration template $templateName @ $applicationName updated"
+				println "configuration template $templateName @ $appName updated"
 			}
 		}
 	}
 	
-	def ConfigurationOptionSetting[] loadConfigurationOptions(Closure<String> jsonClosure) {
-		def options = []
-		new groovy.json.JsonSlurper().parseText(jsonClosure.call()).each {
+	ConfigurationOptionSetting[] loadConfigurationOptions(String json) {
+		List<ConfigurationOptionSetting> options = []
+		new groovy.json.JsonSlurper().parseText(json).each {
 			options += new ConfigurationOptionSetting(it.Namespace, it.OptionName, it.Value)
 		}
 		return options

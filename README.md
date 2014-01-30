@@ -40,7 +40,7 @@ Add like this to your build.gradle :
         maven { url 'http://public-maven.classmethod.info/release' }
       }
       dependencies {
-        classpath 'jp.classmethod.aws:gradle-aws-plugin:0.7'
+        classpath 'jp.classmethod.aws:gradle-aws-plugin:0.10'
       }
     }
     
@@ -105,11 +105,48 @@ Add like this to your build.gradle :
     // awsR53CreateHostedZone task is declared
 
 
+### Implements tasks to treat Elastic Beanstalk environemnt
+
+    apply plugin: 'aws-beanstalk'
+    beanstalk {
+      String extension = project.war.archiveName.tokenize('.').last()
+      String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+    
+      appName 'foobar'
+      appDesc 'foobar demo application'
+      
+      version {
+        label = "foobar-${project.war.version}-${timestamp}"
+        description = "${artifactId} v${version}"
+        bucket = 'sample-bucket'
+        key = "eb-apps/foobar-${project.war.version}-${timestamp}.${extension}"
+      }
+      
+      configurationTemplates {
+        production {
+          optionSettings = file('src/main/config/production.json')
+          solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
+        }
+        development {
+          optionSettings = file('src/main/config/development.json')
+          solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
+        }
+      }
+      
+      environment {
+        envName = 'foobar'
+        envDesc = 'foobar demo application development environemnt'
+        templateName = 'development'
+        versionLabel = "foobar-${project.war.version}-${timestamp}"
+      }
+    }
+    
+    // task awsEbMigrateEnvironment, awsEbDeleteApplication and so on are declared
+
+
 License
 -------
 
 Copyright (C) 2013-2014 [Classmethod, Inc.](http://classmethod.jp/)
 
 Distributed under the Apache License v2.0.  See the file copyright/LICENSE.txt.
-
-
