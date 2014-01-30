@@ -13,14 +13,14 @@ class AWSElasticBeanstalkDeleteApplicationTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
 	@TaskAction
 	def deleteApplication() {
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
-		eb.deleteApplication(new DeleteApplicationRequest(applicationName))
-		println "application $applicationName deleted"
+		eb.deleteApplication(new DeleteApplicationRequest(appName))
+		println "application $appName deleted"
 	}
 }

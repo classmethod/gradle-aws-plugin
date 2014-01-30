@@ -13,22 +13,12 @@ import com.amazonaws.services.s3.model.*
 import com.amazonaws.services.s3.transfer.*
 
 
-class AmazonS3ProgressiveFileUploadTask extends DefaultTask {
+class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	{
 		description 'Upload war file to the Amazon S3 bucket.'
 		group = 'AWS'
 	}
-	
-	String bucketName
-	
-	String key
-	
-	File file
-	
-	// == after did work
-	
-	String resourceUrl
 	
 	@TaskAction
 	def upload() {
@@ -40,8 +30,8 @@ class AmazonS3ProgressiveFileUploadTask extends DefaultTask {
 		AmazonS3 s3 = ext.s3
 		
 		TransferManager s3mgr = new TransferManager(s3)
-		println "uploading... ${bucketName}/${key}"
-		Upload upload = s3mgr.upload(bucketName, key, file)
+		println "uploading... ${bucketName}/${getKey()}"
+		Upload upload = s3mgr.upload(bucketName, getKey(), file)
 		upload.addProgressListener(new ProgressListener() {
 			void progressChanged(ProgressEvent event) {
 				// TODO うまい感じでprogressをログ表示できないか
@@ -52,7 +42,7 @@ class AmazonS3ProgressiveFileUploadTask extends DefaultTask {
 			}
 		})
 		upload.waitForCompletion()
-		resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, key)
+		resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, getKey())
 		println "upload completed: $resourceUrl"
 	}
 }

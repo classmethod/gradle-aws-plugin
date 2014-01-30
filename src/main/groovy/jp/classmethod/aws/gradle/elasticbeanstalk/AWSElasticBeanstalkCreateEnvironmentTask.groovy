@@ -14,11 +14,11 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	String applicationName
+	String appName
 	
-	String environmentName
+	String envName
 	
-	String environmentDescription = ''
+	String envDesc = ''
 	
 	String cnamePrefix = java.util.UUID.randomUUID().toString()
 	
@@ -35,28 +35,29 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 		
 		try {
 			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-				.withApplicationName(applicationName)
-				.withEnvironmentNames(environmentName))
+				.withApplicationName(appName)
+				.withEnvironmentNames(envName))
 			
 			if (der.environments == null || der.environments.isEmpty()) {
 				throw new AmazonClientException("no env")
 			}
 			
-			String environmentId = der.environments[0].environmentId
+			EnvironmentDescription ed = der.environments[0]
+			String environmentId = ed.environmentId
 			
 			eb.updateEnvironment(new UpdateEnvironmentRequest()
 				.withEnvironmentId(environmentId)
-				.withEnvironmentName(environmentName)
-				.withDescription(environmentDescription)
+				.withEnvironmentName(envName)
+				.withDescription(envDesc)
 				.withTemplateName(templateName)
 				.withVersionLabel(versionLabel)
 				.withTier(tier.toEnvironmentTier()))
-			println "environment $environmentName @ $applicationName (${environmentId}) updated"
+			println "environment $envName @ $appName (${environmentId}) updated"
 		} catch (AmazonClientException e) {
 			CreateEnvironmentRequest req = new CreateEnvironmentRequest()
-				.withApplicationName(applicationName)
-				.withEnvironmentName(environmentName)
-				.withDescription(environmentDescription)
+				.withApplicationName(appName)
+				.withEnvironmentName(envName)
+				.withDescription(envDesc)
 				.withTemplateName(templateName)
 				.withVersionLabel(versionLabel)
 				.withTier(tier.toEnvironmentTier())
@@ -64,7 +65,7 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 				req.withCNAMEPrefix(cnamePrefix)
 			}
 			CreateEnvironmentResult result = eb.createEnvironment(req)
-			println "environment $environmentName @ $applicationName (${result.environmentId}) created"
+			println "environment $envName @ $appName (${result.environmentId}) created"
 		}
 	}
 }
