@@ -1,6 +1,8 @@
 Gradle AWS Plugin
 =================
 
+Gradle plugin to treat AWS resouces.
+
 Current Features / Supported AWS Products
 -----------------------------------------
 
@@ -52,10 +54,17 @@ Add like this to your build.gradle :
       region = 'ap-northeast-1'
     }
 
+These credentials are used to make API accesses by default.
+
 
 ### Implements tasks to start and stop bastion instance
 
     apply plugin: 'aws-ec2'
+    
+    // You can overwrite default credentials and region settings like this:
+    // ec2 {
+    //   region = 'us-east-1'
+    // }
     
     task stopBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StopInstanceTask) {
       instanceIds += 'i-12345678'

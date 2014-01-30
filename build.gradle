@@ -1,8 +1,18 @@
 // -*- coding: utf-8; mode: groovy -*-
 
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+	}
+}
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
+apply plugin: 'license'
 
 defaultTasks 'clean', 'build'
 
@@ -101,6 +111,13 @@ uploadArchives {
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
+}
+
+// ======== License =======
+license {
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	header rootProject.file('copyright/HEADER')
+	strictCheck true
 }
 
 // ======== IDE ========
