@@ -17,7 +17,7 @@ apply plugin: 'license'
 defaultTasks 'clean', 'build'
 
 group = 'jp.classmethod.aws'
-version = '0.11'
+version = '0.12-SNAPSHOT'
 ext {
 	artifactId = 'gradle-aws-plugin'
 	defaultEncoding = 'UTF-8'
