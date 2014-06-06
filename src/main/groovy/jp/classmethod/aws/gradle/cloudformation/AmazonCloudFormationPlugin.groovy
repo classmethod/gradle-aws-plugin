@@ -79,7 +79,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.doFirst {
 				t.stackName = cfnExt.stackName
 				t.capabilityIam = cfnExt.capabilityIam
-				cfnExt.stackParams.each {
+				cfnExt.stackParams.call().each {
 					t.cfnStackParams += new com.amazonaws.services.cloudformation.model.Parameter()
 						.withParameterKey(it.key).withParameterValue((String) it.value)
 				}
@@ -148,7 +148,7 @@ class AwsCloudFormationPluginExtension {
 	}()
 	
 	String stackName
-	Map<String, String> stackParams = [:]
+	Closure<Map<String, String>> stackParams = { [:] }
 	String templateURL
 	
 	File templateFile
@@ -161,7 +161,7 @@ class AwsCloudFormationPluginExtension {
 		this.project = project;
 	}
 
-	void stackParams(Map<String, String> stackParams) {
+	void stackParams(Closure<Map<String, String>> stackParams) {
 		this.stackParams = stackParams
 	}
 	
@@ -171,5 +171,9 @@ class AwsCloudFormationPluginExtension {
 	
 	List<StackResource> getStackResources(String stackName) {
 		return cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
+	}
+	
+	String getParameter(List<Parameter> parameters, String key) {
+		return parameters.find { it.parameterKey == key }.parameterValue
 	}
 }
