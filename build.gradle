@@ -1,19 +1,29 @@
 // -*- coding: utf-8; mode: groovy -*-
 
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+	}
+}
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
+apply plugin: 'license'
 
 defaultTasks 'clean', 'build'
 
 group = 'jp.classmethod.aws'
-version = '0.10'
+version = '0.11'
 ext {
 	artifactId = 'gradle-aws-plugin'
 	defaultEncoding = 'UTF-8'
 }
 
-// ======== ソースバンドル・Javadocバンドルの作成 ========
+// ======== create source and javadoc bundles ========
 
 task sourcesJar(type: Jar, dependsOn:classes) {
 	classifier = 'sources'
@@ -34,12 +44,13 @@ configurations {
 	deployerJars
 }
 
-// ======== 依存ライブラリ ========
+// ======== library versions ========
 ext {
-	awsJavaSdkVersion = "1.6.12"
-	junitVersion = "4.+"
-	hamcrestVersion = "1.3"
-	mockitoCoreVersion = "1.9.5"
+	awsJavaSdkVersion = '1.7.12'
+	groovyVersion = '2.0.8'
+	junitVersion = '4.+'
+	hamcrestVersion = '1.3'
+	mockitoCoreVersion = '1.9.5'
 }
 
 repositories {
@@ -48,12 +59,12 @@ repositories {
 
 dependencies {
 	compile gradleApi()
-	compile 'org.codehaus.groovy:groovy-all:2.0.8'
+	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
 	compile 'commons-codec:commons-codec:1.8'
 	
 	// tests
-	testCompile "junit:junit:${ext.junitVersion}"
+	testCompile "junit:junit:$junitVersion"
 	testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
 	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
 
@@ -61,7 +72,6 @@ dependencies {
 }
 
 // ======== deploy artifacts ========
-
 uploadArchives {
 	repositories {
 		mavenDeployer {
@@ -97,9 +107,15 @@ uploadArchives {
 }
 
 // ======== wrapper ========
-
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
+}
+
+// ======== License =======
+license {
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	header rootProject.file('copyright/HEADER')
+	strictCheck true
 }
 
 // ======== IDE ========
@@ -119,10 +135,10 @@ eclipse {
 		defaultOutputDir = file('build/classes')
 		containers = [
 			'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7',
-			'org.springsource.ide.eclipse.gradle.classpathcontainer'  // Gradle IDEのクラスパスコンテナ
+			'org.springsource.ide.eclipse.gradle.classpathcontainer'  // Gradle IDE classpath container
 		]
 		file {
-			// .classpathファイルの出力時にクラスパスからJARエントリを除外する
+			// exclude jar entries from .classpath
 			whenMerged { classpath ->
 				classpath.configure classpath.entries.grep { entry ->
 					!(entry instanceof org.gradle.plugins.ide.eclipse.model.Library)
@@ -134,16 +150,5 @@ eclipse {
 		}
 		downloadSources = true
 		downloadJavadoc = true
-		/*
-		jdt {
-			file {
-				withProperties { properties ->
-					def rootProperties = new Properties()
-					new File(rootProject.projectDir, '.settings/org.eclipse.jdt.core.prefs').withReader { rootProperties.load it }
-					properties.putAll rootProperties.findAll { k, v -> k.startsWith 'org.eclipse.jdt.core.formatter' }
-				}
-			}
-		}
-		*/
 	}
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013-2014 Classmethod, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package jp.classmethod.aws.gradle.cloudformation
 
 import java.util.List;
@@ -64,7 +79,7 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 			t.doFirst {
 				t.stackName = cfnExt.stackName
 				t.capabilityIam = cfnExt.capabilityIam
-				cfnExt.stackParams.each {
+				cfnExt.stackParams.call().each {
 					t.cfnStackParams += new com.amazonaws.services.cloudformation.model.Parameter()
 						.withParameterKey(it.key).withParameterValue((String) it.value)
 				}
@@ -133,7 +148,7 @@ class AwsCloudFormationPluginExtension {
 	}()
 	
 	String stackName
-	Map<String, String> stackParams = [:]
+	Closure<Map<String, String>> stackParams = { [:] }
 	String templateURL
 	
 	File templateFile
@@ -146,7 +161,7 @@ class AwsCloudFormationPluginExtension {
 		this.project = project;
 	}
 
-	void stackParams(Map<String, String> stackParams) {
+	void stackParams(Closure<Map<String, String>> stackParams) {
 		this.stackParams = stackParams
 	}
 	
@@ -156,5 +171,9 @@ class AwsCloudFormationPluginExtension {
 	
 	List<StackResource> getStackResources(String stackName) {
 		return cfn.describeStackResources(new DescribeStackResourcesRequest().withStackName(stackName)).stackResources
+	}
+	
+	String getParameter(List<Parameter> parameters, String key) {
+		return parameters.find { it.parameterKey == key }.parameterValue
 	}
 }
