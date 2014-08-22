@@ -34,22 +34,22 @@ class SyncTask extends DefaultTask {
 	
 	@TaskAction
 	def uploadAction() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
-		if (! source) throw new GradleException("source is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
+		if (! getSource()) throw new GradleException("source is not specified")
 		
-		String prefix = this.prefix
+		String prefix = getPrefix()
 		prefix = prefix.startsWith('/') ? prefix.substring(1) : prefix
-		
-		upload(prefix)
-		delete(prefix)
-	}
-	
-	private String upload(String prefix) {
+
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
-		
-		println "uploading... ${source} to s3://${bucketName}/${prefix}"
-		project.fileTree(source).visit { FileTreeElement element ->
+
+		upload(s3, prefix)
+		delete(s3, prefix)
+	}
+	
+	private String upload(AmazonS3 s3, String prefix) {
+		println "uploading... ${getSource()} to s3://${getBucketName()}/${prefix}"
+		project.fileTree(getSource()).visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
 				String relativePath = prefix + element.relativePath.toString()
 				String key = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
@@ -67,7 +67,7 @@ class SyncTask extends DefaultTask {
 				
 				boolean doUpload = false
 				try {
-					def metadata = s3.getObjectMetadata(bucketName, key)
+					def metadata = s3.getObjectMetadata(getBucketName(), key)
 					if (metadata.ETag.equalsIgnoreCase(md5) == false) {
 						doUpload = true
 					}
@@ -76,26 +76,23 @@ class SyncTask extends DefaultTask {
 				}
 				
 				if (doUpload) {
-					println " => s3://${bucketName}/${key}"
-					s3.putObject(bucketName, key, element.file)
+					println " => s3://${getBucketName()}/${key}"
+					s3.putObject(getBucketName(), key, element.file)
 				} else {
-					println " => s3://${bucketName}/${key} (SKIP)"
+					println " => s3://${getBucketName()}/${key} (SKIP)"
 				}
 			}
 		}
 	}
 	
-	private delete(String prefix) {
-		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-		AmazonS3 s3 = ext.s3
-		
-		String pathPrefix = source.toString()
+	private delete(AmazonS3 s3, String prefix) {
+		String pathPrefix = getSource().toString()
 		pathPrefix += pathPrefix.endsWith('/') ? '' : '/'
-		s3.listObjects(bucketName, prefix).objectSummaries.each { S3ObjectSummary os ->
+		s3.listObjects(getBucketName(), prefix).objectSummaries.each { S3ObjectSummary os ->
 			def File f = project.file(pathPrefix + os.key.substring(prefix.length()))
 			if (f.exists() == false) {
-				println "deleting... s3://${bucketName}/${os.key}"
-				s3.deleteObject(bucketName, os.key)
+				println "deleting... s3://${getBucketName()}/${os.key}"
+				s3.deleteObject(getBucketName(), os.key)
 			}
 		}
 	}

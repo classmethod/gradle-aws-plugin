@@ -29,7 +29,7 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	
 	String bucketName
 	
-	def key
+	String key
 	
 	File file
 	
@@ -39,12 +39,6 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	
 	String resourceUrl
 	
-	
-	String getKey() {
-		if (key instanceof String) return key
-		if (key instanceof Closure<String>) return key.call()
-		return key.toString()
-	}
 	
 	boolean exists() {
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)

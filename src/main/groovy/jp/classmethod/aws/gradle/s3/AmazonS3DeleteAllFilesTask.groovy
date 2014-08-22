@@ -36,19 +36,23 @@ class AmazonS3DeleteAllFilesTask extends DefaultTask {
 	
 	@TaskAction
 	def delete() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
 		
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
+
+		String prefix = getPrefix()
+		if (prefix.startsWith('/')) {
+			prefix = prefix.substring(1)
+		}
 		
-		String prefix = this.prefix.startsWith('/') ? this.prefix.substring(1) : this.prefix
-		println "deleting... ${bucketName}/${prefix}"
+		println "deleting... ${getBucketName()}/${prefix}"
 		
 		List<S3ObjectSummary> objectSummaries
-		while ((objectSummaries = s3.listObjects(bucketName, prefix).objectSummaries).isEmpty() == false) {
+		while ((objectSummaries = s3.listObjects(getBucketName(), prefix).objectSummaries).isEmpty() == false) {
 			objectSummaries.each { S3ObjectSummary os ->
-				println "deleting... s3://${bucketName}/${os.key}"
-				s3.deleteObject(bucketName, os.key)
+				println "deleting... s3://${getBucketName()}/${os.key}"
+				s3.deleteObject(getBucketName(), os.key)
 			}
 		}
 	}

@@ -35,23 +35,20 @@ public class DeleteBucketTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteBucket() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
 		
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
-		if (ifExists == false || exists()) {
-			s3.deleteBucket(bucketName)
-			println "bucket $bucketName deleted"
+		if (ifExists == false || exists(s3)) {
+			s3.deleteBucket(getBucketName())
+			println "bucket ${getBucketName()} deleted"
 		}
 	}
 	
-	boolean exists() {
-		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-		AmazonS3 s3 = ext.s3
-		
+	boolean exists(AmazonS3 s3) {
 		try {
-			s3.getBucketLocation(bucketName)
+			s3.getBucketLocation(getBucketName())
 			return true
 		} catch (AmazonClientException e) {
 			return false

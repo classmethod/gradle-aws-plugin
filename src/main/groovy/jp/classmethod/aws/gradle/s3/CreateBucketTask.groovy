@@ -38,23 +38,20 @@ public class CreateBucketTask extends DefaultTask {
 	
 	@TaskAction
 	def createBucket() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
 		
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
-		if (ifNotExists == false || exists() == false) {
-			s3.createBucket(bucketName)
-			println "bucket $bucketName created"
+		if (isIfNotExists() == false || exists(s3) == false) {
+			s3.createBucket(getBucketName())
+			println "bucket ${getBucketName()} created"
 		}
 	}
 	
-	boolean exists() {
-		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-		AmazonS3 s3 = ext.s3
-		
+	boolean exists(AmazonS3 s3) {
 		try {
-			s3.getBucketLocation(bucketName)
+			s3.getBucketLocation(getBucketName())
 			return true
 		} catch (AmazonClientException e) {
 			return false
