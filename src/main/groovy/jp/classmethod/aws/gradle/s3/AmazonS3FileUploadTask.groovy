@@ -35,20 +35,20 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 
 	@TaskAction
 	def upload() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
-		if (! key) throw new GradleException("key is not specified")
-		if (! file) throw new GradleException("file is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
+		if (! getKey()) throw new GradleException("key is not specified")
+		if (! getFile()) throw new GradleException("file is not specified")
 		
 		if (overwrite || exists() == false) {
 			AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 			AmazonS3 s3 = ext.s3
 					
-			println "uploading... ${bucketName}/${getKey()}"
-			resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, getKey())
-			s3.putObject(bucketName, getKey(), file)
+			println "uploading... ${getBucketName()}/${getKey()}"
+			resourceUrl = ((AmazonS3Client) s3).getResourceUrl(getBucketName(), getKey())
+			s3.putObject(getBucketName(), getKey(), getFile())
 			println "upload completed: $resourceUrl"
 		} else {
-			println "${bucketName}/${getKey()} is already exists -- skipped"
+			println "${getBucketName()}/${getKey()} is already exists -- skipped"
 		}
 	}
 }

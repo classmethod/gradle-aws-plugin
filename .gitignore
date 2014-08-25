@@ -6,3 +6,4 @@ gradle.properties
 .classpath
 .settings
 .project
+.idea

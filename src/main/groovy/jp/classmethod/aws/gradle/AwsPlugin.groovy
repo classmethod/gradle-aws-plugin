@@ -15,13 +15,16 @@
  */
 package jp.classmethod.aws.gradle
 
+import com.amazonaws.AmazonWebServiceClient
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSCredentialsProviderChain
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.internal.StaticCredentialsProvider
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.RegionUtils
+import com.amazonaws.regions.Regions
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
-import com.amazonaws.*
-import com.amazonaws.auth.*
-import com.amazonaws.regions.*
-import com.amazonaws.internal.StaticCredentialsProvider
 
 /**
  * A plugin which configures a AWS project.
@@ -30,7 +33,7 @@ class AwsPlugin implements Plugin<Project> {
 	
 	void apply(Project project) {
 		project.configure(project) {
-			project.extensions.create(AwsPluginExtension.NAME, AwsPluginExtension, project)
+			extensions.create(AwsPluginExtension.NAME, AwsPluginExtension, project)
 		}
 	}
 }
@@ -39,7 +42,7 @@ class AwsPluginExtension {
 	
 	public static final NAME = 'aws'
 	
-	Project project;
+	Project project
 	
 	String accessKeyId
 	
@@ -49,14 +52,14 @@ class AwsPluginExtension {
 	
 	
 	AwsPluginExtension(Project project) {
-		this.project = project;
+		this.project = project
 	}
 
-	def void setRegion(String r) {
+	void setRegion(String r) {
 		region = RegionUtils.getRegion(r)
 	}
 	
-	def void setRegion(Regions r) {
+	void setRegion(Regions r) {
 		region = RegionUtils.getRegion(r.name)
 	}
 	
@@ -71,10 +74,13 @@ class AwsPluginExtension {
 	
 	def <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, Region region = null, String accessKeyId = null, String secretKey = null) {
 		if (region == null) {
-			if (this.region == null) throw new IllegalStateException('default region is null')
+			if (this.region == null) {
+				throw new IllegalStateException('default region is null')
+			}
 			region = this.region
 		}
-		
-		return region.createClient(serviceClass, newCredentialsProvider(accessKeyId, secretKey), null)
+
+		def credentialsProvider = newCredentialsProvider(accessKeyId, secretKey)
+		return region.createClient(serviceClass, credentialsProvider, null)
 	}
 }

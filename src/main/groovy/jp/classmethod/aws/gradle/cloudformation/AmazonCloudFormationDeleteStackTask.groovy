@@ -29,16 +29,16 @@ class AmazonCloudFormationDeleteStackTask extends DefaultTask {
 		group = 'AWS'
 	}
 	
-	def stackName
+	String stackName
 	
 	@TaskAction
 	def deleteStack() {
-		if (! stackName) throw new GradleException("stackName is not specified")
+		if (! getStackName()) throw new GradleException("stackName is not specified")
 		
 		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
 		AmazonCloudFormation cfn = ext.cfn
 		
-		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
-		println "delete stack $stackName requested"
+		cfn.deleteStack(new DeleteStackRequest().withStackName(getStackName()))
+		println "delete stack ${getStackName()} requested"
 	}
 }

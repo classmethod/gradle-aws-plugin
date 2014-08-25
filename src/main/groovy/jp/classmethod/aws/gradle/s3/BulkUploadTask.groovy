@@ -34,17 +34,22 @@ class BulkUploadTask extends DefaultTask {
 	
 	@TaskAction
 	def upload() {
-		String prefix = this.prefix.startsWith('/') ? this.prefix.substring(1) : this.prefix
-		prefix += this.prefix.endsWith('/') ? '' : '/'
-		
+		String prefix = getPrefix();
+		if (prefix.startsWith('/')) {
+			prefix = prefix.substring(1)
+		}
+		if (prefix.endsWith('/') == false) {
+			prefix += '/'
+		}
+
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
-		println "uploading... ${source} to s3://${bucketName}/${prefix}"
-		source.visit { FileTreeElement element ->
+		println "uploading... ${getSource()} to s3://${getBucketName()}/${prefix}"
+		getSource().visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
-				println " => s3://${bucketName}/${prefix}${element.relativePath}"
-				s3.putObject(bucketName, prefix + element.relativePath, element.file)
+				println " => s3://${getBucketName()}/${prefix}${element.relativePath}"
+				s3.putObject(getBucketName(), prefix + element.relativePath, element.file)
 			}
 		}
 	}

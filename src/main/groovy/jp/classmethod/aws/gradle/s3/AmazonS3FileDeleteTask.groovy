@@ -35,13 +35,13 @@ class AmazonS3FileDeleteTask extends DefaultTask {
 	
 	@TaskAction
 	def delete() {
-		if (! bucketName) throw new GradleException("bucketName is not specified")
-		if (! key) throw new GradleException("key is not specified")
+		if (! getBucketName()) throw new GradleException("bucketName is not specified")
+		if (! getKey()) throw new GradleException("key is not specified")
 		
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
-		println "deleting... ${bucketName}/${key}"
-		s3.deleteObject(bucketName, key)
+		println "deleting... ${getBucketName()}/${getKey()}"
+		s3.deleteObject(getBucketName(), getKey())
 	}
 }
