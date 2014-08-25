@@ -33,7 +33,7 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	
 	String cfnTemplateUrl
 	
-	def cfnStackParams = []
+	List<Parameter> cfnStackParams = []
 	
 	boolean capabilityIam
 	
@@ -44,8 +44,8 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	
 	@TaskAction
 	def createOrUpdateStack() {
-		if (! stackName) throw new GradleException("stackName is not specified")
-		if (! cfnTemplateUrl) throw new GradleException("cfnTemplateUrl is not specified")
+		if (! getStackName()) throw new GradleException("stackName is not specified")
+		if (! getCfnTemplateUrl()) throw new GradleException("cfnTemplateUrl is not specified")
 		
 		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
 		AmazonCloudFormation cfn = ext.cfn
@@ -54,20 +54,20 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 			def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
 			Stack stack = describeStackResult.stacks[0]
 			if (stack == null) {
-				println "stack ${stackName} not found"
+				println "stack ${getStackName()} not found"
 				createStack(cfn)
 			} else if (stack.stackStatus == 'DELETE_COMPLETE') {
-				println "deleted stack ${stackName} already exists"
+				println "deleted stack ${getStackName()} already exists"
 				deleteStack(cfn)
 				createStack(cfn)
-			} else if (stableStatuses.contains(stack.stackStatus) == false) {
-				throw new org.gradle.api.GradleException('invalid status for update: ' + stack.stackStatus)
+			} else if (getStableStatuses().contains(stack.stackStatus) == false) {
+				throw new GradleException('invalid status for update: ' + stack.stackStatus)
 			} else {
 				updateStack(cfn)
 			}
 		} catch (AmazonServiceException e) {
 			if (e.message.contains("does not exist")) {
-				println "stack ${stackName} not found"
+				println "stack ${getStackName()} not found"
 				createStack(cfn)
 			} else if (e.message.contains("No updates are to be performed.")) {
 				// ignore
@@ -78,12 +78,12 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	}
 	
 	private updateStack(AmazonCloudFormation cfn) {
-		println "update stack: $stackName"
+		println "update stack: ${getStackName()}"
 		UpdateStackRequest req = new UpdateStackRequest()
-				.withStackName(stackName)
-				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams)
-		if (capabilityIam) {
+				.withStackName(getStackName())
+				.withTemplateURL(getCfnTemplateUrl())
+				.withParameters(getCfnStackParams())
+		if (isCapabilityIam()) {
 			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def updateStackResult = cfn.updateStack(req)
@@ -91,20 +91,20 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	}
 	
 	private deleteStack(AmazonCloudFormation cfn) {
-		println "delete stack: $stackName"
+		println "delete stack: ${getStackName()}"
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
-		println "delete requested: $stackName"
+		println "delete requested: ${getStackName()}"
 		Thread.sleep(3000)
 	}
 	
 	private createStack(AmazonCloudFormation cfn) {
-		println "create stack: $stackName"
+		println "create stack: ${getStackName()}"
 		
 		CreateStackRequest req = new CreateStackRequest()
-				.withStackName(stackName)
-				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams)
-		if (capabilityIam) {
+				.withStackName(getStackName())
+				.withTemplateURL(getCfnTemplateUrl())
+				.withParameters(getCfnStackParams())
+		if (isCapabilityIam()) {
 			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def createStackResult = cfn.createStack(req)
