@@ -24,32 +24,32 @@ import org.gradle.api.tasks.TaskAction
 
 class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 
-    {
-        description 'Create/Migrate ElasticBeanstalk Application.'
-        group = 'AWS'
-    }
+	{
+		description 'Create/Migrate ElasticBeanstalk Application.'
+		group = 'AWS'
+	}
 
-    def String appName
+	def String appName
 
-    def String appDesc = ''
+	def String appDesc = ''
 
-    @TaskAction
-    def createApplication() {
-        AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
-        AWSElasticBeanstalk eb = ext.eb
+	@TaskAction
+	def createApplication() {
+		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
+		AWSElasticBeanstalk eb = ext.eb
 
-        def existingApps = eb.describeApplications(new DescribeApplicationsRequest()
-                .withApplicationNames(appName))
-        if (existingApps.getApplications().isEmpty()) {
-            eb.createApplication(new CreateApplicationRequest()
-                    .withApplicationName(appName)
-                    .withDescription(appDesc))
-            println "application $appName ($appDesc) created"
-        } else {
-            eb.updateApplication(new UpdateApplicationRequest()
-                    .withApplicationName(appName)
-                    .withDescription(appDesc))
-            println "application $appName ($appDesc) updated"
-        }
-    }
+		def existingApps = eb.describeApplications(new DescribeApplicationsRequest()
+				.withApplicationNames(appName))
+		if (existingApps.getApplications().isEmpty()) {
+			eb.createApplication(new CreateApplicationRequest()
+					.withApplicationName(appName)
+					.withDescription(appDesc))
+			println "application $appName ($appDesc) created"
+		} else {
+			eb.updateApplication(new UpdateApplicationRequest()
+					.withApplicationName(appName)
+					.withDescription(appDesc))
+			println "application $appName ($appDesc) updated"
+		}
+	}
 }

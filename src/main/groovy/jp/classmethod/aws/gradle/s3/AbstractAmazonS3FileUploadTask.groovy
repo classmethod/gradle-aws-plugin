@@ -22,27 +22,31 @@ import org.gradle.api.DefaultTask
 
 abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 
-    String bucketName
-    String key
-    File file
-    boolean overwrite = false
-    String resourceUrl
+	String bucketName
 
-    ObjectMetadata objectMetadata() {
-        AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-        AmazonS3 s3 = ext.s3
-        try {
-            return s3.getObjectMetadata(bucketName, key)
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() != 404) {
-                throw e
-            }
-        }
-        return null
-    }
+	String key
 
-    boolean exists() {
-        objectMetadata() != null
-    }
+	File file
+
+	String resourceUrl
+
+	boolean overwrite = false
+
+	ObjectMetadata objectMetadata() {
+		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+		AmazonS3 s3 = ext.s3
+		try {
+			return s3.getObjectMetadata(bucketName, key)
+		} catch (AmazonS3Exception e) {
+			if (e.getStatusCode() != 404) {
+				throw e
+			}
+		}
+		return null
+	}
+
+	boolean exists() {
+		objectMetadata() != null
+	}
 
 }

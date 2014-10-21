@@ -30,39 +30,39 @@ import org.gradle.api.tasks.TaskAction
 
 
 class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
-    {
-        description = 'Upload file to the Amazon S3 bucket.'
-        group = 'AWS'
-    }
+	{
+		description = 'Upload file to the Amazon S3 bucket.'
+		group = 'AWS'
+	}
 
 
-    @TaskAction
-    def upload() {
-        verifyParameters()
+	@TaskAction
+	def upload() {
+		verifyParameters()
 
-        AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-        AmazonS3Client s3 = ext.s3
+		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+		AmazonS3Client s3 = ext.s3
 
-        // metadata will be null iff the object does not exist
-        def metadata = objectMetadata()
+		// metadata will be null iff the object does not exist
+		def metadata = objectMetadata()
 
-        if (overwrite || !metadata || (metadata.getETag() != md5())) {
-            println "uploading... ${getBucketName()}/${getKey()}"
-            resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
-            s3.putObject(getBucketName(), getKey(), getFile())
-            println "upload completed: $resourceUrl"
-        } else {
-            println "${getBucketName()}/${getKey()} already exists with matching md5 sum -- skipped"
-        }
-    }
+		if (overwrite || !metadata || (metadata.getETag() != md5())) {
+			println "uploading... ${getBucketName()}/${getKey()}"
+			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
+			s3.putObject(getBucketName(), getKey(), getFile())
+			println "upload completed: $resourceUrl"
+		} else {
+			println "${getBucketName()}/${getKey()} already exists with matching md5 sum -- skipped"
+		}
+	}
 
-    def md5() {
-        Hashing.md5().newHasher().putBytes(getFile().getBytes()).hash().toString()
-    }
+	def md5() {
+		Hashing.md5().newHasher().putBytes(getFile().getBytes()).hash().toString()
+	}
 
-    def private verifyParameters() {
-        if (!getBucketName()) throw new GradleException("bucketName is not specified")
-        if (!getKey()) throw new GradleException("key is not specified")
-        if (!getFile()) throw new GradleException("file is not specified")
-    }
+	def private verifyParameters() {
+		if (!getBucketName()) throw new GradleException("bucketName is not specified")
+		if (!getKey()) throw new GradleException("key is not specified")
+		if (!getFile()) throw new GradleException("file is not specified")
+	}
 }

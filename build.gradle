@@ -9,26 +9,16 @@ buildscript {
 	}
 }
 
-plugins {
-    id 'com.jfrog.artifactory' version "3.0.1"
-}
-
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'maven-publish'
 apply plugin: 'license'
-
-dependencies {
-    compile 'com.google.guava:guava:18.0'
-}
 
 defaultTasks 'clean', 'build'
 
-group = 'TouchType'
+// ======== deployment options (dispatched on group name) ========
+group = 'jp.classmethod.aws'
 version = '0.13-SNAPSHOT'
-
-
 
 ext {
 	artifactId = 'gradle-aws-plugin'
@@ -63,6 +53,7 @@ ext {
 	junitVersion = '4.+'
 	hamcrestVersion = '1.3'
 	mockitoCoreVersion = '1.9.5'
+	guavaVersion = '18.0'
 }
 
 repositories {
@@ -74,7 +65,8 @@ dependencies {
 	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
 	compile 'commons-codec:commons-codec:1.8'
-	
+	compile "com.google.guava:guava:$guavaVersion"
+
 	// tests
 	testCompile "junit:junit:$junitVersion"
 	testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
@@ -84,24 +76,9 @@ dependencies {
 }
 
 // ======== deploy artifacts ========
-def releasePrefix = project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            credentials {
-              username System.env.ARTIFACTORY_USERNAME
-              password System.env.ARTIFACTORY_PASSWORD
-            }
-            url "http://touchtype.artifactoryonline.com/touchtype/${releasePrefix}-internal"
-        }
-    }
-}
+// Allows forks of the plugin to define their own deployment mechanisms
+// in separate files named according to their maven group name
+apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
