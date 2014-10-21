@@ -9,16 +9,27 @@ buildscript {
 	}
 }
 
+plugins {
+    id 'com.jfrog.artifactory' version "3.0.1"
+}
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'license'
+
+dependencies {
+    compile 'com.google.guava:guava:18.0'
+}
 
 defaultTasks 'clean', 'build'
 
-group = 'jp.classmethod.aws'
-version = '0.12'
+group = 'TouchType'
+version = '0.13-SNAPSHOT'
+
+
+
 ext {
 	artifactId = 'gradle-aws-plugin'
 	defaultEncoding = 'UTF-8'
@@ -47,8 +58,8 @@ configurations {
 
 // ======== library versions ========
 ext {
-	awsJavaSdkVersion = '1.7.12'
-	groovyVersion = '2.0.8'
+	awsJavaSdkVersion = '1.9.0'
+	groovyVersion = '2.3.7'
 	junitVersion = '4.+'
 	hamcrestVersion = '1.3'
 	mockitoCoreVersion = '1.9.5'
@@ -73,49 +84,34 @@ dependencies {
 }
 
 // ======== deploy artifacts ========
-uploadArchives {
-	repositories {
-		mavenDeployer {
-			assert project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey'): "AWS credential is required"
-			def awsCredentials = [
-				userName: awsAccessKey,
-				passphrase: awsSecretKey
-			]
+def releasePrefix = project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'
 
-			configuration = configurations.deployerJars
-			repository(url: "s3://public-maven.classmethod.info/release") {
-				authentication(awsCredentials)
-			}
-			snapshotRepository(url: "s3://public-maven.classmethod.info/snapshot") {
-				authentication(awsCredentials)
-			}
-		}
-	}
-}
-
-[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
-	pom.project {
-		inceptionYear '2013'
-		packaging 'jar'
-		licenses {
-			license {
-				name 'The Apache Software License, Version 2.0'
-				url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-				distribution 'repo'
-			}
-		}
-	}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+              username System.env.ARTIFACTORY_USERNAME
+              password System.env.ARTIFACTORY_PASSWORD
+            }
+            url "http://touchtype.artifactoryonline.com/touchtype/${releasePrefix}-internal"
+        }
+    }
 }
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '1.7'
+	gradleVersion = '2.1'
 }
 
 // ======== License =======
 license {
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
-	header rootProject.file('copyright/HEADER')
+	header file('copyright/HEADER')
 	strictCheck true
 }
 

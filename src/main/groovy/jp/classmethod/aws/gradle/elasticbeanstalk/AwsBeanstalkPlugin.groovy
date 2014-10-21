@@ -254,7 +254,7 @@ class EbEnvironmentExtension implements Configurable<Void> {
 	String versionLabel
 	
 	@Override
-	public Void configure(Closure<?> closure) {
+	public Void configure(Closure closure) {
 		closure.resolveStrategy = Closure.DELEGATE_FIRST
 		closure.delegate = this
 		closure.call()
@@ -268,6 +268,7 @@ class EbConfigurationTemplateExtension implements Named {
 	String desc
 	def private optionSettings
 	String solutionStackName
+    boolean recreate = false
 	
 	EbConfigurationTemplateExtension(String name) {
 		this.name = name

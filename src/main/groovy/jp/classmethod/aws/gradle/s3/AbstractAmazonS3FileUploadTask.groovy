@@ -15,43 +15,34 @@
  */
 package jp.classmethod.aws.gradle.s3
 
-import java.util.List;
-
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
-import com.amazonaws.services.s3.transfer.*
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.tasks.TaskAction
 
 abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
-	
-	String bucketName
-	
-	String key
-	
-	File file
-	
-	boolean overwrite = true
-	
-	// == after did work
-	
-	String resourceUrl
-	
-	
-	boolean exists() {
-		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-		AmazonS3 s3 = ext.s3
-		
-		try {
-			ObjectMetadata objectMetadata = s3.getObjectMetadata(bucketName, getKey())
-			return true
-		} catch (AmazonS3Exception e) {
-			if (e.getStatusCode() != 404) {
-				throw e
-			}
-		}
-		return false
-	}
+
+    String bucketName
+    String key
+    File file
+    boolean overwrite = false
+    String resourceUrl
+
+    ObjectMetadata objectMetadata() {
+        AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+        AmazonS3 s3 = ext.s3
+        try {
+            return s3.getObjectMetadata(bucketName, key)
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw e
+            }
+        }
+        return null
+    }
+
+    boolean exists() {
+        objectMetadata() != null
+    }
+
 }
