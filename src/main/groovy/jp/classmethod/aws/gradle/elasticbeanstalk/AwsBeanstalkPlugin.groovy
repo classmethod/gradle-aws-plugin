@@ -108,6 +108,7 @@ class AwsBeanstalkPlugin implements Plugin<Project> {
 				t.templateName = ebExt.environment.templateName
 				t.versionLabel = ebExt.environment.versionLabel
 				t.tier = ebExt.tier ?: Tier.WebServer
+				if (ebExt.environment.cnamePrefix) t.cnamePrefix = ebExt.environment.cnamePrefix
 			}
 		}
 		
@@ -250,6 +251,7 @@ class EbEnvironmentExtension implements Configurable<Void> {
 	
 	String envName
 	String envDesc = ''
+	String cnamePrefix
 	String templateName
 	String versionLabel
 	
