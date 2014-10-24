@@ -36,7 +36,8 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		try {
-			return s3.getObjectMetadata(bucketName, key)
+			// to enable conventionMapping, you must reference field via getters
+			return s3.getObjectMetadata(getBucketName(), getKey())
 		} catch (AmazonS3Exception e) {
 			if (e.getStatusCode() != 404) {
 				throw e
