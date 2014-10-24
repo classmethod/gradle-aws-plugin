@@ -15,40 +15,54 @@
  */
 package jp.classmethod.aws.gradle.s3
 
+import java.security.DigestInputStream
+import java.security.MessageDigest
 import java.util.List;
 
 import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
 import com.amazonaws.services.s3.transfer.*
 
+import com.google.common.hash.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 
 class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
-	
 	{
 		description = 'Upload file to the Amazon S3 bucket.'
 		group = 'AWS'
 	}
 
+
 	@TaskAction
 	def upload() {
-		if (! getBucketName()) throw new GradleException("bucketName is not specified")
-		if (! getKey()) throw new GradleException("key is not specified")
-		if (! getFile()) throw new GradleException("file is not specified")
-		
-		if (overwrite || exists() == false) {
-			AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
-			AmazonS3 s3 = ext.s3
-					
+		verifyParameters()
+
+		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
+		AmazonS3Client s3 = ext.s3
+
+		// metadata will be null iff the object does not exist
+		def metadata = objectMetadata()
+
+		if (overwrite || !metadata || (metadata.getETag() != md5())) {
 			println "uploading... ${getBucketName()}/${getKey()}"
-			resourceUrl = ((AmazonS3Client) s3).getResourceUrl(getBucketName(), getKey())
+			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
 			s3.putObject(getBucketName(), getKey(), getFile())
 			println "upload completed: $resourceUrl"
 		} else {
-			println "${getBucketName()}/${getKey()} is already exists -- skipped"
+			println "${getBucketName()}/${getKey()} already exists with matching md5 sum -- skipped"
 		}
+	}
+
+	def md5() {
+		Hashing.md5().newHasher().putBytes(getFile().getBytes()).hash().toString()
+	}
+
+	def private verifyParameters() {
+		if (!getBucketName()) throw new GradleException("bucketName is not specified")
+		if (!getKey()) throw new GradleException("key is not specified")
+		if (!getFile()) throw new GradleException("file is not specified")
 	}
 }

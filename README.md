@@ -155,7 +155,11 @@ These credentials are used to make API accesses by default.
 
 License
 -------
-
 Copyright (C) 2013-2014 [Classmethod, Inc.](http://classmethod.jp/)
 
 Distributed under the Apache License v2.0.  See the file copyright/LICENSE.txt.
+
+Development
+-----------
+To contribute to the plugin or make your own modifications, including the ability
+to publish your build artifacts to your own maven repository see: [development](docs/development.md).
