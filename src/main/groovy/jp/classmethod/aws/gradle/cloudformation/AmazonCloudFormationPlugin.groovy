@@ -57,8 +57,8 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 		
 		project.task('awsCfnUploadTemplate', type: AmazonS3FileUploadTask) {
 			description = 'Upload cfn template file to the Amazon S3 bucket.'
-			conventionMapping.file = { cfnExt.templateFile }
-			conventionMapping.bucketName = { cfnExt.templateBucket }
+			conventionMapping.file = { cfnExt.getTemplateFile() }
+			conventionMapping.bucketName = { cfnExt.getTemplateBucket() }
 			conventionMapping.key = {
 				String extension = cfnExt.templateFile.name.tokenize('.').last()
 				String filename  = cfnExt.templateFile.name.tokenize('/').last()
@@ -75,27 +75,27 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 		project.task('awsCfnMigrateStack', type: AmazonCloudFormationMigrateStackTask) {
 			description 'Create/Migrate cfn stack'
 			mustRunAfter project.awsCfnUploadTemplate
-			conventionMapping.stackName = { cfnExt.stackName }
-			conventionMapping.capabilityIam = { cfnExt.capabilityIam }
+			conventionMapping.stackName = { cfnExt.getStackName() }
+			conventionMapping.capabilityIam = { cfnExt.getCapabilityIam() }
 			conventionMapping.cfnStackParams = {
 				cfnExt.stackParams.collect {
 					new Parameter().withParameterKey(it.key).withParameterValue((String) it.value)
 				}
 			}
-			conventionMapping.cfnTemplateUrl = { cfnExt.templateURL }
+			conventionMapping.cfnTemplateUrl = { cfnExt.getTemplateURL() }
 		}
 		
 		project.task('awsCfnWaitStackReady', type: AmazonCloudFormationWaitStackStatusTask) {
 			description 'Wait cfn stack for *_COMPLETE status.'
 			mustRunAfter project.awsCfnMigrateStack
-			conventionMapping.stackName = { cfnExt.stackName }
+			conventionMapping.stackName = { cfnExt.getStackName() }
 		}
 		
 		project.task('awsCfnWaitStackComplete', type: AmazonCloudFormationWaitStackStatusTask) {
 			description 'Wait cfn stack for CREATE_COMPETE or UPDATE_COMPLETE status.'
 			mustRunAfter project.awsCfnMigrateStack
 			successStatuses = [ 'CREATE_COMPLETE', 'UPDATE_COMPLETE' ]
-			conventionMapping.stackName = { cfnExt.stackName }
+			conventionMapping.stackName = { cfnExt.getStackName() }
 		}
 		
 		project.task('awsCfnMigrateStackAndWaitCompleted') {
@@ -105,14 +105,14 @@ class AmazonCloudFormationPlugin implements Plugin<Project> {
 		
 		project.task('awsCfnDeleteStack', type: AmazonCloudFormationDeleteStackTask) {
 			description 'Delete cfn stack'
-			conventionMapping.stackName = { cfnExt.stackName }
+			conventionMapping.stackName = { cfnExt.getStackName() }
 		}
 		
 		project.task('awsCfnWaitStackDeleted', type: AmazonCloudFormationWaitStackStatusTask) {
 			description 'Wait cfn stack for DELETE_COMPLETE status.'
 			mustRunAfter project.awsCfnDeleteStack
 			successStatuses = [ 'DELETE_COMPLETE' ]
-			conventionMapping.stackName = { cfnExt.stackName }
+			conventionMapping.stackName = { cfnExt.getStackName() }
 		}
 		
 		project.task('awsCfnDeleteStackAndWaitCompleted') {
