@@ -32,10 +32,13 @@ class AWSElasticBeanstalkDeleteApplicationTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteApplication() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
 		eb.deleteApplication(new DeleteApplicationRequest(appName))
-		println "application $appName deleted"
+		logger.info "application $appName deleted"
 	}
 }

@@ -29,12 +29,17 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 		group = 'AWS'
 	}
 
-	def String appName
+	String appName
 
-	def String appDesc = ''
+	String appDesc = ''
 
 	@TaskAction
 	def createApplication() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		String appDesc = getAppDesc()
+		
+
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 
@@ -44,12 +49,12 @@ class AWSElasticBeanstalkCreateApplicationTask extends DefaultTask {
 			eb.createApplication(new CreateApplicationRequest()
 					.withApplicationName(appName)
 					.withDescription(appDesc))
-			println "application $appName ($appDesc) created"
+			logger.info "application $appName ($appDesc) created"
 		} else {
 			eb.updateApplication(new UpdateApplicationRequest()
 					.withApplicationName(appName)
 					.withDescription(appDesc))
-			println "application $appName ($appDesc) updated"
+			logger.info "application $appName ($appDesc) updated"
 		}
 	}
 }

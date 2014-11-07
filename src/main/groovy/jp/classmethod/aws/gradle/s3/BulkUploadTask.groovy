@@ -34,7 +34,11 @@ class BulkUploadTask extends DefaultTask {
 	
 	@TaskAction
 	def upload() {
-		String prefix = getPrefix();
+		// to enable conventionMappings feature
+		String bucketName = getBucketName()
+		String prefix = getPrefix()
+		FileTree source = getSource()
+
 		if (prefix.startsWith('/')) {
 			prefix = prefix.substring(1)
 		}
@@ -45,11 +49,12 @@ class BulkUploadTask extends DefaultTask {
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
-		println "uploading... ${getSource()} to s3://${getBucketName()}/${prefix}"
+		logger.info "uploading... $source to s3://$bucketName/$prefix"
 		getSource().visit { FileTreeElement element ->
 			if (element.isDirectory() == false) {
-				println " => s3://${getBucketName()}/${prefix}${element.relativePath}"
-				s3.putObject(getBucketName(), prefix + element.relativePath, element.file)
+				String key = prefix + element.relativePath
+				logger.info " => s3://$bucketName/$key"
+				s3.putObject(bucketName, key, element.file)
 			}
 		}
 	}

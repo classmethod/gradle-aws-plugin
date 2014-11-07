@@ -41,6 +41,10 @@ class AWSElasticBeanstalkCleanupApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteVersion() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		boolean deleteSourceBundle = deleteSourceBundle
+	
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		

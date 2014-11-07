@@ -35,12 +35,15 @@ class AmazonEC2StartInstanceTask extends DefaultTask {
 	
 	@TaskAction
 	def createApplication() {
+		// to enable conventionMappings feature
+		List<String> instanceIds = getInstanceIds()
+
 		if (instanceIds.isEmpty()) return
 		
 		AmazonEC2PluginExtension ext = project.extensions.getByType(AmazonEC2PluginExtension)
 		AmazonEC2 ec2 = ext.ec2
 		
 		ec2.startInstances(new StartInstancesRequest(instanceIds))
-		println "instance $instanceIds start requested"
+		logger.info "instance $instanceIds start requested"
 	}
 }

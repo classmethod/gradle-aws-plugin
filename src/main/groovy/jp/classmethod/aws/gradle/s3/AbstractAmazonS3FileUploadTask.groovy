@@ -33,11 +33,18 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	boolean overwrite = false
 
 	ObjectMetadata objectMetadata() {
+		// to enable conventionMappings feature
+		String bucketName = getBucketName()
+		String key = getKey()
+		File file = getFile()
+		String resourceUrl = getResourceUrl()
+		boolean overwrite = isOverwrite()
+
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		try {
 			// to enable conventionMapping, you must reference field via getters
-			return s3.getObjectMetadata(getBucketName(), getKey())
+			return s3.getObjectMetadata(bucketName, key)
 		} catch (AmazonS3Exception e) {
 			if (e.getStatusCode() != 404) {
 				throw e
@@ -49,5 +56,4 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	boolean exists() {
 		objectMetadata() != null
 	}
-
 }

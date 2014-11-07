@@ -34,6 +34,10 @@ class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteTemplate() {
+		// to enable conventionMappings feature
+		String applicationName = getApplicationName()
+		String templateName = getTemplateName()
+
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
@@ -41,6 +45,6 @@ class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends DefaultTask {
 			.withApplicationName(applicationName)
 			.withTemplateName(templateName))
 		
-		println "configuration template $templateName @ $applicationName deleted"
+		logger.info "configuration template $templateName @ $applicationName deleted"
 	}
 }

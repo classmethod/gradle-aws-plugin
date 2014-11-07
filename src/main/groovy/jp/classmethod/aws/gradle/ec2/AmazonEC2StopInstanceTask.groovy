@@ -36,12 +36,15 @@ class AmazonEC2StopInstanceTask extends DefaultTask {
 	
 	@TaskAction
 	def createApplication() {
+		// to enable conventionMappings feature
+		List<String> instanceIds = instanceIds
+		
 		if (instanceIds.isEmpty()) return
 		
 		AmazonEC2PluginExtension ext = project.extensions.getByType(AmazonEC2PluginExtension)
 		AmazonEC2 ec2 = ext.ec2
 		
 		ec2.stopInstances(new StopInstancesRequest(instanceIds))
-		println "instance $instanceIds stop requested"
+		logger.info "instance $instanceIds stop requested"
 	}
 }

@@ -37,13 +37,16 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 
 	@TaskAction
 	def createTemplate() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
-
+		
 		configurationTemplates.each { EbConfigurationTemplateExtension config ->
 			String templateName = config.name
 			String templateDesc = config.desc
-			String solutionStackName = config.solutionStackName ?: defaultSolutionStackName
+			String solutionStackName = config.solutionStackName ?: getDefaultSolutionStackName()
 			boolean deleteTemplateIfExists = config.recreate
 
 			ConfigurationOptionSetting[] optionSettings = loadConfigurationOptions(config.optionSettings)
@@ -58,7 +61,7 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 					eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
 							.withApplicationName(appName)
 							.withTemplateName(templateName))
-					println "configuration template $templateName @ $appName deleted"
+					logger.info "configuration template $templateName @ $appName deleted"
 				}
 				else {
 					eb.updateConfigurationTemplate(new UpdateConfigurationTemplateRequest()
@@ -66,7 +69,7 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 							.withTemplateName(templateName)
 							.withDescription(templateDesc)
 							.withOptionSettings(optionSettings))
-					println "configuration template $templateName @ $appName updated"
+					logger.info "configuration template $templateName @ $appName updated"
 					return
 				}
 			}
@@ -77,7 +80,7 @@ class AWSElasticBeanstalkCreateConfigurationTemplateTask extends DefaultTask {
 					.withDescription(templateDesc)
 					.withSolutionStackName(solutionStackName)
 					.withOptionSettings(optionSettings))
-			println "configuration template $templateName @ $appName created"
+			logger.info "configuration template $templateName @ $appName created"
 		}
 	}
 

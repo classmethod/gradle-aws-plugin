@@ -30,29 +30,42 @@ class CreateHostedZoneTask extends DefaultTask {
 	
 	String comment
 	
+	// after did work
+	
+	String hostedZoneId
+	
+	List<String> nameServers
+	
+	
 	@TaskAction
 	def createHostedZone() {
+		// to enable conventionMappings feature
+		String hostedZoneName= getHostedZoneName()
+		String callerReference = getCallerReference() ?: InetAddress.getLocalHost().getHostName()
+		String comment = getComment()
+
 		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
 		AmazonRoute53 r53 = ext.r53
 		
-		String callerRef = callerReference == null ? InetAddress.getLocalHost().getHostName() : callerReference
-		println "callerRef = ${callerRef}"
+		logger.info "callerRef = $callerReference"
 		
 		CreateHostedZoneRequest req = new CreateHostedZoneRequest()
 			.withName(hostedZoneName)
-			.withCallerReference(callerRef)
+			.withCallerReference(callerReference)
 		if (comment != null) {
 			req.setHostedZoneConfig(new HostedZoneConfig().withComment(comment))
 		}
 		
 		try {
 			CreateHostedZoneResult chzr = r53.createHostedZone(req)
-			println "HostedZone ${hostedZoneName} - ${callerRef} is created."
-			for (String nameServer in chzr.delegationSet.nameServers) {
-				println "NS ${nameServer}"
+			nameServers = chzr.delegationSet.nameServers
+			hostedZoneId = chzr.hostedZone.id
+			logger.info "HostedZone $hostedZoneId ($hostedZoneName - $callerReference)  is created."
+			nameServers.each {
+				logger.info "  NS $it"
 			}
 		} catch (HostedZoneAlreadyExistsException e) {
-			println "HostedZone ${hostedZoneName} - ${callerRef} is already created."
+			logger.error "HostedZone $hostedZoneName - $callerReference is already created."
 		}
 	}
 }

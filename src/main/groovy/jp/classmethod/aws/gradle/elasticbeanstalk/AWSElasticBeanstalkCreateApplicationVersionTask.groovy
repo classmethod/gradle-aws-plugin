@@ -40,6 +40,12 @@ class AWSElasticBeanstalkCreateApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def createVersion() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		String versionLabel = getVersionLabel()
+		String bucketName = getBucketName()
+		String key = getKey()
+		
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
@@ -47,9 +53,9 @@ class AWSElasticBeanstalkCreateApplicationVersionTask extends DefaultTask {
 			eb.createApplicationVersion(new CreateApplicationVersionRequest()
 				.withApplicationName(appName)
 				.withVersionLabel(versionLabel)
-				.withSourceBundle(new S3Location(bucketName, key)))
+				.withSourceBundle(new S3Location(getBucketName(), getKey())))
 			logger.info "version $versionLabel @ $appName created"
-		} catch(AmazonServiceException e) {
+		} catch (AmazonServiceException e) {
 			if (e.getMessage().endsWith('already exists.') == false) {
 				throw e
 			}

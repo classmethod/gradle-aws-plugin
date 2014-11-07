@@ -37,6 +37,11 @@ class AmazonRoute53ChangeRecordSetTask extends DefaultTask {
 	
 	@TaskAction
 	def changeResourceRecordSets() {
+		// to enable conventionMappings feature
+		String hostedZoneId = getHostedZoneId()
+		String rrsName = getRrsName()
+		String resourceRecord = getResourceRecord()
+		
 		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
 		AmazonRoute53 r53 = ext.r53
 		
@@ -45,6 +50,6 @@ class AmazonRoute53ChangeRecordSetTask extends DefaultTask {
 			.withChangeBatch(new ChangeBatch()
 				.withChanges(new Change(ChangeAction.CREATE, new ResourceRecordSet(rrsName, RRType.CNAME)
 					.withResourceRecords(new ResourceRecord(resourceRecord))))))	
-		println "change $hostedZoneId requested"
+		logger.info "change $hostedZoneId requested"
 	}
 }

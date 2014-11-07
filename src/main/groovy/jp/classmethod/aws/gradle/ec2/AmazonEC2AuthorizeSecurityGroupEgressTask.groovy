@@ -40,6 +40,10 @@ class AmazonEC2AuthorizeSecurityGroupEgressTask extends AbstractAmazonEC2Securit
 	
 	@TaskAction
 	def createApplication() {
+		// to enable conventionMappings feature
+		String groupId = getGroupId()
+		def ipPermissions = getIpPermissions()
+	
 		if (! groupId) throw new GradleException("groupId is not specified")
 		if (! ipPermissions) throw new GradleException("ipPermissions is not specified")
 		
