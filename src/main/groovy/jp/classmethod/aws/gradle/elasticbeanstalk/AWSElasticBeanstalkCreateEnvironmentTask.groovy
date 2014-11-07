@@ -45,6 +45,15 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 
 	@TaskAction
 	def createEnvironment() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		String envName = getEnvName()
+		String envDesc = getEnvDesc()
+		String cnamePrefix = getCnamePrefix()
+		String templateName = getTemplateName()
+		String versionLabel = getVersionLabel()
+		Tier tier = getTier()
+		
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 
@@ -65,7 +74,7 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 				req.withCNAMEPrefix(cnamePrefix)
 			}
 			CreateEnvironmentResult result = eb.createEnvironment(req)
-			println "environment $envName @ $appName (${result.environmentId}) created"
+			logger.info "environment $envName @ $appName (${result.environmentId}) created"
 		} else {
 			def environmentId = der.environments.first().environmentId
 
@@ -76,7 +85,7 @@ class AWSElasticBeanstalkCreateEnvironmentTask extends DefaultTask {
 					.withTemplateName(templateName)
 					.withVersionLabel(versionLabel)
 					.withTier(tier.toEnvironmentTier()))
-			println "environment $envName @ $appName (${environmentId}) updated"
+			logger.info "environment $envName @ $appName (${environmentId}) updated"
 		}
 	}
 }

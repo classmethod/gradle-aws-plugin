@@ -37,27 +37,32 @@ class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	@TaskAction
 	def upload() {
-		if (! getBucketName()) throw new GradleException("bucketName is not specified")
-		if (! getKey()) throw new GradleException("key is not specified")
-		if (! getFile()) throw new GradleException("file is not specified")
+		// to enable conventionMappings feature
+		String bucketName = getBucketName()
+		String key = getKey()
+		File file = getFile()
+
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! key) throw new GradleException("key is not specified")
+		if (! file) throw new GradleException("file is not specified")
 		
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3 s3 = ext.s3
 		
 		TransferManager s3mgr = new TransferManager(s3)
-		println "uploading... ${getBucketName()}/${getKey()}"
-		Upload upload = s3mgr.upload(getBucketName(), getKey(), getFile())
+		logger.info "uploading... $bucketName/$key"
+		Upload upload = s3mgr.upload(bucketName, key, file)
 		upload.addProgressListener(new ProgressListener() {
 			void progressChanged(ProgressEvent event) {
-				// TODO うまい感じでprogressをログ表示できないか
+				// TODO progress logging
 //				System.out.printf("%d%%%n", (int) upload.progress.percentTransferred)
 //				if (event.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE) {
-//					println("Upload completed.")
+//					logger.info("Upload completed.")
 //				}
 			}
 		})
 		upload.waitForCompletion()
-		resourceUrl = ((AmazonS3Client) s3).getResourceUrl(getBucketName(), getKey())
-		println "upload completed: $resourceUrl"
+		resourceUrl = ((AmazonS3Client) s3).getResourceUrl(bucketName, key)
+		logger.info "upload completed: $resourceUrl"
 	}
 }

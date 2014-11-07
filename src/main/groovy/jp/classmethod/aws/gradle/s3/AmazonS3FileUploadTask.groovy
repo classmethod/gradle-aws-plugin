@@ -38,7 +38,14 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 
 	@TaskAction
 	def upload() {
-		verifyParameters()
+		// to enable conventionMappings feature
+		String bucketName = getBucketName()
+		String key = getKey()
+		File file = getFile()
+
+		if (! bucketName) throw new GradleException("bucketName is not specified")
+		if (! key) throw new GradleException("key is not specified")
+		if (! file) throw new GradleException("file is not specified")
 
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
 		AmazonS3Client s3 = ext.s3
@@ -47,22 +54,16 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		def metadata = objectMetadata()
 
 		if (overwrite || !metadata || (metadata.getETag() != md5())) {
-			println "uploading... ${getBucketName()}/${getKey()}"
+			logger.info "uploading... ${getBucketName()}/${getKey()}"
 			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
 			s3.putObject(getBucketName(), getKey(), getFile())
-			println "upload completed: $resourceUrl"
+			logger.info "upload completed: $resourceUrl"
 		} else {
-			println "${getBucketName()}/${getKey()} already exists with matching md5 sum -- skipped"
+			logger.info "$bucketName/$key already exists with matching md5 sum -- skipped"
 		}
 	}
 
 	def md5() {
 		Hashing.md5().newHasher().putBytes(getFile().getBytes()).hash().toString()
-	}
-
-	def private verifyParameters() {
-		if (!getBucketName()) throw new GradleException("bucketName is not specified")
-		if (!getKey()) throw new GradleException("key is not specified")
-		if (!getFile()) throw new GradleException("file is not specified")
 	}
 }

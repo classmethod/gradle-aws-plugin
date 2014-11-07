@@ -50,6 +50,12 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 	
 	@TaskAction
 	def waitEnvironmentForStatus() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		String envName = getEnvName()
+		int loopTimeout = getLoopTimeout()
+		int loopWait = getLoopWait()
+
 		if (! appName) throw new GradleException("applicationName is not specified")
 		
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
@@ -67,21 +73,21 @@ class AWSElasticBeanstalkWaitEnvironmentStatusTask extends DefaultTask {
 					.withEnvironmentNames(envName))
 				
 				if (der.environments == null || der.environments.isEmpty()) {
-					println "environment $envName @ $appName not found"
+					logger.info "environment $envName @ $appName not found"
 					return
 				}
 				
 				EnvironmentDescription ed = der.environments[0]
 				
 				if (successStatuses.contains(ed.status)) {
-					println "Status of environment ${envName} @ $appName is now ${ed.status}."
+					logger.info "Status of environment $envName @ $appName is now ${ed.status}."
 					break
 				} else if (waitStatuses.contains(ed.status)) {
-					println "Status of environment ${envName} @ $appName is ${ed.status}..."
+					logger.info "Status of environment $envName @ $appName is ${ed.status}..."
 					Thread.sleep(loopWait * 1000)
 				} else {
 					// waitStatusesでもsuccessStatusesないステータスはfailとする
-					throw new GradleException("Status of environment ${envName} @ $appName is ${ed.status}.  It seems to be failed.")
+					throw new GradleException("Status of environment $envName @ $appName is ${ed.status}.  It seems to be failed.")
 				}
 			} catch (AmazonServiceException e) {
 				throw new GradleException(e)

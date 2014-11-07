@@ -40,6 +40,11 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 	
 	@TaskAction
 	def terminateEnvironment() {
+		// to enable conventionMappings feature
+		String appName = getAppName()
+		String envName = getEnvName()
+		String envId = getEnvId()
+				
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
@@ -49,7 +54,7 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 				.withEnvironmentNames(envName))
 			
 			if (der.environments == null || der.environments.isEmpty()) {
-				println "environment $envName @ $appName not found"
+				logger.warn "environment $envName @ $appName not found"
 				return
 			}
 			
@@ -61,12 +66,12 @@ class AWSElasticBeanstalkTerminateEnvironmentTask extends DefaultTask {
 			eb.terminateEnvironment(new TerminateEnvironmentRequest()
 				.withEnvironmentId(envId)
 				.withEnvironmentName(envName))
-			println "environment $envName (${envId}) @ $appName termination requested"
+			logger.info "environment $envName (${envId}) @ $appName termination requested"
 		} catch (AmazonServiceException e) {
 			if (e.message.contains('No Environment found') == false) {
 				throw e
 			}
-			println "environment $envName (${envId}) @ $appName not found"
+			logger.warn "environment $envName (${envId}) @ $appName not found"
 		}
 	}
 }

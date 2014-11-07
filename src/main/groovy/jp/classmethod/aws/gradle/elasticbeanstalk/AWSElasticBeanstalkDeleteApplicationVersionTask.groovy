@@ -39,6 +39,12 @@ class AWSElasticBeanstalkDeleteApplicationVersionTask extends DefaultTask {
 	
 	@TaskAction
 	def deleteVersion() {
+		// to enable conventionMappings feature
+		String applicationName = getApplicationName()
+		String versionLabel = getVersionLabel()
+		String bucketName = getBucketName()
+		boolean deleteSourceBundle = isDeleteSourceBundle()
+
 		AwsBeanstalkPluginExtension ext = project.extensions.getByType(AwsBeanstalkPluginExtension)
 		AWSElasticBeanstalk eb = ext.eb
 		
@@ -46,6 +52,6 @@ class AWSElasticBeanstalkDeleteApplicationVersionTask extends DefaultTask {
 			.withApplicationName(applicationName)
 			.withVersionLabel(versionLabel)
 			.withDeleteSourceBundle(deleteSourceBundle))
-		println "version ${versionLabel} deleted"
+		logger.info "version ${versionLabel} deleted"
 	}
 }

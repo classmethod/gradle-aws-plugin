@@ -23,10 +23,13 @@ import org.gradle.api.tasks.TaskAction
 
 class DeleteHostedZoneTask extends DefaultTask {
 	
-	def String hostedZoneId
+	String hostedZoneId
 	
 	@TaskAction
 	def createHostedZone() {
+		// to enable conventionMappings feature
+		String hostedZoneId = getHostedZoneId()
+
 		AmazonRoute53PluginExtension ext = project.extensions.getByType(AmazonRoute53PluginExtension)
 		AmazonRoute53 r53 = ext.r53
 		

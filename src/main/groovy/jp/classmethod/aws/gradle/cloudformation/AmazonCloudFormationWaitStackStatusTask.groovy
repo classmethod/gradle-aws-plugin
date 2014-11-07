@@ -58,39 +58,46 @@ class AmazonCloudFormationWaitStackStatusTask extends DefaultTask {
 	
 	@TaskAction
 	def waitStackForStatus() {
-		if (! getStackName()) throw new GradleException("stackName is not specified")
+		// to enable conventionMappings feature
+		String stackName = getStackName()
+		List<String> successStatuses = getSuccessStatuses()
+		List<String> waitStatuses = getWaitStatuses()
+		int loopTimeout = getLoopTimeout()
+		int loopWait = getLoopWait()
+	
+		if (! stackName) throw new GradleException("stackName is not specified")
 		
 		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
 		AmazonCloudFormation cfn = ext.cfn
 
 		def start = System.currentTimeMillis()
 		while (true) {
-			if (System.currentTimeMillis() > start + (getLoopTimeout() * 1000)) {
+			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException('Timeout')
 			}
 			try {
-				def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(getStackName()))
+				def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
 				Stack stack = describeStackResult.stacks[0]
 				if (stack == null) {
-					throw new GradleException("stack ${getStackName()} is not exists")
+					throw new GradleException("stack $stackName is not exists")
 				}
 				found = true
 				lastStatus = stack.stackStatus
-				if (getSuccessStatuses().contains(lastStatus)) {
-					println "Status of stack ${getStackName()} is now ${lastStatus}."
+				if (successStatuses.contains(lastStatus)) {
+					logger.info "Status of stack $stackName is now ${lastStatus}."
 					break
-				} else if (getWaitStatuses().contains(lastStatus)) {
-					println "Status of stack ${getStackName()} is ${lastStatus}..."
-					Thread.sleep(getLoopWait() * 1000)
+				} else if (waitStatuses.contains(lastStatus)) {
+					logger.info "Status of stack $stackName is ${lastStatus}..."
+					Thread.sleep(loopWait * 1000)
 				} else {
 					// waitStatusesでもsuccessStatusesないステータスはfailとする
-					throw new GradleException("Status of stack ${getStackName()} is ${lastStatus}.  It seems to be failed.")
+					throw new GradleException("Status of stack $stackName is ${lastStatus}.  It seems to be failed.")
 				}
 			} catch (AmazonServiceException e) {
 				if (found) {
 					break
 				} else {
-					throw new GradleException("Fail to describe stack: ${getStackName()}", e)
+					throw new GradleException("Fail to describe stack: $stackName", e)
 				}
 			}
 		}

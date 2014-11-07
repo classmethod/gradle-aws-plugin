@@ -44,8 +44,14 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	
 	@TaskAction
 	def createOrUpdateStack() {
-		if (! getStackName()) throw new GradleException("stackName is not specified")
-		if (! getCfnTemplateUrl()) throw new GradleException("cfnTemplateUrl is not specified")
+		// to enable conventionMappings feature
+		String stackName = getStackName()
+		String cfnTemplateUrl = getCfnTemplateUrl()
+		boolean capabilityIam = isCapabilityIam()
+		List<String> stableStatuses = getStableStatuses()
+		
+		if (! stackName) throw new GradleException("stackName is not specified")
+		if (! cfnTemplateUrl) throw new GradleException("cfnTemplateUrl is not specified")
 		
 		AwsCloudFormationPluginExtension ext = project.extensions.getByType(AwsCloudFormationPluginExtension)
 		AmazonCloudFormation cfn = ext.cfn
@@ -54,20 +60,20 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 			def describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName))
 			Stack stack = describeStackResult.stacks[0]
 			if (stack == null) {
-				println "stack ${getStackName()} not found"
+				logger.info "stack $stackName not found"
 				createStack(cfn)
 			} else if (stack.stackStatus == 'DELETE_COMPLETE') {
-				println "deleted stack ${getStackName()} already exists"
+				logger.warn "deleted stack $stackName already exists"
 				deleteStack(cfn)
 				createStack(cfn)
-			} else if (getStableStatuses().contains(stack.stackStatus) == false) {
+			} else if (stableStatuses.contains(stack.stackStatus) == false) {
 				throw new GradleException('invalid status for update: ' + stack.stackStatus)
 			} else {
 				updateStack(cfn)
 			}
 		} catch (AmazonServiceException e) {
 			if (e.message.contains("does not exist")) {
-				println "stack ${getStackName()} not found"
+				logger.warn "stack $stackName not found"
 				createStack(cfn)
 			} else if (e.message.contains("No updates are to be performed.")) {
 				// ignore
@@ -78,37 +84,50 @@ class AmazonCloudFormationMigrateStackTask extends DefaultTask {
 	}
 	
 	private updateStack(AmazonCloudFormation cfn) {
-		println "update stack: ${getStackName()}"
+		// to enable conventionMappings feature
+		String stackName = getStackName()
+		String cfnTemplateUrl = getCfnTemplateUrl()
+		List<Parameter> cfnStackParams = getCfnStackParams()
+		
+		logger.info "update stack: $stackName"
 		UpdateStackRequest req = new UpdateStackRequest()
-				.withStackName(getStackName())
-				.withTemplateURL(getCfnTemplateUrl())
-				.withParameters(getCfnStackParams())
+				.withStackName(stackName)
+				.withTemplateURL(cfnTemplateUrl)
+				.withParameters(cfnStackParams)
 		if (isCapabilityIam()) {
 			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def updateStackResult = cfn.updateStack(req)
-		println "update requested: ${updateStackResult.stackId}"
+		logger.info "update requested: ${updateStackResult.stackId}"
 	}
 	
 	private deleteStack(AmazonCloudFormation cfn) {
-		println "delete stack: ${getStackName()}"
+		// to enable conventionMappings feature
+		String stackName = getStackName()
+
+		logger.info "delete stack: $stackName"
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName))
-		println "delete requested: ${getStackName()}"
+		logger.info "delete requested: $stackName"
 		Thread.sleep(3000)
 	}
 	
 	private createStack(AmazonCloudFormation cfn) {
-		println "create stack: ${getStackName()}"
+		// to enable conventionMappings feature
+		String stackName = getStackName()
+		String cfnTemplateUrl = getCfnTemplateUrl()
+		List<Parameter> cfnStackParams = getCfnStackParams()
+
+		logger.info "create stack: $stackName"
 		
 		CreateStackRequest req = new CreateStackRequest()
-				.withStackName(getStackName())
-				.withTemplateURL(getCfnTemplateUrl())
-				.withParameters(getCfnStackParams())
+				.withStackName(stackName)
+				.withTemplateURL(cfnTemplateUrl)
+				.withParameters(cfnStackParams)
 		if (isCapabilityIam()) {
 			req.setCapabilities([Capability.CAPABILITY_IAM.toString()])
 		}
 		def createStackResult = cfn.createStack(req)
-		println "create requested: ${createStackResult.stackId}"
+		logger.info "create requested: ${createStackResult.stackId}"
 	}
 }
 

@@ -57,7 +57,12 @@ class AmazonEC2WaitInstanceStatusTask extends DefaultTask {
 	
 	@TaskAction
 	def waitStackForStatus() {
+		// to enable conventionMappings feature
 		String instanceId = getInstanceId()
+		List<String> successStatuses = getSuccessStatuses()
+		List<String> waitStatuses = getWaitStatuses()
+		int loopTimeout = getLoopTimeout()
+		int loopWait = getLoopWait()
 
 		if (! instanceId) throw new GradleException("instanceId is not specified")
 		
@@ -66,7 +71,7 @@ class AmazonEC2WaitInstanceStatusTask extends DefaultTask {
 		
 		def start = System.currentTimeMillis()
 		while (true) {
-			if (System.currentTimeMillis() > start + (getLoopTimeout() * 1000)) {
+			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException('Timeout')
 			}
 			try {
@@ -79,21 +84,21 @@ class AmazonEC2WaitInstanceStatusTask extends DefaultTask {
 				
 				found = true
 				lastStatus = instance.state.name
-				if (getSuccessStatuses().contains(lastStatus)) {
-					println "Status of ${instanceId} is now ${lastStatus}."
+				if (successStatuses.contains(lastStatus)) {
+					logger.info "Status of $instanceId is now ${lastStatus}."
 					break
-				} else if (getWaitStatuses().contains(lastStatus)) {
-					println "Status of stack ${instanceId} is ${lastStatus}..."
-					Thread.sleep(getLoopWait() * 1000)
+				} else if (waitStatuses.contains(lastStatus)) {
+					logger.info "Status of stack $instanceId is ${lastStatus}..."
+					Thread.sleep(loopWait * 1000)
 				} else {
-					// waitStatusesでもsuccessStatusesないステータスはfailとする
-					throw new GradleException("Status of ${instanceId} is ${lastStatus}.  It seems to be failed.")
+					// fail when current status is not waitStatuses or successStatuses
+					throw new GradleException("Status of $instanceId is ${lastStatus}.  It seems to be failed.")
 				}
 			} catch (AmazonServiceException e) {
 				if (found) {
 					break
 				} else {
-					throw new GradleException("Fail to describe instance: ${instanceId}", e)
+					throw new GradleException("Fail to describe instance: $instanceId", e)
 				}
 			}
 		}
