@@ -48,7 +48,7 @@ class SyncTask extends DefaultTask {
 		AmazonS3 s3 = ext.s3
 
 		upload(s3, prefix)
-		delete(s3, prefix)
+		deleteAbsent(s3, prefix)
 	}
 	
 	private String upload(AmazonS3 s3, String prefix) {
@@ -93,7 +93,7 @@ class SyncTask extends DefaultTask {
 		}
 	}
 	
-	private delete(AmazonS3 s3, String prefix) {
+	private void deleteAbsent(AmazonS3 s3, String prefix) {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName()
 		File source = getSource()
