@@ -43,14 +43,13 @@ class AmazonELBPluginExtension {
 	public static final NAME = 'elb'
 	
 	Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 		
 	@Lazy
 	AmazonElasticLoadBalancing elb = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonElasticLoadBalancingClient, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonElasticLoadBalancingClient, region, profileName)
 	}()
 	
 	AmazonELBPluginExtension(Project project) {

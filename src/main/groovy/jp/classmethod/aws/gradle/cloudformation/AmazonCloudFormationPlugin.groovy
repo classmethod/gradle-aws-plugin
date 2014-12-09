@@ -127,14 +127,13 @@ class AwsCloudFormationPluginExtension {
 	public static final NAME = 'cloudFormation'
 	
 	final Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 	
 	@Lazy
 	AmazonCloudFormation cfn = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonCloudFormationClient, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonCloudFormationClient, region, profileName)
 	}()
 	
 	String stackName
