@@ -37,7 +37,6 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 		String bucketName = getBucketName()
 		String key = getKey()
 		File file = getFile()
-		String resourceUrl = getResourceUrl()
 		boolean overwrite = isOverwrite()
 
 		AmazonS3PluginExtension ext = project.extensions.getByType(AmazonS3PluginExtension)
