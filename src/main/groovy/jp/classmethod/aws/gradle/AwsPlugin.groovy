@@ -16,6 +16,7 @@
 package jp.classmethod.aws.gradle
 
 import com.amazonaws.AmazonWebServiceClient
+import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.amazonaws.auth.BasicAWSCredentials
@@ -70,7 +71,10 @@ class AwsPluginExtension {
 		return new AWSCredentialsProviderChain(
 			new EnvironmentVariableCredentialsProvider(),
 			new SystemPropertiesCredentialsProvider(),
-			new ProfileCredentialsProvider(profileName),
+			profileName ? new ProfileCredentialsProvider(profileName) : new AWSCredentialsProvider() {
+				void refresh() {}
+				AWSCredentials getCredentials() { null }
+			},
 			new ProfileCredentialsProvider(this.profileName),
 			new InstanceProfileCredentialsProvider()
 		)
