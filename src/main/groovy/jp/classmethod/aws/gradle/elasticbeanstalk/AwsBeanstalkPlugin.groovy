@@ -161,14 +161,13 @@ class AwsBeanstalkPluginExtension {
 	public static final NAME = 'beanstalk'
 
 	Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 		
 	@Lazy
 	AWSElasticBeanstalk eb = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AWSElasticBeanstalkClient, region, accessKeyId, secretKey)
+		return aws.createClient(AWSElasticBeanstalkClient, region, profileName)
 	}()
 	
 	String appName

@@ -49,8 +49,7 @@ Add like this to your build.gradle :
     apply plugin: 'aws'
     
     aws {
-      accessKeyId 'your-access-key'
-      secretKey = 'your-secret-key'
+      profileName 'your-credentials-profile-name'
       region = 'ap-northeast-1'
     }
 
@@ -63,6 +62,7 @@ These credentials are used to make API accesses by default.
     
     // You can overwrite default credentials and region settings like this:
     // ec2 {
+    //   profileName 'your-credentials-profile-name-2'
     //   region = 'us-east-1'
     // }
     

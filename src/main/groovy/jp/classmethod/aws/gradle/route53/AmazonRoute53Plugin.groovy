@@ -58,14 +58,13 @@ class AmazonRoute53PluginExtension {
 	public static final NAME = 'route53'
 	
 	Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 		
 	@Lazy
 	AmazonRoute53 r53 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonRoute53Client, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonRoute53Client, region, profileName)
 	}()
 	
 	String hostedZone
