@@ -15,6 +15,8 @@
  */
 package jp.classmethod.aws.gradle.s3
 
+import groovy.lang.Closure;
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
@@ -32,6 +34,8 @@ class BulkUploadTask extends DefaultTask {
 	
 	FileTree source
 	
+	Closure<ObjectMetadata> metadataProvider;
+
 	@TaskAction
 	def upload() {
 		// to enable conventionMappings feature
@@ -54,7 +58,8 @@ class BulkUploadTask extends DefaultTask {
 			if (element.isDirectory() == false) {
 				String key = prefix + element.relativePath
 				logger.info " => s3://$bucketName/$key"
-				s3.putObject(bucketName, key, element.file)
+				s3.putObject(bucketName, key, element.file,
+						metadataProvider == null ? null : metadataProvider.call(bucketName, key, element.file))
 			}
 		}
 	}

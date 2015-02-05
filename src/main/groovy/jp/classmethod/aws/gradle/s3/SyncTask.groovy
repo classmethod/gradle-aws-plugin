@@ -32,6 +32,8 @@ class SyncTask extends DefaultTask {
 	
 	File source
 	
+	Closure<ObjectMetadata> metadataProvider;
+	
 	@TaskAction
 	def uploadAction() {
 		// to enable conventionMappings feature
@@ -85,7 +87,8 @@ class SyncTask extends DefaultTask {
 				
 				if (doUpload) {
 					logger.info " => s3://$bucketName/$key"
-					s3.putObject(getBucketName(), key, element.file)
+					s3.putObject(getBucketName(), key, element.file,
+						metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.file))
 				} else {
 					logger.info " => s3://$bucketName/$key (SKIP)"
 				}

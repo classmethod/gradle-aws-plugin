@@ -27,12 +27,14 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	String key
 
 	File file
+	
+	ObjectMetadata objectMetadata
 
 	String resourceUrl
 
 	boolean overwrite = false
 
-	ObjectMetadata objectMetadata() {
+	ObjectMetadata existingObjectMetadata() {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName()
 		String key = getKey()
@@ -53,6 +55,6 @@ abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
 	}
 
 	boolean exists() {
-		objectMetadata() != null
+		existingObjectMetadata() != null
 	}
 }
