@@ -51,11 +51,11 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		AmazonS3Client s3 = ext.s3
 
 		// metadata will be null iff the object does not exist
-		def metadata = objectMetadata()
+		def metadata = existingObjectMetadata()
 
 		if (overwrite || !metadata || (metadata.getETag() != md5())) {
 			logger.info "uploading... ${getBucketName()}/${getKey()}"
-			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
+			resourceUrl = s3.getResourceUrl(getBucketName(), getKey(), getObjectMetadata())
 			s3.putObject(getBucketName(), getKey(), getFile())
 			logger.info "upload completed: $resourceUrl"
 		} else {

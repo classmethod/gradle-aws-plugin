@@ -16,13 +16,19 @@
 package jp.classmethod.aws.gradle
 
 import com.amazonaws.AmazonWebServiceClient
+import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.internal.StaticCredentialsProvider
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.RegionUtils
 import com.amazonaws.regions.Regions
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -44,9 +50,7 @@ class AwsPluginExtension {
 	
 	Project project
 	
-	String accessKeyId
-	
-	String secretKey
+	String profileName
 	
 	Region region = Region.getRegion(Regions.US_EAST_1)
 	
@@ -63,16 +67,20 @@ class AwsPluginExtension {
 		region = RegionUtils.getRegion(r.name)
 	}
 	
-	def AWSCredentialsProvider newCredentialsProvider(String accessKeyId, String secretKey) {
+	def AWSCredentialsProvider newCredentialsProvider(String profileName) {
 		return new AWSCredentialsProviderChain(
-			new StaticCredentialsProvider((accessKeyId && secretKey) ?
-				new BasicAWSCredentials(accessKeyId, secretKey) : null),
-			new StaticCredentialsProvider((this.accessKeyId && this.secretKey) ?
-				new BasicAWSCredentials(this.accessKeyId, this.secretKey) : null)
+			new EnvironmentVariableCredentialsProvider(),
+			new SystemPropertiesCredentialsProvider(),
+			profileName ? new ProfileCredentialsProvider(profileName) : new AWSCredentialsProvider() {
+				void refresh() {}
+				AWSCredentials getCredentials() { null }
+			},
+			new ProfileCredentialsProvider(this.profileName),
+			new InstanceProfileCredentialsProvider()
 		)
 	}
 	
-	def <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, Region region = null, String accessKeyId = null, String secretKey = null) {
+	def <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, Region region = null, String profileName = null) {
 		if (region == null) {
 			if (this.region == null) {
 				throw new IllegalStateException('default region is null')
@@ -80,7 +88,7 @@ class AwsPluginExtension {
 			region = this.region
 		}
 
-		def credentialsProvider = newCredentialsProvider(accessKeyId, secretKey)
+		def credentialsProvider = newCredentialsProvider(profileName)
 		return region.createClient(serviceClass, credentialsProvider, null)
 	}
 }

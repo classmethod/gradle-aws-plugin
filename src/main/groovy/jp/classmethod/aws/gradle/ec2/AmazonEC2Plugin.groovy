@@ -43,14 +43,13 @@ class AmazonEC2PluginExtension {
 	public static final NAME = 'ec2'
 	
 	Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 		
 	@Lazy
 	AmazonEC2 ec2 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonEC2Client, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonEC2Client, region, profileName)
 	}()
 	
 	AmazonEC2PluginExtension(Project project) {

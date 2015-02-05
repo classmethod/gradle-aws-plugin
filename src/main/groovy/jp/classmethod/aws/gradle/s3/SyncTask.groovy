@@ -32,6 +32,8 @@ class SyncTask extends DefaultTask {
 	
 	File source
 	
+	Closure<ObjectMetadata> metadataProvider;
+	
 	@TaskAction
 	def uploadAction() {
 		// to enable conventionMappings feature
@@ -48,7 +50,7 @@ class SyncTask extends DefaultTask {
 		AmazonS3 s3 = ext.s3
 
 		upload(s3, prefix)
-		delete(s3, prefix)
+		deleteAbsent(s3, prefix)
 	}
 	
 	private String upload(AmazonS3 s3, String prefix) {
@@ -85,7 +87,8 @@ class SyncTask extends DefaultTask {
 				
 				if (doUpload) {
 					logger.info " => s3://$bucketName/$key"
-					s3.putObject(getBucketName(), key, element.file)
+					s3.putObject(getBucketName(), key, element.file,
+						metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.file))
 				} else {
 					logger.info " => s3://$bucketName/$key (SKIP)"
 				}
@@ -93,7 +96,7 @@ class SyncTask extends DefaultTask {
 		}
 	}
 	
-	private delete(AmazonS3 s3, String prefix) {
+	private void deleteAbsent(AmazonS3 s3, String prefix) {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName()
 		File source = getSource()

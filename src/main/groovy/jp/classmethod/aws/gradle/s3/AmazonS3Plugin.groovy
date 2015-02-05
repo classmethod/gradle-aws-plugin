@@ -43,14 +43,13 @@ class AmazonS3PluginExtension {
 	public static final NAME = 's3'
 	
 	Project project
-	String accessKeyId
-	String secretKey
+	String profileName
 	Region region
 		
 	@Lazy
 	AmazonS3 s3 = {
 		AwsPluginExtension aws = project.extensions.getByType(AwsPluginExtension)
-		return aws.createClient(AmazonS3Client, region, accessKeyId, secretKey)
+		return aws.createClient(AmazonS3Client, region, profileName)
 	}()
 	
 	AmazonS3PluginExtension(Project project) {

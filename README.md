@@ -42,15 +42,14 @@ Add like this to your build.gradle :
         maven { url 'http://public-maven.classmethod.info/release' }
       }
       dependencies {
-        classpath 'jp.classmethod.aws:gradle-aws-plugin:0.10'
+        classpath 'jp.classmethod.aws:gradle-aws-plugin:0.14'
       }
     }
     
     apply plugin: 'aws'
     
     aws {
-      accessKeyId 'your-access-key'
-      secretKey = 'your-secret-key'
+      profileName 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
       region = 'ap-northeast-1'
     }
 
@@ -63,6 +62,7 @@ These credentials are used to make API accesses by default.
     
     // You can overwrite default credentials and region settings like this:
     // ec2 {
+    //   profileName 'another-credentials-profile-name' // optional
     //   region = 'us-east-1'
     // }
     
@@ -155,7 +155,7 @@ These credentials are used to make API accesses by default.
 
 License
 -------
-Copyright (C) 2013-2014 [Classmethod, Inc.](http://classmethod.jp/)
+Copyright (C) 2013-2015 [Classmethod, Inc.](http://classmethod.jp/)
 
 Distributed under the Apache License v2.0.  See the file copyright/LICENSE.txt.
 
