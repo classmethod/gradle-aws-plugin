@@ -87,8 +87,9 @@ class SyncTask extends DefaultTask {
 				
 				if (doUpload) {
 					logger.info " => s3://$bucketName/$key"
-					s3.putObject(getBucketName(), key, element.file,
-						metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.file))
+					Closure<ObjectMetadata> metadataProvider = getMetadataProvider()
+					s3.putObject(new PutObjectRequest(getBucketName(), key, element.file)
+						.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.file)))
 				} else {
 					logger.info " => s3://$bucketName/$key (SKIP)"
 				}

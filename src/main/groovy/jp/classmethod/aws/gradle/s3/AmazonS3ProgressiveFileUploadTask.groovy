@@ -51,7 +51,9 @@ class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
 		
 		TransferManager s3mgr = new TransferManager(s3)
 		logger.info "uploading... $bucketName/$key"
-		Upload upload = s3mgr.upload(bucketName, key, file)
+		
+		Upload upload = s3mgr.upload(new PutObjectRequest(getBucketName(), getKey(), getFile())
+			.withMetadata(getObjectMetadata()))
 		upload.addProgressListener(new ProgressListener() {
 			void progressChanged(ProgressEvent event) {
 				// TODO progress logging

@@ -34,7 +34,7 @@ class BulkUploadTask extends DefaultTask {
 	
 	FileTree source
 	
-	Closure<ObjectMetadata> metadataProvider;
+	Closure<ObjectMetadata> metadataProvider
 
 	@TaskAction
 	def upload() {
@@ -58,8 +58,9 @@ class BulkUploadTask extends DefaultTask {
 			if (element.isDirectory() == false) {
 				String key = prefix + element.relativePath
 				logger.info " => s3://$bucketName/$key"
-				s3.putObject(bucketName, key, element.file,
-						metadataProvider == null ? null : metadataProvider.call(bucketName, key, element.file))
+				Closure<ObjectMetadata> metadataProvider = getMetadataProvider()
+				s3.putObject(new PutObjectRequest(bucketName, key, element.file)
+					.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.file)))
 			}
 		}
 	}
