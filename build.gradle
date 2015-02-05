@@ -18,7 +18,7 @@ defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
-version = '0.14.1'
+version = '0.15-SNAPSHOT'
 
 ext {
 	artifactId = 'gradle-aws-plugin'
