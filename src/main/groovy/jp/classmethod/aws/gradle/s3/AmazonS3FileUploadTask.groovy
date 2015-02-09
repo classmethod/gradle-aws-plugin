@@ -55,7 +55,7 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 
 		if (overwrite || !metadata || (metadata.getETag() != md5())) {
 			logger.info "uploading... ${getBucketName()}/${getKey()}"
-			resourceUrl = s3.getResourceUrl(getBucketName(), getKey(), getObjectMetadata())
+			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
 			
 			s3.putObject(new PutObjectRequest(getBucketName(), getKey(), getFile())
 				.withMetadata(getObjectMetadata()))
