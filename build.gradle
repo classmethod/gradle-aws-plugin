@@ -1,5 +1,7 @@
 // -*- coding: utf-8; mode: groovy -*-
 
+sourceCompatibility = 1.7
+
 buildscript {
 	repositories {
 		mavenCentral()
