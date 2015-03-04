@@ -1,7 +1,5 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-sourceCompatibility = 1.7
-
 buildscript {
 	repositories {
 		mavenCentral()
@@ -21,6 +19,8 @@ defaultTasks 'clean', 'build'
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
 version = '0.15-SNAPSHOT'
+
+sourceCompatibility = 1.7
 
 ext {
 	artifactId = 'gradle-aws-plugin'
