@@ -20,6 +20,8 @@ defaultTasks 'clean', 'build'
 group = 'jp.classmethod.aws'
 version = '0.15-SNAPSHOT'
 
+sourceCompatibility = 1.7
+
 ext {
 	artifactId = 'gradle-aws-plugin'
 	defaultEncoding = 'UTF-8'
