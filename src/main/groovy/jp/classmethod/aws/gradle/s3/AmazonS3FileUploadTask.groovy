@@ -54,15 +54,14 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		def metadata = existingObjectMetadata()
 
 		if (metadata == null || (overwrite && metadata.getETag() != md5())) {
-			logger.info "uploading... ${getBucketName()}/${getKey()}"
-			resourceUrl = s3.getResourceUrl(getBucketName(), getKey())
-			
-			s3.putObject(new PutObjectRequest(getBucketName(), getKey(), getFile())
+			logger.info "uploading... ${bucketName}/${key}"
+			s3.putObject(new PutObjectRequest(bucketName, key, file)
 				.withMetadata(getObjectMetadata()))
 			logger.info "upload completed: $resourceUrl"
 		} else {
 			logger.info "$bucketName/$key already exists with matching md5 sum -- skipped"
 		}
+		resourceUrl = s3.getResourceUrl(bucketName, key)
 	}
 
 	def md5() {
