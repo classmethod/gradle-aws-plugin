@@ -58,8 +58,11 @@ class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 			s3.putObject(new PutObjectRequest(bucketName, key, file)
 				.withMetadata(getObjectMetadata()))
 			logger.info "upload completed: $resourceUrl"
-		} else {
+		} else if (overwrite) {
 			logger.info "$bucketName/$key already exists with matching md5 sum -- skipped"
+		} else {
+			logger.info "$bucketName/$key already exists, but overwrite is set to false -- to update the file add" +
+					" 'overwrite = true' in the task closure"
 		}
 		resourceUrl = s3.getResourceUrl(bucketName, key)
 	}
