@@ -9,6 +9,7 @@ buildscript {
 	}
 }
 
+apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -20,7 +21,7 @@ defaultTasks 'clean', 'build'
 group = 'jp.classmethod.aws'
 version = '0.16-SNAPSHOT'
 
-sourceCompatibility = 1.7
+sourceCompatibility = targetCompatibility = 1.8
 
 ext {
 	artifactId = 'gradle-aws-plugin'
