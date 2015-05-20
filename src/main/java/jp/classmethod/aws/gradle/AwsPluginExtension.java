@@ -1,5 +1,8 @@
 package jp.classmethod.aws.gradle;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonWebServiceClient;
@@ -19,25 +22,21 @@ import com.google.common.base.Strings;
 public class AwsPluginExtension {
 	
 	public static final String NAME = "aws";
-			
-	Project project;
 	
-	String profileName;
+	@Getter @Setter
+	private Project project;
 	
-	Region region = Region.getRegion(Regions.US_EAST_1);
+	@Getter @Setter
+	private String profileName;
+	
+	@Getter @Setter
+	private String region = Regions.US_EAST_1.getName();
 	
 	
 	public AwsPluginExtension(Project project) {
 		this.project = project;
 	}
 
-	void setRegion(String r) {
-		region = RegionUtils.getRegion(r);
-	}
-	
-	void setRegion(Regions r) {
-		region = RegionUtils.getRegion(r.getName());
-	}
 	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
 		return new AWSCredentialsProviderChain(
@@ -58,7 +57,7 @@ public class AwsPluginExtension {
 			if (this.region == null) {
 				throw new IllegalStateException("default region is null");
 			}
-			region = this.region;
+			region = RegionUtils.getRegion(this.region);
 		}
 
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);

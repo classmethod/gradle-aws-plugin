@@ -19,8 +19,9 @@ import com.amazonaws.services.s3.*
 import com.amazonaws.services.s3.model.*
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.internal.ConventionTask
 
-abstract class AbstractAmazonS3FileUploadTask extends DefaultTask {
+abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
 
 	String bucketName
 
