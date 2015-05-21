@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.gradle.ec2
+package jp.classmethod.aws.gradle.ec2;
 
-
-class ParseException extends Exception {
+@SuppressWarnings("serial")
+public class ParseException extends RuntimeException {
 	
-	String expression
+	private String expression;
 	
-	ParseException(String expression) {
-		this.expression = expression
+	public ParseException(String expression) {
+		this.expression = expression;
 	}
 	
 	@Override
 	public String getMessage() {
-		return "fail to parse expression: $expression";
+		return "fail to parse expression: " + expression;
 	}
 }

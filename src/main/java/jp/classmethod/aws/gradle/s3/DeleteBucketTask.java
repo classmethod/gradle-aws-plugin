@@ -18,13 +18,12 @@ package jp.classmethod.aws.gradle.s3;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.s3.*;
+import com.amazonaws.services.s3.AmazonS3;
 
 public class DeleteBucketTask extends ConventionTask {
 	
