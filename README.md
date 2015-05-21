@@ -107,7 +107,7 @@ These credentials are used to make API accesses by default.
 
     apply plugin: 'aws-route53'
     route53 {
-      hostedZone 'foobar.example.com'
+      hostedZoneName 'foobar.example.com'
       callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
     }
     
