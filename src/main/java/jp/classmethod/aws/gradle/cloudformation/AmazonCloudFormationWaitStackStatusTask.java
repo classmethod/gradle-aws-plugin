@@ -69,7 +69,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
 		if (stackName == null) throw new GradleException("stackName is not specified");
 		
-		AwsCloudFormationPluginExtension ext = getProject().getExtensions().getByType(AwsCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getCfn();
 
 		long start = System.currentTimeMillis();

@@ -22,15 +22,15 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getPluginManager().apply(AmazonS3Plugin.class);
-		project.getExtensions().create(AwsCloudFormationPluginExtension.NAME, AwsCloudFormationPluginExtension.class,
+		project.getExtensions().create(AmazonCloudFormationPluginExtension.NAME, AmazonCloudFormationPluginExtension.class,
 				project);
 		applyTasks(project);
 	}
 	
 	
 	private void applyTasks(Project project) {
-		AwsCloudFormationPluginExtension cfnExt =
-				project.getExtensions().findByType(AwsCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension cfnExt =
+				project.getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
 		
 		AmazonS3FileUploadTask awsCfnUploadTemplate =
 				project.getTasks().create("awsCfnUploadTemplate", AmazonS3FileUploadTask.class, task -> {

@@ -22,7 +22,7 @@ import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackResource;
 
 
-public class AwsCloudFormationPluginExtension {
+public class AmazonCloudFormationPluginExtension {
 	
 	public static final String NAME = "cloudFormation";
 	
@@ -59,7 +59,7 @@ public class AwsCloudFormationPluginExtension {
 	@Getter(lazy = true)
 	private final AmazonCloudFormation cfn = initCfn();
 
-	public AwsCloudFormationPluginExtension(Project project) {
+	public AmazonCloudFormationPluginExtension(Project project) {
 		this.project = project;
 	}
 
