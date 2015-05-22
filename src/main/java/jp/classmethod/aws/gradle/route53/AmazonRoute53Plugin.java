@@ -26,18 +26,5 @@ public class AmazonRoute53Plugin implements Plugin<Project> {
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getExtensions().create(AmazonRoute53PluginExtension.NAME, AmazonRoute53PluginExtension.class, project);
-		applyTasks(project);
-	}
-	
-	private void applyTasks(final Project project) {
-		AmazonRoute53PluginExtension r53Ext = project.getExtensions().getByType(AmazonRoute53PluginExtension.class);
-		
-		project.getTasks().create("awsR53CreateHostedZone", CreateHostedZoneTask.class, task -> {
-			task.setDescription("Create hostedZone.");
-			task.doFirst(t -> {
-				task.setHostedZoneName(r53Ext.getHostedZone());
-				task.setCallerReference(r53Ext.getCallerReference());
-			});
-		});
 	}
 }

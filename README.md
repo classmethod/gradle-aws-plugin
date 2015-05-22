@@ -119,15 +119,18 @@ cloudFormation {
 
 ```
 apply plugin: 'aws-route53'
-route53 {
-  hostedZoneName 'foobar.example.com'
-  callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
+
+ask createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
+	hostedZoneName "foobar.example.com"
+	callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
 }
 
-// awsR53CreateHostedZone task is declared
+task deleteHostedZone(type: jp.classmethod.aws.gradle.route53.DeleteHostedZoneTask) {
+	hostedZoneId "XXXX"
+}
 ```
 
-### Implements tasks to treat Elastic Beanstalk environemnt
+### Implements tasks to manage Elastic Beanstalk environemnt
 
 ```
 apply plugin: 'aws-beanstalk'

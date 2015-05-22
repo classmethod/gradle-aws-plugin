@@ -39,6 +39,6 @@ public class DeleteHostedZoneTask extends ConventionTask {
 		AmazonRoute53 route53 = ext.getClient();
 		
 		route53.deleteHostedZone(new DeleteHostedZoneRequest(hostedZoneId));
-		getLogger().info("HostedZone " + hostedZoneId + " is deleted successfully.");
+		getLogger().info("HostedZone {} is deleted successfully.", hostedZoneId);
 	}
 }

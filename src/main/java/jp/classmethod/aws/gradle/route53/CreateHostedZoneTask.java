@@ -31,7 +31,7 @@ import com.amazonaws.services.route53.model.CreateHostedZoneResult;
 import com.amazonaws.services.route53.model.HostedZoneAlreadyExistsException;
 import com.amazonaws.services.route53.model.HostedZoneConfig;
 
-class CreateHostedZoneTask extends ConventionTask {
+public class CreateHostedZoneTask extends ConventionTask {
 	
 	@Getter @Setter
 	private String hostedZoneName;
@@ -43,6 +43,9 @@ class CreateHostedZoneTask extends ConventionTask {
 	private String comment;
 	
 	// after did work
+
+	@Getter
+	private CreateHostedZoneResult createHostedZoneResult;
 	
 	@Getter
 	private String hostedZoneId;
@@ -61,7 +64,7 @@ class CreateHostedZoneTask extends ConventionTask {
 		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
 		AmazonRoute53 route53 = ext.getClient();
 		
-		getLogger().info("callerRef = " + callerReference);
+		getLogger().info("callerRef = {}", callerReference);
 		
 		CreateHostedZoneRequest req = new CreateHostedZoneRequest()
 			.withName(hostedZoneName)
@@ -71,15 +74,15 @@ class CreateHostedZoneTask extends ConventionTask {
 		}
 		
 		try {
-			CreateHostedZoneResult chzr = route53.createHostedZone(req);
-			nameServers = chzr.getDelegationSet().getNameServers();
-			hostedZoneId = chzr.getHostedZone().getId();
-			getLogger().info("HostedZone "+hostedZoneId+" ("+hostedZoneName+" - "+callerReference+")  is created.");
+			createHostedZoneResult = route53.createHostedZone(req);
+			nameServers = createHostedZoneResult.getDelegationSet().getNameServers();
+			hostedZoneId = createHostedZoneResult.getHostedZone().getId();
+			getLogger().info("HostedZone {} ({} - {})  is created.", hostedZoneId, hostedZoneName, callerReference);
 			nameServers.forEach(it -> {
-				getLogger().info("  NS " + it);
+				getLogger().info("  NS {}", it);
 			});
 		} catch (HostedZoneAlreadyExistsException e) {
-			getLogger().error("HostedZone "+hostedZoneName+" - "+callerReference+" is already created.");
+			getLogger().error("HostedZone {} - {} is already created.", hostedZoneName, callerReference);
 		}
 	}
 }

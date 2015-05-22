@@ -32,16 +32,13 @@ import com.amazonaws.services.route53.model.ResourceRecordSet;
 
 public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
 	
-	@Getter
-	@Setter
+	@Getter @Setter
 	private String hostedZoneId;
 	
-	@Getter
-	@Setter
+	@Getter @Setter
 	private String rrsName;
 	
-	@Getter
-	@Setter
+	@Getter @Setter
 	private String resourceRecord;
 	
 	
@@ -65,6 +62,6 @@ public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
 			.withChangeBatch(new ChangeBatch()
 				.withChanges(new Change(ChangeAction.CREATE, new ResourceRecordSet(rrsName, RRType.CNAME)
 					.withResourceRecords(new ResourceRecord(resourceRecord))))));
-		getLogger().info("change " + hostedZoneId + " requested");
+		getLogger().info("change {} requested", hostedZoneId);
 	}
 }
