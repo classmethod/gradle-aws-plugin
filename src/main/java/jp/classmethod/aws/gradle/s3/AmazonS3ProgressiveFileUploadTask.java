@@ -32,7 +32,7 @@ import com.amazonaws.services.s3.transfer.Upload;
 public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	public AmazonS3ProgressiveFileUploadTask() {
-		setDescription("Upload war file to the Amazon S3 bucket.");
+		setDescription("Upload file to the Amazon S3 bucket.");
 		setGroup("AWS");
 	}
 	
@@ -46,26 +46,23 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		if (key == null) throw new GradleException("key is not specified");
 		if (file == null) throw new GradleException("file is not specified");
+		if (file.isFile() == false) throw new GradleException("file must be regular file");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		TransferManager s3mgr = new TransferManager(s3);
-		getLogger().info("uploading... "+bucketName+"/"+key);
+		getLogger().info("Uploading... s3://{}/{}", bucketName, key);
 		
 		Upload upload = s3mgr.upload(new PutObjectRequest(getBucketName(), getKey(), getFile())
 			.withMetadata(getObjectMetadata()));
 		upload.addProgressListener(new ProgressListener() {
 			public void progressChanged(ProgressEvent event) {
-				// TODO progress logging
-//				System.out.printf("%d%%%n", (int) upload.getProgress().getPercentTransferred());
-//				if (event.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE) {
-//					getLogger().info("Upload completed.");
-//				}
+				getLogger().info("  {}% uploaded", upload.getProgress().getPercentTransferred());
 			}
 		});
 		upload.waitForCompletion();
 		setResourceUrl(((AmazonS3Client) s3).getResourceUrl(bucketName, key));
-		getLogger().info("upload completed: "+getResourceUrl());
+		getLogger().info("Upload completed: {}", getResourceUrl());
 	}
 }

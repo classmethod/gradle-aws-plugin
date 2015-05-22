@@ -38,17 +38,28 @@ import com.google.common.io.Files;
 
 public class SyncTask extends ConventionTask {
 	
+	private static String md5(File file) {
+		try {
+			return Files.hash(file, Hashing.md5()).toString();
+		} catch (IOException e) {
+			return "";
+		}
+	}
+
 	@Getter @Setter
-	String bucketName;
+	private String bucketName;
 	
 	@Getter @Setter
-	String prefix = "";
+	private String prefix = "";
 	
 	@Getter @Setter
-	File source;
+	private File source;
 	
 	@Getter @Setter
-	Closure<ObjectMetadata> metadataProvider;
+	private boolean delete;
+	
+	@Getter @Setter
+	private Closure<ObjectMetadata> metadataProvider;
 	
 	@TaskAction
 	public void uploadAction() {
@@ -59,6 +70,7 @@ public class SyncTask extends ConventionTask {
 
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		if (source == null) throw new GradleException("source is not specified");
+		if (source.isDirectory() == false) throw new GradleException("source must be directory");
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 
@@ -66,14 +78,8 @@ public class SyncTask extends ConventionTask {
 		AmazonS3 s3 = ext.getClient();
 
 		upload(s3, prefix);
-		deleteAbsent(s3, prefix);
-	}
-	
-	private String md5(File file) {
-		try {
-			return Files.hash(file, Hashing.md5()).toString();
-		} catch (IOException e) {
-			return "";
+		if (isDelete()) {
+			deleteAbsent(s3, prefix);
 		}
 	}
 	
@@ -82,7 +88,7 @@ public class SyncTask extends ConventionTask {
 		String bucketName = getBucketName();
 		File source = getSource();
 
-		getLogger().info("uploading... "+source+" to s3://"+bucketName+"/"+prefix);
+		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
 			public void visitFile(FileVisitDetails element) {
 				String relativePath = prefix + element.getRelativePath().toString();
@@ -104,7 +110,7 @@ public class SyncTask extends ConventionTask {
 					s3.putObject(new PutObjectRequest(getBucketName(), key, element.getFile())
 						.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));
 				} else {
-					getLogger().info(" => s3://"+bucketName+"/"+key+" (SKIP)");
+					getLogger().info(" => s3://{}/{} (SKIP)", bucketName, key);
 				}
 			}
 		});
@@ -114,10 +120,11 @@ public class SyncTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		String pathPrefix = getNormalizedPathPrefix();
+		
 		s3.listObjects(bucketName, prefix).getObjectSummaries().forEach(os -> {
 			File f = getProject().file(pathPrefix + os.getKey().substring(prefix.length()));
 			if (f.exists() == false) {
-				getLogger().info("deleting... s3://"+bucketName+"/"+os.getKey());
+				getLogger().info("deleting... s3://{}/{}", bucketName, os.getKey());
 				s3.deleteObject(bucketName, os.getKey());
 			}
 		});

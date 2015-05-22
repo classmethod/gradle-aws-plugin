@@ -24,6 +24,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectListing;
 
 public class DeleteBucketTask extends ConventionTask {
 	
@@ -32,6 +33,11 @@ public class DeleteBucketTask extends ConventionTask {
 	
 	@Getter @Setter
 	boolean ifExists;
+	
+	@Getter @Setter
+	boolean deleteObjects;
+	
+	
 	
 	public DeleteBucketTask() {
 		setDescription("Create the Amazon S3 bucket.");
@@ -50,8 +56,21 @@ public class DeleteBucketTask extends ConventionTask {
 		AmazonS3 s3 = ext.getClient();
 		
 		if (ifExists == false || exists(s3)) {
+			if (deleteObjects) {
+				getLogger().info("Delete all S3 objects in bucket [{}]", bucketName);
+				ObjectListing objectListing = s3.listObjects(bucketName);
+				while (objectListing.getObjectSummaries().isEmpty() == false) {
+					objectListing.getObjectSummaries().forEach(summary -> {
+						getLogger().info(" => delete s3://{}/{}", bucketName, summary.getKey());
+						s3.deleteObject(bucketName, summary.getKey());
+					});
+					objectListing = s3.listNextBatchOfObjects(objectListing);
+				}
+			}
 			s3.deleteBucket(bucketName);
-			getLogger().info("bucket "+bucketName+" deleted");
+			getLogger().info("S3 bucket {} is deleted", bucketName);
+		} else {
+			getLogger().debug("S3 bucket {} does not exist", bucketName);
 		}
 	}
 	

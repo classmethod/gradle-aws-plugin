@@ -47,6 +47,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		if (key == null) throw new GradleException("key is not specified");
 		if (file == null) throw new GradleException("file is not specified");
+		if (file.isFile() == false) throw new GradleException("file must be regular file");
 
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
@@ -60,7 +61,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 				.withMetadata(getObjectMetadata()));
 			getLogger().info("upload completed: "+getResourceUrl());
 		} else {
-			getLogger().info(bucketName+"/"+key+" already exists with matching md5 sum -- skipped");
+			getLogger().info("s3://{}/{} already exists with matching md5 sum -- skipped", bucketName, key);
 		}
 		setResourceUrl(((AmazonS3Client) s3).getResourceUrl(bucketName, key));
 	}

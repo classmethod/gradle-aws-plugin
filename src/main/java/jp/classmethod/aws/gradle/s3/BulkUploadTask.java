@@ -54,11 +54,11 @@ public class BulkUploadTask extends ConventionTask {
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
-		getLogger().info("uploading... "+source+" to s3://"+bucketName+"/"+prefix);
+		getLogger().info("uploading... {} to s3://{}/{}", source, bucketName, prefix);
 		source.visit(new EmptyFileVisitor() {
 			public void visitFile(FileVisitDetails element) {
 				String key = prefix + element.getRelativePath();
-				getLogger().info(" => s3://"+bucketName+"/"+key);
+				getLogger().info(" => s3://{}/{}", bucketName, key);
 				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
 					.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));

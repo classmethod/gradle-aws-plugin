@@ -51,7 +51,7 @@ public class CreateBucketTask extends ConventionTask {
 		
 		if (isIfNotExists() == false || exists(s3) == false) {
 			s3.createBucket(bucketName);
-			getLogger().info("bucket "+bucketName+" created");
+			getLogger().info("S3 Bucket '{}' created", bucketName);
 		}
 	}
 	
