@@ -68,7 +68,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 		Tier tier = getTier();
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 
 		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 				.withApplicationName(appName)

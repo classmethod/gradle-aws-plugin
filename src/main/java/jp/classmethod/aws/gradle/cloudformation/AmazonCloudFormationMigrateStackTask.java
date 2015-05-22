@@ -60,7 +60,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (cfnTemplateUrl == null) throw new GradleException("cfnTemplateUrl is not specified");
 		
 		AmazonCloudFormationPluginExtension ext = getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		AmazonCloudFormation cfn = ext.getCfn();
+		AmazonCloudFormation cfn = ext.getClient();
 		
 		try {
 			DescribeStacksResult describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));

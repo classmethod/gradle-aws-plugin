@@ -26,7 +26,7 @@ public class AmazonS3PluginExtension {
 	private String region = Regions.US_EAST_1.getName();
 		
 	@Getter(lazy = true)
-	private final AmazonS3 s3 = initClient();
+	private final AmazonS3 client = initClient();
 
 	public AmazonS3PluginExtension(Project project) {
 		this.project = project;
@@ -34,6 +34,9 @@ public class AmazonS3PluginExtension {
 
 	private AmazonS3 initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AmazonS3Client.class, RegionUtils.getRegion(this.region), profileName);
+		return aws.createClient(
+				AmazonS3Client.class,
+				this.region == null ? null : RegionUtils.getRegion(this.region),
+				profileName);
 	}
 }

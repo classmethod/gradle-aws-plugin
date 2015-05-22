@@ -48,7 +48,7 @@ public class AmazonRoute53PluginExtension {
 	String callerReference;
 	
 	@Getter(lazy = true)
-	private final AmazonRoute53 route53 = initClient();
+	private final AmazonRoute53 client = initClient();
 
 	public AmazonRoute53PluginExtension(Project project) {
 		this.project = project;
@@ -56,11 +56,14 @@ public class AmazonRoute53PluginExtension {
 
 	private AmazonRoute53 initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AmazonRoute53Client.class, RegionUtils.getRegion(this.region), profileName);
+		return aws.createClient(
+				AmazonRoute53Client.class,
+				this.region == null ? null : RegionUtils.getRegion(this.region),
+				profileName);
 	}
 	
 	public String getHostedZoneId() {
-		ListHostedZonesResult lhzr = getRoute53().listHostedZones();
+		ListHostedZonesResult lhzr = getClient().listHostedZones();
 		HostedZone zone = lhzr.getHostedZones().stream().filter(it -> it.getName().equals(hostedZone + ".")).findFirst().orElse(null);
 		if (zone == null) {
 			throw new GradleException("Hosted zone "+hostedZone+" not found.");
@@ -70,7 +73,7 @@ public class AmazonRoute53PluginExtension {
 	
 	public ResourceRecordSet getAssociatedResourceRecordSet(String hostname) {
 		String resourceRecordName = hostname.replace(hostedZone, "");
-		ListResourceRecordSetsResult lrrsr = getRoute53().listResourceRecordSets(new ListResourceRecordSetsRequest(getHostedZoneId())
+		ListResourceRecordSetsResult lrrsr = getClient().listResourceRecordSets(new ListResourceRecordSetsRequest(getHostedZoneId())
 			.withStartRecordName(resourceRecordName));
 		return lrrsr.getResourceRecordSets().stream()
 				.filter(it -> it.getType().equals("CNAME") || it.getAliasTarget() != null).findFirst().get();
@@ -85,7 +88,7 @@ public class AmazonRoute53PluginExtension {
 			.withAliasTarget(new AliasTarget(ldb.getCanonicalHostedZoneNameID(), ldb.getCanonicalHostedZoneName())
 				.withEvaluateTargetHealth(false))));
 		
-		getRoute53().changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
+		getClient().changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
 			.withHostedZoneId(getHostedZoneId())
 			.withChangeBatch(new ChangeBatch().withChanges(changes)));
 	}

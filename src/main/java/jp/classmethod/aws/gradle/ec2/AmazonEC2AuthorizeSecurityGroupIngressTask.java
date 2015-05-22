@@ -49,7 +49,7 @@ public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC
 		if (ipPermissions == null) throw new GradleException("ipPermissions is not specified");
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getEc2();
+		AmazonEC2 ec2 = ext.getClient();
 		
 		try {
 			ec2.authorizeSecurityGroupIngress(new AuthorizeSecurityGroupIngressRequest()

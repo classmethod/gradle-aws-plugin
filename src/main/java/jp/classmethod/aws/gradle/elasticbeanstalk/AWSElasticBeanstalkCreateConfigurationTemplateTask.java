@@ -57,7 +57,7 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 		String appName = getAppName();
 
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		configurationTemplates.forEach(config -> {
 			String templateName = config.getName();

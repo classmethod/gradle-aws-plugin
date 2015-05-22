@@ -74,7 +74,7 @@ public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends ConventionTask
 		if (appName == null) throw new GradleException("applicationName is not specified");
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 
 		long start = System.currentTimeMillis();
 		while (true) {

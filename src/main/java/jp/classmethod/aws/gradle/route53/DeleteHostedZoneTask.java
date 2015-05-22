@@ -36,7 +36,7 @@ public class DeleteHostedZoneTask extends ConventionTask {
 		String hostedZoneId = getHostedZoneId();
 
 		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
-		AmazonRoute53 route53 = ext.getRoute53();
+		AmazonRoute53 route53 = ext.getClient();
 		
 		route53.deleteHostedZone(new DeleteHostedZoneRequest(hostedZoneId));
 		getLogger().info("HostedZone " + hostedZoneId + " is deleted successfully.");

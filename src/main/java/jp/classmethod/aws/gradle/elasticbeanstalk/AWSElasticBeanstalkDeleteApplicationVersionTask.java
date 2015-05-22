@@ -52,7 +52,7 @@ public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionT
 		boolean deleteSourceBundle = isDeleteSourceBundle();
 
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteApplicationVersion(new DeleteApplicationVersionRequest()
 			.withApplicationName(applicationName)

@@ -26,7 +26,7 @@ public class AmazonEC2PluginExtension {
 	private String region = Regions.US_EAST_1.getName();
 		
 	@Getter(lazy = true)
-	private final AmazonEC2 ec2 = initClient();
+	private final AmazonEC2 client = initClient();
 	
 	public AmazonEC2PluginExtension(Project project) {
 		this.project = project;
@@ -34,6 +34,9 @@ public class AmazonEC2PluginExtension {
 
 	private AmazonEC2 initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AmazonEC2Client.class, RegionUtils.getRegion(this.region), profileName);
+		return aws.createClient(
+				AmazonEC2Client.class,
+				this.region == null ? null : RegionUtils.getRegion(this.region),
+				profileName);
 	}
 }

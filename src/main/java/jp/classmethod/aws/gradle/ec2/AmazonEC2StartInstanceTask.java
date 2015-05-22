@@ -46,7 +46,7 @@ public class AmazonEC2StartInstanceTask extends ConventionTask {
 		if (instanceIds.isEmpty()) return;
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getEc2();
+		AmazonEC2 ec2 = ext.getClient();
 		
 		ec2.startInstances(new StartInstancesRequest(instanceIds));
 		getLogger().info("instance "+instanceIds+" start requested");

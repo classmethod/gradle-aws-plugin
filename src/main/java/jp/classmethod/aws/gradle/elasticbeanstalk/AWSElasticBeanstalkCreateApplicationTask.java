@@ -47,7 +47,7 @@ public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
 		String appDesc = getAppDesc();
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 
 		DescribeApplicationsResult existingApps = eb.describeApplications(new DescribeApplicationsRequest()
 				.withApplicationNames(appName));

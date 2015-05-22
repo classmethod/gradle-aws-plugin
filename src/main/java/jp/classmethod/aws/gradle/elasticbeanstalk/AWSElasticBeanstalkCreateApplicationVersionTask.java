@@ -53,7 +53,7 @@ public class AWSElasticBeanstalkCreateApplicationVersionTask extends ConventionT
 		String versionLabel = getVersionLabel();
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		try {
 			eb.createApplicationVersion(new CreateApplicationVersionRequest()

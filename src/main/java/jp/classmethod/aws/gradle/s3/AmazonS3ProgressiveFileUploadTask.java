@@ -48,7 +48,7 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 		if (file == null) throw new GradleException("file is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 		
 		TransferManager s3mgr = new TransferManager(s3);
 		getLogger().info("uploading... "+bucketName+"/"+key);

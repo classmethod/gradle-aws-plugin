@@ -48,7 +48,7 @@ public class AmazonS3FileDeleteTask extends ConventionTask {
 		if (key == null) throw new GradleException("key is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 		
 		getLogger().info("deleting... "+bucketName+"/"+key);
 		s3.deleteObject(bucketName, key);

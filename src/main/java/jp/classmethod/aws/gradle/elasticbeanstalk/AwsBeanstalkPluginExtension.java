@@ -34,11 +34,14 @@ public class AwsBeanstalkPluginExtension {
 	private String region = Regions.US_EAST_1.getName();
 		
 	@Getter(lazy = true)
-	private final AWSElasticBeanstalk eb = initClient();
+	private final AWSElasticBeanstalk client = initClient();
 	
 	private AWSElasticBeanstalk initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AWSElasticBeanstalkClient.class, RegionUtils.getRegion(this.region), profileName);
+		return aws.createClient(
+				AWSElasticBeanstalkClient.class,
+				this.region == null ? null : RegionUtils.getRegion(this.region),
+				profileName);
 	}
 
 	
@@ -80,7 +83,7 @@ public class AwsBeanstalkPluginExtension {
 	}
 	
 	public String getEbEnvironmentCNAME(String environmentName) {
-		DescribeEnvironmentsResult der = getEb().describeEnvironments(new DescribeEnvironmentsRequest()
+		DescribeEnvironmentsResult der = getClient().describeEnvironments(new DescribeEnvironmentsRequest()
 			.withApplicationName(appName)
 			.withEnvironmentNames(environmentName));
 		EnvironmentDescription env = der.getEnvironments().get(0);
@@ -92,7 +95,7 @@ public class AwsBeanstalkPluginExtension {
 		if (environmentNames.isEmpty() == false) {
 			req.setEnvironmentNames(environmentNames);
 		}
-		DescribeEnvironmentsResult der = getEb().describeEnvironments(req);
+		DescribeEnvironmentsResult der = getClient().describeEnvironments(req);
 		return der.getEnvironments();
 	}
 	

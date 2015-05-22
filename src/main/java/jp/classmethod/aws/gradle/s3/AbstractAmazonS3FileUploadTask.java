@@ -38,7 +38,7 @@ public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
 		String key = getKey();
 
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 
 		try {
 			// to enable conventionMapping, you must reference field via getters

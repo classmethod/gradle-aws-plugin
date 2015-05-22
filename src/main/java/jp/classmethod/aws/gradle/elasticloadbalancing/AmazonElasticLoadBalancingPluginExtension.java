@@ -34,7 +34,10 @@ public class AmazonElasticLoadBalancingPluginExtension {
 
 	private AmazonElasticLoadBalancing initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AmazonElasticLoadBalancingClient.class, RegionUtils.getRegion(this.region), profileName);
+		return aws.createClient(
+				AmazonElasticLoadBalancingClient.class,
+				this.region == null ? null : RegionUtils.getRegion(this.region),
+				profileName);
 	}
 	
 }

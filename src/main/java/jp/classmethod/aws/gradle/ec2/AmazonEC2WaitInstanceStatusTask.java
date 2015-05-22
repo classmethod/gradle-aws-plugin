@@ -78,7 +78,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 		if (instanceId == null) throw new GradleException("instanceId is not specified");
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getEc2();
+		AmazonEC2 ec2 = ext.getClient();
 		
 		long start = System.currentTimeMillis();
 		while (true) {

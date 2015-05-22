@@ -58,7 +58,7 @@ public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
 		String resourceRecord = getResourceRecord();
 		
 		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
-		AmazonRoute53 route53 = ext.getRoute53();
+		AmazonRoute53 route53 = ext.getClient();
 		
 		route53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()
 			.withHostedZoneId(hostedZoneId)

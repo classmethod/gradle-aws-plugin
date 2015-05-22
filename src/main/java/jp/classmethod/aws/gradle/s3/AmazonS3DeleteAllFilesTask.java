@@ -50,7 +50,7 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 
 		if (prefix.startsWith("/")) {
 			prefix = prefix.substring(1);

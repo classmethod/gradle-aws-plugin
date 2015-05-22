@@ -49,7 +49,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		if (file == null) throw new GradleException("file is not specified");
 
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 
 		// metadata will be null iff the object does not exist
 		ObjectMetadata metadata = existingObjectMetadata();

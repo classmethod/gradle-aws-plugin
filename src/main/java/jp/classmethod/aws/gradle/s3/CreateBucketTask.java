@@ -47,7 +47,7 @@ public class CreateBucketTask extends ConventionTask {
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 		
 		if (isIfNotExists() == false || exists(s3) == false) {
 			s3.createBucket(bucketName);

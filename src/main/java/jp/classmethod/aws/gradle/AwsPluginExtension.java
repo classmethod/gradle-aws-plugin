@@ -27,7 +27,7 @@ public class AwsPluginExtension {
 	private Project project;
 	
 	@Getter @Setter
-	private String profileName;
+	private String profileName = "default";
 	
 	@Getter @Setter
 	private String region = Regions.US_EAST_1.getName();
@@ -58,6 +58,12 @@ public class AwsPluginExtension {
 				throw new IllegalStateException("default region is null");
 			}
 			region = RegionUtils.getRegion(this.region);
+		}
+		if (profileName == null) {
+			if (this.profileName == null) {
+				throw new IllegalStateException("default profileName is null");
+			}
+			profileName = this.profileName;
 		}
 
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);

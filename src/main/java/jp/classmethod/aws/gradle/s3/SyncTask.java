@@ -63,7 +63,7 @@ public class SyncTask extends ConventionTask {
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 
 		upload(s3, prefix);
 		deleteAbsent(s3, prefix);

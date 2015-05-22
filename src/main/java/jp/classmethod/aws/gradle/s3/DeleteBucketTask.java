@@ -47,7 +47,7 @@ public class DeleteBucketTask extends ConventionTask {
 		if (bucketName == null) throw new GradleException("bucketName is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 		
 		if (ifExists == false || exists(s3)) {
 			s3.deleteBucket(bucketName);

@@ -52,7 +52,7 @@ public class BulkUploadTask extends ConventionTask {
 		FileTree source = getSource();
 
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getS3();
+		AmazonS3 s3 = ext.getClient();
 		
 		getLogger().info("uploading... "+source+" to s3://"+bucketName+"/"+prefix);
 		source.visit(new EmptyFileVisitor() {

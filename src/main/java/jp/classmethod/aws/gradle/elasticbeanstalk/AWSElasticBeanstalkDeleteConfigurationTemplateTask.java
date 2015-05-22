@@ -45,7 +45,7 @@ public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends Conventi
 		String templateName = getTemplateName();
 
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
 			.withApplicationName(applicationName)

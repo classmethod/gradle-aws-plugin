@@ -41,7 +41,7 @@ public class AWSElasticBeanstalkDeleteApplicationTask extends ConventionTask {
 		String appName = getAppName();
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteApplication(new DeleteApplicationRequest(appName));
 		getLogger().info ("application "+appName+" deleted");

@@ -53,7 +53,7 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 		String envId = getEnvId();
 				
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
-		AWSElasticBeanstalk eb = ext.getEb();
+		AWSElasticBeanstalk eb = ext.getClient();
 		
 		if (envId == null) {
 			DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()

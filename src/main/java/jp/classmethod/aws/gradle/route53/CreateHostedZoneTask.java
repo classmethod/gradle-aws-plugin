@@ -59,7 +59,7 @@ class CreateHostedZoneTask extends ConventionTask {
 		String comment = getComment();
 
 		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
-		AmazonRoute53 route53 = ext.getRoute53();
+		AmazonRoute53 route53 = ext.getClient();
 		
 		getLogger().info("callerRef = " + callerReference);
 		
