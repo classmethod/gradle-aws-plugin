@@ -23,7 +23,7 @@ public class AmazonS3PluginExtension {
 	private	String profileName;
 	
 	@Getter @Setter
-	private String region = Regions.US_EAST_1.getName();
+	private String region;
 		
 	@Getter(lazy = true)
 	private final AmazonS3 client = initClient();

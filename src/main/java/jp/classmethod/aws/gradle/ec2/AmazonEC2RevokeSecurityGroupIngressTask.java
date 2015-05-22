@@ -29,10 +29,10 @@ import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2SecurityGroupPermissionTask {
 	
 	@Getter @Setter
-	String groupId;
+	private String groupId;
 	
 	@Getter @Setter
-	Object ipPermissions;
+	private Object ipPermissions;
 	
 	public AmazonEC2RevokeSecurityGroupIngressTask() {
 		setDescription("Revoke security group ingress.");
@@ -40,7 +40,7 @@ public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2Se
 	}
 	
 	@TaskAction
-	public void createApplication() {
+	public void revokeIngress() {
 		// to enable conventionMappings feature
 		String groupId = getGroupId();
 		Object ipPermissions = getIpPermissions();

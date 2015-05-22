@@ -55,7 +55,7 @@ public class CreateBucketTask extends ConventionTask {
 		}
 	}
 	
-	boolean exists(AmazonS3 s3) {
+	private boolean exists(AmazonS3 s3) {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 

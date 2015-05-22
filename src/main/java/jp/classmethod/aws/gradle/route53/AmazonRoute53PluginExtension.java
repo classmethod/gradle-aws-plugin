@@ -39,7 +39,7 @@ public class AmazonRoute53PluginExtension {
 	private	String profileName;
 	
 	@Getter @Setter
-	private String region = Regions.US_EAST_1.getName();
+	private String region;
 			
 	@Getter @Setter
 	String hostedZone;

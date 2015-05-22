@@ -40,7 +40,7 @@ public class AmazonEC2AuthorizeSecurityGroupEgressTask extends AbstractAmazonEC2
 	}
 	
 	@TaskAction
-	public void createApplication() {
+	public void authorizeEgress() {
 		// to enable conventionMappings feature
 		String groupId = getGroupId();
 		Object ipPermissions = getIpPermissions();

@@ -25,25 +25,25 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.StopInstancesRequest;
-import com.amazonaws.services.ec2.model.StopInstancesResult;
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.amazonaws.services.ec2.model.TerminateInstancesResult;
 
 
-public class AmazonEC2StopInstanceTask extends ConventionTask {
+public class AmazonEC2TerminateInstanceTask extends ConventionTask {
 	
 	@Getter @Setter
 	private List<String> instanceIds = new ArrayList<>();
 	
 	@Getter
-	private StopInstancesResult stopInstancesResult;
+	private TerminateInstancesResult terminateInstancesResult;
 	
-	public AmazonEC2StopInstanceTask() {
+	public AmazonEC2TerminateInstanceTask() {
 		setDescription("Stop EC2 instance.");
 		setGroup("AWS");
 	}
 	
 	@TaskAction
-	public void stopInstance() {
+	public void terminateInstance() {
 		// to enable conventionMappings feature
 		List<String> instanceIds = getInstanceIds();
 		
@@ -52,7 +52,7 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
-		stopInstancesResult = ec2.stopInstances(new StopInstancesRequest(instanceIds));
-		getLogger().info("Stop EC2 instance {} requested", instanceIds);
+		terminateInstancesResult = ec2.terminateInstances(new TerminateInstancesRequest(instanceIds));
+		getLogger().info("Terminate EC2 instance {} requested", instanceIds);
 	}
 }

@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.gradle.api.Project;
 
 import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 
@@ -23,7 +22,7 @@ public class AmazonEC2PluginExtension {
 	private	String profileName;
 	
 	@Getter @Setter
-	private String region = Regions.US_EAST_1.getName();
+	private String region;
 		
 	@Getter(lazy = true)
 	private final AmazonEC2 client = initClient();

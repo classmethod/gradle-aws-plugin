@@ -35,31 +35,33 @@ import com.amazonaws.services.ec2.model.Instance;
 public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 	
 	@Getter @Setter
-	String instanceId;
+	private String instanceId;
 	
 	@Getter @Setter
-	List<String> successStatuses = Arrays.asList(
+	private List<String> successStatuses = Arrays.asList(
 		"running",
 		"stopped",
 		"terminated"
 	);
 
 	@Getter @Setter
-	List<String> waitStatuses = Arrays.asList(
+	private List<String> waitStatuses = Arrays.asList(
 		"pending",
 		"shutting-down",
 		"stopping"
 	);
 	
 	@Getter @Setter
-	int loopTimeout = 900; // sec
+	private int loopTimeout = 900; // sec
+	
 	@Getter @Setter
-	int loopWait = 10; // sec
+	private int loopWait = 10; // sec
 	
 	@Getter
-	boolean found;
+	private boolean found;
+	
 	@Getter
-	String lastStatus;
+	private String lastStatus;
 	
 	public AmazonEC2WaitInstanceStatusTask() {
 		setDescription("Wait EC2 instance for specific status.");
@@ -67,7 +69,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 	}
 
 	@TaskAction
-	public void waitStackForStatus() {
+	public void waitInstanceForStatus() {
 		// to enable conventionMappings feature
 		String instanceId = getInstanceId();
 		List<String> successStatuses = getSuccessStatuses();
@@ -96,10 +98,10 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 				found = true;
 				lastStatus = instance.getState().getName();
 				if (successStatuses.contains(lastStatus)) {
-					getLogger().info("Status of "+instanceId+" is now "+lastStatus+".");
+					getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
 					break;
 				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack "+instanceId+" is "+lastStatus+"...");
+					getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
 					try {
 						Thread.sleep(loopWait * 1000);
 					} catch (InterruptedException e) {

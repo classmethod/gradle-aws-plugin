@@ -26,12 +26,16 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
+import com.amazonaws.services.ec2.model.StartInstancesResult;
 
 
 public class AmazonEC2StartInstanceTask extends ConventionTask {
 	
 	@Getter @Setter
-	List<String> instanceIds = new ArrayList<>();
+	private List<String> instanceIds = new ArrayList<>();
+	
+	@Getter
+	private StartInstancesResult startInstancesResult;
 	
 	public AmazonEC2StartInstanceTask() {
 		setDescription("Start EC2 instance.");
@@ -39,7 +43,7 @@ public class AmazonEC2StartInstanceTask extends ConventionTask {
 	}
 	
 	@TaskAction
-	public void createApplication() {
+	public void startInstance() {
 		// to enable conventionMappings feature
 		List<String> instanceIds = getInstanceIds();
 
@@ -48,7 +52,7 @@ public class AmazonEC2StartInstanceTask extends ConventionTask {
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
-		ec2.startInstances(new StartInstancesRequest(instanceIds));
-		getLogger().info("instance "+instanceIds+" start requested");
+		startInstancesResult = ec2.startInstances(new StartInstancesRequest(instanceIds));
+		getLogger().info("Start EC2 instance {} requested", instanceIds);
 	}
 }

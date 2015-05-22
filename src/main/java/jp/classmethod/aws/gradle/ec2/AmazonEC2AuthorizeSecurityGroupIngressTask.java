@@ -29,10 +29,10 @@ import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC2SecurityGroupPermissionTask {
 	
 	@Getter @Setter
-	String groupId;
+	private String groupId;
 	
 	@Getter @Setter
-	Object ipPermissions;
+	private Object ipPermissions;
 	
 	public AmazonEC2AuthorizeSecurityGroupIngressTask() {
 		setDescription("Authorize security group ingress.");
@@ -40,7 +40,7 @@ public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC
 	}
 	
 	@TaskAction
-	public void createApplication() {
+	public void authorizeIngress() {
 		// to enable conventionMappings feature
 		String groupId = getGroupId();
 		Object ipPermissions = getIpPermissions();
