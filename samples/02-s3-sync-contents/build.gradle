@@ -1,0 +1,48 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import jp.classmethod.aws.gradle.s3.CreateBucketTask;
+import jp.classmethod.aws.gradle.s3.DeleteBucketTask;
+import jp.classmethod.aws.gradle.s3.SyncTask;
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "http://public-maven.classmethod.info/release" }
+		maven { url "http://public-maven.classmethod.info/snapshot" }
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "aws-s3"
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+task createBucket(type: CreateBucketTask) {
+	bucketName "gradle-aws-plugin-sample"
+	ifNotExists true
+}
+
+task deleteBucket(type: DeleteBucketTask) {
+	bucketName "gradle-aws-plugin-sample"
+	ifExists true
+	deleteObjects true
+}
+
+task syncContents(type: SyncTask, dependsOn: createBucket) {
+	source file("contents") // must be directory
+	bucketName "gradle-aws-plugin-sample"
+	prefix "02-s3-sync-contents/"
+	
+	// to set all file's metadata "no-cache, no-store"
+	metadataProvider { bucket, key, file ->
+		ObjectMetadata m = new ObjectMetadata()
+		m.setCacheControl("no-cache, no-store")
+		return m
+	}
+}

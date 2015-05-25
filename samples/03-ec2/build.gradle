@@ -1,0 +1,59 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import jp.classmethod.aws.gradle.ec2.AmazonEC2ImportKeyTask;
+import jp.classmethod.aws.gradle.ec2.AmazonEC2RunInstanceTask;
+import jp.classmethod.aws.gradle.ec2.AmazonEC2StartInstanceTask;
+import jp.classmethod.aws.gradle.ec2.AmazonEC2StopInstanceTask;
+import jp.classmethod.aws.gradle.ec2.AmazonEC2TerminateInstanceTask;
+import jp.classmethod.aws.gradle.ec2.AmazonEC2WaitInstanceStatusTask;
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "http://public-maven.classmethod.info/release" }
+		maven { url "http://public-maven.classmethod.info/snapshot" }
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "aws-ec2"
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+task importKey(type: AmazonEC2ImportKeyTask) {
+	keyName "sample-key"
+	publicKeyMaterial "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCDSfT3mJ5LbEIVgxh0FIFyERmfML2FkEmTCmF6dxmuJGiHaja6e71IwALDAH2B6HyrEbzuYE+43DMFxgnglkzOnZ5azWnotDDqXUS+Rg+EKU7vDzMifV5iQ13oVwQSr0vGX2WDzvhKMe9nQtUsu1LAVHir128Bnl6M76VrlAfjEX2sUfHGzWKEPzyTY0DgQFQo+2e37bP2M0Wvrb+CJxlFLQPsDc5ebB2hWnJtWK++7IORT7mgLLeLCRZQ7sOF1ZUP5ax0M9j7dl7+m6Vev/fHIbQjqVPRKbgm35iOCTkto8lHCZmoRGQmG6t83T8FSy7Pzd4XDw49hDF1uXZXkl19"
+	ifNotExists true
+}
+
+
+if (hasProperty('instanceId') == false) { ext.instanceId = 'i-12345678' }
+
+task runInstance(type: AmazonEC2RunInstanceTask, dependsOn: importKey) {
+	ami "ami-cbf90ecb"
+	keyName "sample-key"
+	instanceType "t2.micro"
+	userData "#! /bin/bash\nyum -y update"
+}
+
+task stopInstance(type: AmazonEC2StopInstanceTask) {
+	instanceIds += project.instanceId
+}
+
+task startInstance(type: AmazonEC2StartInstanceTask) {
+	instanceIds += project.instanceId
+}
+
+task terminateInstance(type: AmazonEC2TerminateInstanceTask) {
+	instanceIds += project.instanceId
+}
+
+task waitInstanceStatusStable(type: AmazonEC2WaitInstanceStatusTask) {
+	shouldRunAfter runInstance, stopInstance, startInstance, terminateInstance
+	instanceId = project.instanceId
+	loopWait = 2
+}

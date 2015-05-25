@@ -1,0 +1,45 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
+import jp.classmethod.aws.gradle.s3.CreateBucketTask;
+import jp.classmethod.aws.gradle.s3.DeleteBucketTask;
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "http://public-maven.classmethod.info/release" }
+		maven { url "http://public-maven.classmethod.info/snapshot" }
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "aws-s3"
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+task createBucket(type: CreateBucketTask) {
+	bucketName "gradle-aws-plugin-sample"
+	ifNotExists true
+}
+
+task deleteBucket(type: DeleteBucketTask) {
+	bucketName "gradle-aws-plugin-sample"
+	ifExists true
+	deleteObjects true
+}
+
+task uploadContent(type: AmazonS3FileUploadTask, dependsOn: createBucket) {
+	file file("target-file.txt") // must be directory
+	bucketName "gradle-aws-plugin-sample"
+	key "01-s3-upload-simple/"
+	
+	def m = new ObjectMetadata()
+	m.setCacheControl("no-cache, no-store")
+	objectMetadata = m
+}

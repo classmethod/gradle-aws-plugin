@@ -1,7 +1,7 @@
 Gradle AWS Plugin
 =================
 
-Gradle plugin to treat AWS resouces.
+Gradle plugin to manage AWS resouces.
 
 Current Features / Supported AWS Products
 -----------------------------------------
@@ -31,126 +31,144 @@ Current Features / Supported AWS Products
   * Create or delete application versions
   * Wait environment for specific status
 
+Requirements
+------------
+
+* Java 8+
+* Gradle 2.4+
+
 How to use?
 -----------
 
 Add like this to your build.gradle :
 
-    buildscript {
-      repositories {
-        mavenCentral()
-        maven { url 'http://public-maven.classmethod.info/release' }
-      }
-      dependencies {
-        classpath 'jp.classmethod.aws:gradle-aws-plugin:0.14'
-      }
-    }
-    
-    apply plugin: 'aws'
-    
-    aws {
-      profileName 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
-      region = 'ap-northeast-1'
-    }
+```
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url 'http://public-maven.classmethod.info/release' }
+  }
+  dependencies {
+    classpath 'jp.classmethod.aws:gradle-aws-plugin:0.14'
+  }
+}
+
+apply plugin: 'aws'
+
+aws {
+  profileName 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
+  region = 'ap-northeast-1'
+}
+```
 
 These credentials are used to make API accesses by default.
 
 
 ### Implements tasks to start and stop bastion instance
 
-    apply plugin: 'aws-ec2'
-    
-    // You can overwrite default credentials and region settings like this:
-    // ec2 {
-    //   profileName 'another-credentials-profile-name' // optional
-    //   region = 'us-east-1'
-    // }
-    
-    task stopBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StopInstanceTask) {
-      instanceIds += 'i-12345678'
-    }
+```
+apply plugin: 'aws-ec2'
 
-    task startBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StartInstanceTask) {
-      instanceIds += 'i-12345678'
-    }
+// You can overwrite default credentials and region settings like this:
+// ec2 {
+//   profileName 'another-credentials-profile-name' // optional
+//   region = 'us-east-1'
+// }
+
+task stopBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StopInstanceTask) {
+  instanceIds += 'i-12345678'
+}
+
+task startBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StartInstanceTask) {
+  instanceIds += 'i-12345678'
+}
+```
 
 ### Implements sync S3 files task
 
-    apply plugin: 'aws-s3'
-    
-    task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
-      bucketName 'foobar.example.com'
-      source file('path/to/objects')
-    }
+```
+apply plugin: 'aws-s3'
 
+task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
+  bucketName 'foobar.example.com'
+  source file('path/to/objects')
+}
+```
 
 ### Implements tasks to migrate and delete stack
 
-    apply plugin: 'aws-cloudformation'
-    
-    cloudFormation {
-      stackName 'foobar-stack'
-      stackParams([
-        Foo: 'bar',
-        Baz: 'qux'
-      ])
-      capabilityIam true
-      templateFile project.file("foobar.template")
-      templateBucket 'example-bucket'
-      templateKeyPrefix 'foobar/'
-    }
-    
-    // awsCfnMigrateStack and awsCfnDeleteStack task (and so on) is declared.
+```
+apply plugin: 'aws-cloudformation'
 
+cloudFormation {
+  stackName 'foobar-stack'
+  stackParams([
+    Foo: 'bar',
+    Baz: 'qux'
+  ])
+  capabilityIam true
+  templateFile project.file("foobar.template")
+  templateBucket 'example-bucket'
+  templateKeyPrefix 'foobar/'
+}
+
+// awsCfnMigrateStack and awsCfnDeleteStack task (and so on) is declared.
+```
 
 ### Implemets create / delete hosted zone task
 
-    apply plugin: 'aws-route53'
-    route53 {
-      hostedZone 'foobar.example.com'
-      callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
+```
+apply plugin: 'aws-route53'
+
+ask createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
+	hostedZoneName "foobar.example.com"
+	callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
+}
+
+task deleteHostedZone(type: jp.classmethod.aws.gradle.route53.DeleteHostedZoneTask) {
+	hostedZoneId "XXXX"
+}
+```
+
+### Implements tasks to manage Elastic Beanstalk environemnt
+
+```
+apply plugin: 'aws-beanstalk'
+beanstalk {
+  String extension = project.war.archiveName.tokenize('.').last()
+  String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+
+  appName 'foobar'
+  appDesc 'foobar demo application'
+  
+  version {
+    label = "foobar-${project.war.version}-${timestamp}"
+    description = "${artifactId} v${version}"
+    bucket = 'sample-bucket'
+    key = "eb-apps/foobar-${project.war.version}-${timestamp}.${extension}"
+  }
+  
+  configurationTemplates {
+    production {
+      optionSettings = file('src/main/config/production.json')
+      solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
     }
-    
-    // awsR53CreateHostedZone task is declared
-
-
-### Implements tasks to treat Elastic Beanstalk environemnt
-
-    apply plugin: 'aws-beanstalk'
-    beanstalk {
-      String extension = project.war.archiveName.tokenize('.').last()
-      String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
-    
-      appName 'foobar'
-      appDesc 'foobar demo application'
-      
-      version {
-        label = "foobar-${project.war.version}-${timestamp}"
-        description = "${artifactId} v${version}"
-        bucket = 'sample-bucket'
-        key = "eb-apps/foobar-${project.war.version}-${timestamp}.${extension}"
-      }
-      
-      configurationTemplates {
-        production {
-          optionSettings = file('src/main/config/production.json')
-          solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
-        }
-        development {
-          optionSettings = file('src/main/config/development.json')
-          solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
-        }
-      }
-      
-      environment {
-        envName = 'foobar'
-        envDesc = 'foobar demo application development environemnt'
-        templateName = 'development'
-        versionLabel = "foobar-${project.war.version}-${timestamp}"
-      }
+    development {
+      optionSettings = file('src/main/config/development.json')
+      solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
     }
-    
-    // task awsEbMigrateEnvironment, awsEbDeleteApplication and so on are declared
+  }
+  
+  environment {
+    envName = 'foobar'
+    envDesc = 'foobar demo application development environemnt'
+    templateName = 'development'
+    versionLabel = "foobar-${project.war.version}-${timestamp}"
+  }
+}
+
+// task awsEbMigrateEnvironment, awsEbDeleteApplication and so on are declared
+```
 
 
 License

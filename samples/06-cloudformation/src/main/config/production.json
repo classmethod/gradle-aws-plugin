@@ -1,0 +1,13 @@
+[
+  { "Namespace" : "aws:elb:policies", "OptionName" : "Stickiness Policy", "Value" : "true" },
+
+  { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "InstanceType", "Value" : "t2.small" },
+  { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "EC2KeyName", "Value" : "sample-key" },
+  { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "IamInstanceProfile", "Value" : "ec2-poweruser" },
+
+  { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "2" },
+  { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MaxSize", "Value" : "6" },
+
+  { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/health" },
+  { "Namespace" : "aws:elasticbeanstalk:hostmanager", "OptionName" : "LogPublicationControl", "Value" : "true" }
+]

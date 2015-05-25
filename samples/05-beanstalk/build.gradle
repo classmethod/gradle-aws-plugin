@@ -1,0 +1,115 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "http://public-maven.classmethod.info/release" }
+		maven { url "http://public-maven.classmethod.info/snapshot" }
+	}
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: "aws-beanstalk"
+
+// ==== Project settings
+
+group = 'jp.classmethod.aws.gradle.sample'
+version = '0.1-SNAPSHOT'
+ext.artifactId = '05-beanstalk'
+
+ext.timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
+ext.versionDesc = "${version}-${timestamp}"
+
+ext.defaultEncoding = 'UTF-8'
+sourceCompatibility = targetCompatibility = 1.8
+tasks.withType(AbstractCompile) each {
+	it.options.encoding = ext.defaultEncoding
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'http://repo.spring.io/release' }
+}
+
+dependencies {
+	compile "org.springframework.boot:spring-boot-starter-actuator"
+	compile "org.springframework.boot:spring-boot-starter-web"
+	compile "org.apache.tomcat.embed:tomcat-embed-jasper"
+	compile "javax.servlet:jstl"
+}
+
+
+// ==== AWS settings
+
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+beanstalk {
+	appName "05-beanstalk"
+	appDesc "gradle-aws-plugin demo application"
+
+	version {
+		label = "05-beanstalk-${versionDesc}"
+		description = "${artifactId} v${version}"
+		bucket = "elasticbeanstalk-${aws.region}-${aws.accountId}"
+		key = "eb-apps/${artifactId}/${artifactId}-${versionDesc}.zip"
+	}
+
+	configurationTemplates {
+		production {
+			optionSettings = file("src/main/config/production.json")
+			solutionStackName = "64bit Amazon Linux 2015.03 v1.4.0 running Docker 1.6.0"
+		}
+		development {
+			optionSettings = file("src/main/config/development.json")
+			solutionStackName = "64bit Amazon Linux 2015.03 v1.4.0 running Docker 1.6.0"
+		}
+	}
+
+	environment {
+		envName = "05-beanstalk-blue"
+		envDesc = "foobar demo application blue environemnt"
+		templateName = "development"
+		versionLabel = "05-beanstalk-${versionDesc}"
+	}
+}
+
+
+// ==== Other tasks
+
+task createDockerfile(type: Copy, dependsOn: jar) {
+	from "src/main/bundle/Dockerfile"
+	into "build/bundle"
+	expand(jarFilename: jar.archiveName, artifactId: project.artifactId)
+}
+
+task createBundleResources(type: Copy) {
+	from "src/main/bundle"
+	into "build/bundle"
+	exclude "src/main/bundle/Dockerfile"
+}
+
+task createBundle(type: Zip, dependsOn: [createDockerfile, createBundleResources, bootRepackage]) {
+	archiveName = jar.archiveName.substring(0, jar.archiveName.length() - 4) + ".zip"
+	from "build/bundle"
+	from jar.archivePath
+}
+
+task uploadBundle(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: createBundle) {
+	group "AWS"
+	description "Upload ${artifactId} application bundle file to S3."
+	
+	bucketName "elasticbeanstalk-${aws.region}-${aws.accountId}"
+	key "eb-apps/${artifactId}/${artifactId}-${versionDesc}.zip"
+	file project.createBundle.archivePath
+	overwrite project.version.endsWith("-SNAPSHOT")
+}
+
+awsEbCreateApplicationVersion.dependsOn uploadBundle
