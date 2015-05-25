@@ -11,8 +11,6 @@ import lombok.Setter;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
@@ -38,10 +36,9 @@ public class AwsBeanstalkPluginExtension {
 	
 	private AWSElasticBeanstalk initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(
-				AWSElasticBeanstalkClient.class,
-				this.region == null ? null : RegionUtils.getRegion(this.region),
-				profileName);
+		AWSElasticBeanstalkClient client = aws.createClient(AWSElasticBeanstalkClient.class, profileName);
+		client.setRegion(aws.getActiveRegion(region));
+		return client;
 	}
 
 	

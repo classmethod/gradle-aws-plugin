@@ -15,6 +15,7 @@
  */
 package jp.classmethod.aws.gradle.elasticbeanstalk;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 	private String defaultSolutionStackName = "64bit Amazon Linux 2013.09 running Tomcat 7 Java 7";
 
 	public AWSElasticBeanstalkCreateConfigurationTemplateTask(){
-		setDescription("Create/Migrate ElasticBeanstalk Configuration Templates."); 
+		setDescription("Create / Migrate ElasticBeanstalk Configuration Templates."); 
 		setGroup("AWS");
 	}
 	
@@ -65,38 +66,42 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 			String solutionStackName = config.getSolutionStackName() != null ? config.getSolutionStackName() : getDefaultSolutionStackName();
 			boolean deleteTemplateIfExists = config.isRecreate();
 
-			List<ConfigurationOptionSetting> optionSettings = loadConfigurationOptions(config.getOptionSettings());
-			List<ApplicationDescription> existingApps = eb.describeApplications(new DescribeApplicationsRequest()
-					.withApplicationNames(appName)).getApplications();
-			if (existingApps.isEmpty()) {
-				throw new IllegalArgumentException("App with name '"+appName+"' does not exist");
-			}
-
-			if (existingApps.get(0).getConfigurationTemplates().contains(templateName)) {
-				if (deleteTemplateIfExists) {
-					eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
-							.withApplicationName(appName)
-							.withTemplateName(templateName));
-					getLogger().info("configuration template "+templateName+" @ "+appName+" deleted");
+			try {
+				List<ConfigurationOptionSetting> optionSettings = loadConfigurationOptions(config.getOptionSettings());
+				List<ApplicationDescription> existingApps = eb.describeApplications(new DescribeApplicationsRequest()
+						.withApplicationNames(appName)).getApplications();
+				if (existingApps.isEmpty()) {
+					throw new IllegalArgumentException("App with name '"+appName+"' does not exist");
 				}
-				else {
-					eb.updateConfigurationTemplate(new UpdateConfigurationTemplateRequest()
-							.withApplicationName(appName)
-							.withTemplateName(templateName)
-							.withDescription(templateDesc)
-							.withOptionSettings(optionSettings));
-					getLogger().info("configuration template "+templateName+" @ "+appName+" updated");
-					return;
-				}
-			}
 
-			eb.createConfigurationTemplate(new CreateConfigurationTemplateRequest()
-					.withApplicationName(appName)
-					.withTemplateName(templateName)
-					.withDescription(templateDesc)
-					.withSolutionStackName(solutionStackName)
-					.withOptionSettings(optionSettings));
-			getLogger().info("configuration template "+templateName+" @ "+appName+" created");
+				if (existingApps.get(0).getConfigurationTemplates().contains(templateName)) {
+					if (deleteTemplateIfExists) {
+						eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
+								.withApplicationName(appName)
+								.withTemplateName(templateName));
+						getLogger().info("configuration template {} @ {} deleted", templateName, appName);
+					}
+					else {
+						eb.updateConfigurationTemplate(new UpdateConfigurationTemplateRequest()
+								.withApplicationName(appName)
+								.withTemplateName(templateName)
+								.withDescription(templateDesc)
+								.withOptionSettings(optionSettings));
+						getLogger().info("configuration template {} @ {} updated", templateName, appName);
+						return;
+					}
+				}
+
+				eb.createConfigurationTemplate(new CreateConfigurationTemplateRequest()
+						.withApplicationName(appName)
+						.withTemplateName(templateName)
+						.withDescription(templateDesc)
+						.withSolutionStackName(solutionStackName)
+						.withOptionSettings(optionSettings));
+				getLogger().info("configuration template {} @ {} created", templateName, appName);
+			} catch (IOException e) {
+				getLogger().error("IOException", e);
+			}
 		});
 	}
 

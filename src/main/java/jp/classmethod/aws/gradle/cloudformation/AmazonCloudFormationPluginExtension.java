@@ -11,7 +11,6 @@ import lombok.Setter;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
@@ -64,11 +63,9 @@ public class AmazonCloudFormationPluginExtension {
 
 	private AmazonCloudFormation initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		
-		return aws.createClient(
-				AmazonCloudFormationClient.class,
-				this.region == null ? null : RegionUtils.getRegion(this.region),
-				profileName);
+		AmazonCloudFormationClient client = aws.createClient(AmazonCloudFormationClient.class, profileName);
+		client.setRegion(aws.getActiveRegion(region));
+		return client;
 	}
 
 	public Stack getStack(String stackName) {

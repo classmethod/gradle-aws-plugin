@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.gradle.api.Project;
 
 import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 
@@ -34,9 +33,10 @@ public class AmazonS3PluginExtension {
 
 	private AmazonS3 initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(
-				AmazonS3Client.class,
-				this.region == null ? null : RegionUtils.getRegion(this.region),
-				profileName);
+		AmazonS3Client client = aws.createClient(AmazonS3Client.class, profileName);
+		if (region != null) {
+			client.setRegion(RegionUtils.getRegion(region));
+		}
+		return client;
 	}
 }

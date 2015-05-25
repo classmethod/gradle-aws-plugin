@@ -6,8 +6,6 @@ import lombok.Setter;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 
@@ -34,10 +32,9 @@ public class AmazonElasticLoadBalancingPluginExtension {
 
 	private AmazonElasticLoadBalancing initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(
-				AmazonElasticLoadBalancingClient.class,
-				this.region == null ? null : RegionUtils.getRegion(this.region),
-				profileName);
+		AmazonElasticLoadBalancingClient client = aws.createClient( AmazonElasticLoadBalancingClient.class, profileName);
+		client.setRegion(aws.getActiveRegion(region));
+		return client;
 	}
 	
 }

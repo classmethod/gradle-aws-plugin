@@ -53,8 +53,8 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 		});
 		
 		AmazonS3ProgressiveFileUploadTask awsUploadWar = project.getTasks()
-				.create("awsUploadWar", AmazonS3ProgressiveFileUploadTask.class, task ->{
-			WarPlugin war = project.getConvention().getPlugin(WarPlugin.class);
+				.create("awsEbUploadBundle", AmazonS3ProgressiveFileUploadTask.class, task ->{
+			WarPlugin war = project.getPlugins().findPlugin(WarPlugin.class);
 			if (war != null) {
 				task.dependsOn(war);
 			}
