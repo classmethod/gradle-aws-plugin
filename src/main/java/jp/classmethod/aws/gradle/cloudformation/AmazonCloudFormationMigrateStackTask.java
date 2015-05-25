@@ -45,7 +45,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	);
 	
 	public AmazonCloudFormationMigrateStackTask() {
-		setDescription("Create/Migrate cfn stack.");
+		setDescription("Create / Migrate cfn stack.");
 		setGroup("AWS");
 	}
 	
@@ -66,10 +66,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			DescribeStacksResult describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
 			Stack stack = describeStackResult.getStacks().get(0);
 			if (stack == null) {
-				getLogger().info("stack "+stackName+" not found");
+				getLogger().info("stack {} not found", stackName);
 				createStack(cfn);
 			} else if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
-				getLogger().warn("deleted stack "+stackName+" already exists");
+				getLogger().warn("deleted stack {} already exists", stackName);
 				deleteStack(cfn);
 				createStack(cfn);
 			} else if (stableStatuses.contains(stack.getStackStatus()) == false) {
@@ -79,7 +79,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			}
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
-				getLogger().warn("stack "+stackName+" not found");
+				getLogger().warn("stack {} not found", stackName);
 				createStack(cfn);
 			} else if (e.getMessage().contains("No updates are to be performed.")) {
 				// ignore
@@ -95,7 +95,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		
-		getLogger().info("update stack: " + stackName);
+		getLogger().info("update stack: {}", stackName);
 		UpdateStackRequest req = new UpdateStackRequest()
 				.withStackName(stackName)
 				.withTemplateURL(cfnTemplateUrl)
@@ -104,16 +104,16 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
 		UpdateStackResult updateStackResult = cfn.updateStack(req);
-		getLogger().info("update requested: " + updateStackResult.getStackId());
+		getLogger().info("update requested: {}", updateStackResult.getStackId());
 	}
 	
 	private void deleteStack(AmazonCloudFormation cfn) throws InterruptedException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 
-		getLogger().info("delete stack: " + stackName);
+		getLogger().info("delete stack: {}", stackName);
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName));
-		getLogger().info("delete requested: " + stackName);
+		getLogger().info("delete requested: {}", stackName);
 		Thread.sleep(3000);
 	}
 	
@@ -123,7 +123,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 
-		getLogger().info("create stack: " + stackName);
+		getLogger().info("create stack: {}", stackName);
 		
 		CreateStackRequest req = new CreateStackRequest()
 				.withStackName(stackName)
@@ -133,6 +133,6 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
 		CreateStackResult createStackResult = cfn.createStack(req);
-		getLogger().info("create requested: " + createStackResult.getStackId());
+		getLogger().info("create requested: {}", createStackResult.getStackId());
 	}
 }
