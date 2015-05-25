@@ -1,0 +1,291 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Gradle AWS Plugin sample environment template",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "EnvironmentType" : {
+      "Default" : "development",
+      "Description" : "The environment type - production, development or local",
+      "AllowedValues": [ "production", "development", "local" ],
+      "Type" : "String",
+      "ConstraintDescription" : "must specify production, development or local."
+    },
+    "AppVersionLabel" : {
+      "Description" : "The version label string of application version.",
+      "Type" : "String"
+    }
+  },
+  "Mappings": {
+    "StackConfig" : {
+      "VPC"               : { "CIDR" : "10.123.0.0/16" },
+      "FrontendSubnet1"   : { "CIDR" : "10.123.0.0/20" },
+      "FrontendSubnet2"   : { "CIDR" : "10.123.16.0/20" },
+      "AppSubnet1"        : { "CIDR" : "10.123.64.0/20" },
+      "AppSubnet2"        : { "CIDR" : "10.123.80.0/20" },
+      "DatabaseSubnet1"   : { "CIDR" : "10.123.128.0/20" },
+      "DatabaseSubnet2"   : { "CIDR" : "10.123.144.0/20" },
+      "BastionServer"     : { "InstanceType" : "t2.micro" },
+      "ApplicationServer" : { "InstanceType" : "t2.micro" }
+    }
+  },
+  "Conditions" : {
+    "IsProduction"             : { "Fn::Equals" : [ { "Ref" : "EnvironmentType" }, "production" ] },
+    "IsProductionOrDevelopment": { "Fn::Or": [
+      { "Fn::Equals" : [ { "Ref" : "EnvironmentType" }, "production" ] },
+      { "Fn::Equals" : [ { "Ref" : "EnvironmentType" }, "development" ] }
+    ]}
+  },
+  "Resources": {
+    "PowerUserRole" : {
+      "Type" : "AWS::IAM::Role",
+      "Properties" : {
+        "AssumeRolePolicyDocument" : {
+          "Statement": [ {
+            "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
+        "Path" : "/",
+        "Policies" :[ {
+          "PolicyName" : "PowerUserPolicy",
+          "PolicyDocument" : {
+            "Statement": [
+              {
+                "Sid": "PowerUserStmt",
+                "Effect": "Allow",
+                "NotAction": [
+                  "iam:*"
+                ],
+                "Resource": [
+                  "*"
+                ]
+              }
+            ]
+          }
+        }]
+      }
+    },
+    "PowerUserProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path": "/",
+        "Roles" : [ { "Ref" : "PowerUserRole" } ]
+      }
+    },
+
+    "DeveloperNotificationTopic" : {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "DisplayName": "app-developers"
+      }
+    },
+
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "VPC", "CIDR" ]},
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "InstanceTenancy" : "default"
+      }
+    },
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway"
+    },
+    "AttachGateway" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "InternetGatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PublicRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "AttachGateway",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+    "PrivateRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+    "PublicRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "FrontendSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref": "VPC" },
+        "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "FrontendSubnet1", "CIDR" ]}
+      }
+    },
+    "FrontendSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref": "VPC" },
+        "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "FrontendSubnet2", "CIDR" ]}
+      }
+    },
+    "AppSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "AppSubnet1", "CIDR" ]},
+        "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]}
+      }
+    },
+    "AppSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "AppSubnet2", "CIDR" ]},
+        "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]}
+      }
+    },
+    "DatabaseSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "DatabaseSubnet1", "CIDR" ]},
+        "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]}
+      }
+    },
+    "DatabaseSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "DatabaseSubnet2", "CIDR" ]},
+        "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]}
+      }
+    },
+
+    "FrontendSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "FrontendSubnet1" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+    "FrontendSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "FrontendSubnet2" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+    "AppSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "AppSubnet1" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+    "AppSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "AppSubnet2" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+    "DatabaseSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "DatabaseSubnet1" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+    "DatabaseSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "DatabaseSubnet2" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "Application" : {
+      "Type" : "AWS::ElasticBeanstalk::Application",
+      "Condition" : "IsProductionOrDevelopment",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "AWS::StackName" },
+        "Description" : { "Ref" : "AWS::StackName" }
+      }
+    },
+    "AppVersion" : {
+      "Type" : "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Condition" : "IsProductionOrDevelopment",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "Application" },
+        "Description" : { "Ref" : "AppVersionLabel" },
+        "SourceBundle" : {
+          "S3Bucket" : { "Fn::Join" : [ "-", [ "elasticbeanstalk", { "Ref": "AWS::Region" }, { "Ref" : "AWS::AccountId" } ]]},
+          "S3Key" : { "Fn::Join" : [ "", [ "eb-apps/06-cloudformation/06-cloudformation-", { "Ref" : "AppVersionLabel" }, ".zip" ]]}
+        }
+      }
+    },
+    "AppConfig" : {
+      "Type" : "AWS::ElasticBeanstalk::ConfigurationTemplate",
+      "Condition" : "IsProductionOrDevelopment",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "Application" },
+        "Description" : "configuration template",
+        "SolutionStackName" : "64bit Amazon Linux 2015.03 v1.4.0 running Docker 1.6.0",
+        "OptionSettings" : [
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "VPCId", "Value" : { "Ref" : "VPC" } },
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "Subnets", "Value" : { "Fn::Join" : [ ",", [ { "Ref" : "AppSubnet1" }, { "Ref" : "AppSubnet2" } ]]}},
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "AssociatePublicIpAddress", "Value" : "true" },
+          
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "EC2KeyName", "Value" : { "Ref" : "KeyName" }},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "IamInstanceProfile", "Value" : { "Ref" : "PowerUserProfile" }},
+          
+          { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/health" },
+          { "Namespace" : "aws:elasticbeanstalk:hostmanager", "OptionName" : "LogPublicationControl", "Value" : "true" }
+        ]
+      }
+    },
+    "AppEnvironmentBlue" : {
+      "Type" : "AWS::ElasticBeanstalk::Environment",
+      "Condition" : "IsProductionOrDevelopment",
+      "DependsOn" : "AttachGateway",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "Application" },
+        "Description" : "blue environment",
+        "EnvironmentName" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "blue" ] ] },
+        "Tier" : { "Name" : "WebServer", "Type" : "Standard", "Version" : "1.0" },
+        "TemplateName" : { "Ref" : "AppConfig" },
+        "VersionLabel" : { "Ref" : "AppVersion" },
+        "OptionSettings" : [
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "InstanceType", "Value" : { "Fn::FindInMap" : [ "StackConfig", "ApplicationServer", "InstanceType" ]} },
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "RootVolumeType", "Value" : "gp2" },
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "RootVolumeSize", "Value" : "10" },
+          
+          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "1" },
+          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MaxSize", "Value" : "4" },
+          
+          { "Namespace" : "aws:autoscaling:updatepolicy:rollingupdate", "OptionName" : "RollingUpdateEnabled", "Value" : "true" },
+          { "Namespace" : "aws:autoscaling:updatepolicy:rollingupdate", "OptionName" : "RollingUpdateType", "Value" : "Health" },
+          
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "CFN_STACK_NAME",  "Value" : { "Ref" : "AWS::StackName" }},
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "DEV_TOPIC_ARN",  "Value" : { "Ref" : "DeveloperNotificationTopic" }}
+        ]
+      }
+    }
+  }
+}
