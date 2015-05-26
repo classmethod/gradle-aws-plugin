@@ -65,17 +65,14 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		try {
 			DescribeStacksResult describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
 			Stack stack = describeStackResult.getStacks().get(0);
-			if (stack == null) {
-				getLogger().info("stack {} not found", stackName);
-				createStack(cfn);
-			} else if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
+			if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
 				getLogger().warn("deleted stack {} already exists", stackName);
 				deleteStack(cfn);
 				createStack(cfn);
-			} else if (stableStatuses.contains(stack.getStackStatus()) == false) {
-				throw new GradleException("invalid status for update: " + stack.getStackStatus());
-			} else {
+			} else if (stableStatuses.contains(stack.getStackStatus())) {
 				updateStack(cfn);
+			} else {
+				throw new GradleException("invalid status for update: " + stack.getStackStatus());
 			}
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
