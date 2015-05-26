@@ -37,7 +37,7 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 	public String prefix = "";
 	
 	public AmazonS3DeleteAllFilesTask() {
-		setDescription("Delete all files on S3 bucket.");
+		setDescription("Delete all files in the S3 bucket.");
 		setGroup("AWS");
 	}
 	
@@ -56,12 +56,12 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 			prefix = prefix.substring(1);
 		}
 		
-		getLogger().info("deleting... "+bucketName+"/"+prefix);
+		getLogger().info("Delete s3://{}/{}*", bucketName, prefix);
 		
 		List<S3ObjectSummary> objectSummaries;
 		while ((objectSummaries = s3.listObjects(bucketName, prefix).getObjectSummaries()).isEmpty() == false) {
 			objectSummaries.forEach(os -> {
-				getLogger().info("  deleting... s3://"+bucketName+"/"+os.getKey());
+				getLogger().info("  Deleting... s3://{}/{}", bucketName, os.getKey());
 				s3.deleteObject(bucketName, os.getKey());
 			});
 		}
