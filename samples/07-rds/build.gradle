@@ -22,10 +22,8 @@ aws {
 	region "ap-northeast-1"
 }
 
-if (hasProperty('instanceId') == false) { ext.instanceId = 'i-12345678' }
-
 task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {
-	dbInstanceIdentifier = "hogex"
+	dbInstanceIdentifier = "foobar"
 	allocatedStorage = 5
 	dbInstanceClass = "db.t2.micro"
 	engine = "MySQL"
@@ -38,16 +36,16 @@ task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {
 }
 
 task rebootDBInstance(type: AmazonRDSRebootDBInstanceTask) {
-	dbInstanceIdentifier = "hogex"
+	dbInstanceIdentifier = "foobar"
 }
 
 task deleteDBInstance(type: AmazonRDSDeleteDBInstanceTask) {
-	dbInstanceIdentifier = "hogex"
+	dbInstanceIdentifier = "foobar"
 	skipFinalSnapshot = true
 }
 
 task waitDBInstanceStatus(type: AmazonRDSWaitInstanceStatusTask) {
-	dbInstanceIdentifier = "hogex"
+	dbInstanceIdentifier = "foobar"
 	successStatuses = [ "available", "terminated" ]
 	waitStatuses = [
 		"backing-up",

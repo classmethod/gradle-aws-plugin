@@ -7,29 +7,52 @@ Current Features / Supported AWS Products
 -----------------------------------------
 
 * S3
-  * Create or delete buckets
-  * Upload or delete objects
+  * Create bucket
+  * Delete bucket
+  * Upload object(s)
+  * Delete object(s)
   * File sync
 * EC2
+  * Run instance
   * Start instance
   * Stop instance
-  * Authorize security group permissions
+  * Terminate instance
+  * Import key
+  * Authorize security group ingress permissions
+  * Authorize security group egress permissions
+  * Revoke security group ingress permissions
+  * Revoke security group egress permissions
   * Wait instance for specific status
-* ELB
-  * (TBD)
+* RDS
+  * Create DB instance
+  * Delete DB instance
+  * Modify DB instance
+  * Migrate (create or modify) DB instance
+  * Reboot DB instance
+  * Wait DB instance for specific status
 * Route53
-  * Create or delete hosted zones
-  * Change record sets
-* CloudFormation
-  * Migrate (create or update) stacks
-  * Delete stacks
-  * Wait stack for specific status
+  * Create hosted zone
+  * Delete hosted zone
+  * Change record set
 * Elastic Beanstalk
   * Create or delete applications
   * Create or terminate environments
   * Create or delete configuration templates
   * Create or delete application versions
   * Wait environment for specific status
+* CloudFormation
+  * Migrate (create or update) stack
+  * Delete stack
+  * Wait stack for specific status
+* Lambda
+  * Create function
+  * Update function code
+  * Update function configuration
+  * Migrate (create or update) function
+  * Invoke function
+  * Delete function
+* ELB
+  * (TBD)
 
 Requirements
 ------------
@@ -64,7 +87,21 @@ aws {
 These credentials are used to make API accesses by default.
 
 
-### Implements tasks to start and stop bastion instance
+### S3 files tasks
+
+```
+apply plugin: 'aws-s3'
+
+task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
+  bucketName 'foobar.example.com'
+  source file('path/to/objects')
+}
+```
+
+Look [S3 example 1](samples/01-s3-upload-simple) and [S3 example 2](samples/02-s3-sync-contents) for more information.
+
+
+### EC2 instance tasks
 
 ```
 apply plugin: 'aws-ec2'
@@ -84,38 +121,47 @@ task startBastion(type: jp.classmethod.aws.gradle.ec2.AmazonEC2StartInstanceTask
 }
 ```
 
-### Implements sync S3 files task
+Look [EC2 example](samples/03-ec2) for more information.
+
+
+### RDS DB instance tasks
 
 ```
-apply plugin: 'aws-s3'
+apply plugin: "aws-rds"
 
-task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
-  bucketName 'foobar.example.com'
-  source file('path/to/objects')
+// You can overwrite default credentials and region settings like this:
+// rds {
+//   profileName 'another-credentials-profile-name' // optional
+//   region = 'us-east-1'
+// }
+
+task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {
+	dbInstanceIdentifier = "foobar"
+	allocatedStorage = 5
+	dbInstanceClass = "db.t2.micro"
+	engine = "MySQL"
+	masterUsername = "root"
+	masterUserPassword = "passW0rd"
+	vpcSecurityGroupIds = [ "sg-d3958fbf" ]
+	dbSubnetGroupName = "default"
+	multiAZ = false
+	publiclyAccessible = true
+}
+
+task rebootDBInstance(type: AmazonRDSRebootDBInstanceTask) {
+	dbInstanceIdentifier = "foobar"
+}
+
+task deleteDBInstance(type: AmazonRDSDeleteDBInstanceTask) {
+	dbInstanceIdentifier = "foobar"
+	skipFinalSnapshot = true
 }
 ```
 
-### Implements tasks to migrate and delete stack
+Look [RDS example](samples/07-rds) for more information.
 
-```
-apply plugin: 'aws-cloudformation'
 
-cloudFormation {
-  stackName 'foobar-stack'
-  stackParams([
-    Foo: 'bar',
-    Baz: 'qux'
-  ])
-  capabilityIam true
-  templateFile project.file("foobar.template")
-  templateBucket 'example-bucket'
-  templateKeyPrefix 'foobar/'
-}
-
-// awsCfnMigrateStack and awsCfnDeleteStack task (and so on) is declared.
-```
-
-### Implemets create / delete hosted zone task
+### Route 53 hosted zone tasks
 
 ```
 apply plugin: 'aws-route53'
@@ -130,7 +176,10 @@ task deleteHostedZone(type: jp.classmethod.aws.gradle.route53.DeleteHostedZoneTa
 }
 ```
 
-### Implements tasks to manage Elastic Beanstalk environemnt
+Look [Route 53 example](samples/04-route53) for more information.
+
+
+### Elastic Beanstalk environemnt tasks
 
 ```
 apply plugin: 'aws-beanstalk'
@@ -169,6 +218,74 @@ beanstalk {
 
 // task awsEbMigrateEnvironment, awsEbDeleteApplication and so on are declared
 ```
+
+Look [Elastic Beanstalk example](samples/05-beanstalk) for more information.
+
+
+### CloudFormation stack tasks
+
+```
+apply plugin: 'aws-cloudformation'
+
+cloudFormation {
+  stackName 'foobar-stack'
+  stackParams([
+    Foo: 'bar',
+    Baz: 'qux'
+  ])
+  capabilityIam true
+  templateFile project.file("foobar.template")
+  templateBucket 'example-bucket'
+  templateKeyPrefix 'foobar/'
+}
+
+// awsCfnMigrateStack and awsCfnDeleteStack task (and so on) is declared.
+```
+
+Look [CloudFormation example](samples/06-cloudformation) for more information.
+
+
+### Lambda function tasks
+
+```
+apply plugin:'base'
+apply plugin: "aws-lambda"
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+lambda {
+	region "us-east-1"
+}
+
+task zip(type: Zip) {
+	from "function/"
+	destinationDir file("build")
+}
+
+task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+	functionName = "foobar"
+	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+	zipFile = zip.archivePath
+	handler = "DecodeBase64.handler"
+}
+
+task invokeFunction(type: AWSLambdaInvokeTask) {
+	functionName = "foobar"
+	invocationType = InvocationType.RequestResponse
+	payload = file("sample-input/input.txt")
+	doLast {
+		println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
+	}
+}
+
+task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
+	functionName = "foobar"
+}
+```
+
+Look [Lambda example](samples/08-lambda) for more information.
 
 
 License

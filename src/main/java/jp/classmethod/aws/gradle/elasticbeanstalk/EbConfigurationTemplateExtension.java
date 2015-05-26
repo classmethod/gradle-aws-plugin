@@ -4,7 +4,6 @@ import groovy.lang.Closure;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,12 +11,9 @@ import lombok.Setter;
 import org.gradle.api.Named;
 
 import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 public class EbConfigurationTemplateExtension implements Named {
-	
-	static String readFile(File file) throws IOException {
-		return new String(Files.readAllBytes(file.toPath()), Charsets.UTF_8);
-	}
 	
 	
 	@Getter
@@ -51,7 +47,7 @@ public class EbConfigurationTemplateExtension implements Named {
 		}
 		if (optionSettings instanceof File) {
 			File file = (File) optionSettings;
-			return readFile(file);
+			return Files.toString(file, Charsets.UTF_8);
 		}
 		return optionSettings.toString();
 	}
