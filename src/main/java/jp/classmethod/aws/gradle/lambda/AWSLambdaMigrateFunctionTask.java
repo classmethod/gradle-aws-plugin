@@ -57,7 +57,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	private String handler;
 	
 	@Getter @Setter
-	private String description;
+	private String functionDescription;
 	
 	@Getter @Setter
 	private Integer timeout;
@@ -110,7 +110,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 				.withRuntime(getRuntime())
 				.withRole(getRole())
 				.withHandler(getHandler())
-				.withDescription(getDescription())
+				.withDescription(getFunctionDescription())
 				.withTimeout(getTimeout())
 				.withMemorySize(getMemorySize())
 				.withCode(new FunctionCode().withZipFile(buffer));
@@ -142,7 +142,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			.withFunctionName(getFunctionName())
 			.withRole(getRole())
 			.withHandler(getHandler())
-			.withDescription(getDescription())
+			.withDescription(getFunctionDescription())
 			.withTimeout(getTimeout())
 			.withMemorySize(getMemorySize());
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);

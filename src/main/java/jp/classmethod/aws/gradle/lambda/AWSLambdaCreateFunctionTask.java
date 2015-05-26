@@ -50,7 +50,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	private String handler;
 	
 	@Getter @Setter
-	private String description;
+	private String functionDescription;
 	
 	@Getter @Setter
 	private Integer timeout;
@@ -89,7 +89,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 				.withRuntime(getRuntime())
 				.withRole(getRole())
 				.withHandler(getHandler())
-				.withDescription(getDescription())
+				.withDescription(getFunctionDescription())
 				.withTimeout(getTimeout())
 				.withMemorySize(getMemorySize())
 				.withCode(new FunctionCode().withZipFile(buffer));

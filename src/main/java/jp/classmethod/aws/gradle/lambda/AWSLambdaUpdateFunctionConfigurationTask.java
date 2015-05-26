@@ -41,7 +41,7 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 	private String handler;
 	
 	@Getter @Setter
-	private String description;
+	private String functionDescription;
 	
 	@Getter @Setter
 	private Integer timeout;
@@ -72,7 +72,7 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 			.withFunctionName(getFunctionName())
 			.withRole(getRole())
 			.withHandler(getHandler())
-			.withDescription(getDescription())
+			.withDescription(getFunctionDescription())
 			.withTimeout(getTimeout())
 			.withMemorySize(getMemorySize());
 		updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
