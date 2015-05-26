@@ -1,0 +1,62 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import jp.classmethod.aws.gradle.rds.AmazonRDSDeleteDBInstanceTask;
+import jp.classmethod.aws.gradle.rds.AmazonRDSMigrateDBInstanceTask;
+import jp.classmethod.aws.gradle.rds.AmazonRDSRebootDBInstanceTask;
+import jp.classmethod.aws.gradle.rds.AmazonRDSWaitInstanceStatusTask;
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "http://public-maven.classmethod.info/release" }
+		maven { url "http://public-maven.classmethod.info/snapshot" }
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "aws-rds"
+aws {
+	profileName "default"
+	region "ap-northeast-1"
+}
+
+if (hasProperty('instanceId') == false) { ext.instanceId = 'i-12345678' }
+
+task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {
+	dbInstanceIdentifier = "hogex"
+	allocatedStorage = 5
+	dbInstanceClass = "db.t2.micro"
+	engine = "MySQL"
+	masterUsername = "root"
+	masterUserPassword = "passW0rd"
+	vpcSecurityGroupIds = [ "sg-d3958fbf" ]
+	dbSubnetGroupName = "default"
+	multiAZ = false
+	publiclyAccessible = true
+}
+
+task rebootDBInstance(type: AmazonRDSRebootDBInstanceTask) {
+	dbInstanceIdentifier = "hogex"
+}
+
+task deleteDBInstance(type: AmazonRDSDeleteDBInstanceTask) {
+	dbInstanceIdentifier = "hogex"
+	skipFinalSnapshot = true
+}
+
+task waitDBInstanceStatus(type: AmazonRDSWaitInstanceStatusTask) {
+	dbInstanceIdentifier = "hogex"
+	successStatuses = [ "available", "terminated" ]
+	waitStatuses = [
+		"backing-up",
+		"creating",
+		"deleting",
+		"modifying",
+		"rebooting",
+		"renaming",
+		"resetting-master-credentials"
+	]
+	mustRunAfter migrateDBInstance, rebootDBInstance, deleteDBInstance
+}
