@@ -24,7 +24,7 @@ public class AmazonElasticLoadBalancingPluginExtension {
 	private String region;
 		
 	@Getter(lazy = true)
-	private final AmazonElasticLoadBalancing elb = initClient();
+	private final AmazonElasticLoadBalancing client = initClient();
 
 	public AmazonElasticLoadBalancingPluginExtension(Project project) {
 		this.project = project;
