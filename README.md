@@ -51,6 +51,9 @@ Current Features / Supported AWS Products
   * Migrate (create or update) function
   * Invoke function
   * Delete function
+* IAM
+  * Create role
+  * Attach role policy
 * ELB
   * (TBD)
 
