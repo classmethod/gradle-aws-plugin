@@ -132,11 +132,19 @@ public class AmazonCloudFormationPluginExtension {
 							.withStackName(stackName));
 				return describeStackResourcesResult.getStackResources();
 			} catch (AmazonClientException e) {
-				logger.error("describeStackResources failed", e);
+				logger.error("describeStackResources failed: {}", e.getMessage());
 			}
 		}
 		logger.info("offline mode: return empty resources");
 		return Collections.emptyList();
+	}
+	
+	public String getStackParameterValue(String key) {
+		return findStackParameterValue(getStackParameters(), key);
+	}
+	
+	public String getStackParameterValue(String stackName, String key) {
+		return findStackParameterValue(getStackParameters(stackName), key);
 	}
 	
 	public String findStackParameterValue(List<Parameter> cfnStackParameters, String key) {
@@ -144,17 +152,25 @@ public class AmazonCloudFormationPluginExtension {
 				.filter(p -> p.getParameterKey().equals(key))
 				.findAny();
 		if (param.isPresent() == false) {
-			logger.warn("WARN: cfn stack parameter "+key+" is not found");
+			logger.warn("WARN: cfn stack parameter {} is not found", key);
 			return "***unknown***";
 		}
 		return param.get().getParameterValue();
 	}
 
+	public String getPhysicalResourceId(String logicalResourceId) {
+		return findPhysicalResourceId(getStackResources(), logicalResourceId);
+	}
+
+	public String getPhysicalResourceId(String stackName, String logicalResourceId) {
+		return findPhysicalResourceId(getStackResources(stackName), logicalResourceId);
+	}
+	
 	public String findPhysicalResourceId(List<StackResource> cfnPhysicalResources, String logicalResourceId) {
 		Optional<StackResource> cfnPhysicalResource = cfnPhysicalResources.stream()
 				.filter(r -> r.getLogicalResourceId().equals(logicalResourceId)).findAny();
 		if (cfnPhysicalResource.isPresent() == false) {
-			logger.warn("WARN: cfn physical resource "+logicalResourceId+" is not found");
+			logger.warn("WARN: cfn physical resource {} is not found", logicalResourceId);
 			return "***unknown***";
 		}
 		return cfnPhysicalResource.get().getPhysicalResourceId();
