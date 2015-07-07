@@ -31,15 +31,18 @@ import com.amazonaws.services.ec2.model.IpPermission;
 
 abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTask {
 	
-	protected Collection<IpPermission> parse(Object elements) {
-		if (elements instanceof IpPermission) {
-			return Collections.singleton((IpPermission) elements);
+	protected Collection<IpPermission> parse(Object e) {
+		if (e instanceof IpPermission) {
+			return Collections.singleton((IpPermission) e);
 		}
-		if (elements instanceof Collection == false) {
-			throw new RuntimeException("unsupported type: " + elements.getClass());
+		Collection<?> elements;
+		if (e instanceof Collection) {
+			elements = (Collection<?>) e;
+		} else {
+			elements =  Collections.singleton(e);
 		}
 		
-		return ((Collection<?>) elements).stream().map(it -> {
+		return elements.stream().map(it -> {
 			if (it instanceof IpPermission) {
 				return (IpPermission) it;
 			} else if (it instanceof String || it instanceof GString) {
