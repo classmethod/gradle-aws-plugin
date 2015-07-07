@@ -36,6 +36,7 @@ import com.amazonaws.services.lambda.model.CreateFunctionResult;
 import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.lambda.model.GetFunctionRequest;
 import com.amazonaws.services.lambda.model.GetFunctionResult;
+import com.amazonaws.services.lambda.model.ResourceNotFoundException;
 import com.amazonaws.services.lambda.model.Runtime;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
@@ -90,13 +91,9 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		try {
 			GetFunctionResult getFunctionResult = lambda.getFunction(new GetFunctionRequest().withFunctionName(functionName));
 			updateStack(lambda, getFunctionResult);
-		} catch (AmazonServiceException e) {
-			if (e.getMessage().contains("does not exist")) {
-				getLogger().warn("function {} not found", functionName);
-				createFunction(lambda);
-			} else {
-				throw e;
-			}
+		} catch (ResourceNotFoundException e) {
+			getLogger().warn(e.getMessage());
+			createFunction(lambda);
 		}
 	}
 
