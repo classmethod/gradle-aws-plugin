@@ -19,7 +19,7 @@ defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
-version = '0.17'
+version = '0.18'
 
 sourceCompatibility = targetCompatibility = 1.8
 
@@ -52,7 +52,7 @@ configurations {
 // ======== library versions ========
 ext {
 	lombokVersion = '1.16.2'
-	awsJavaSdkVersion = '1.9.40'
+	awsJavaSdkVersion = '1.10.2+'
 	groovyVersion = '2.3.7'
 	junitVersion = '4.+'
 	hamcrestVersion = '1.3'
