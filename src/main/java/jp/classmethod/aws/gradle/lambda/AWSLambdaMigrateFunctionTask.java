@@ -93,6 +93,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			updateStack(lambda, getFunctionResult);
 		} catch (ResourceNotFoundException e) {
 			getLogger().warn(e.getMessage());
+			getLogger().warn("Creating function... {}", functionName);
 			createFunction(lambda);
 		}
 	}
