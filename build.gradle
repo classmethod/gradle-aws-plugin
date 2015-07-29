@@ -3,23 +3,25 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		jcenter()
 	}
 	dependencies {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'groovy'
+apply plugin: 'license'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'license'
 
 defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
-version = '0.18.1'
+version = '0.19'
 
 sourceCompatibility = targetCompatibility = 1.8
 
@@ -38,6 +40,10 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
 	from javadoc.destinationDir
+}
+
+javadoc {
+	failOnError = false
 }
 
 artifacts {
@@ -68,6 +74,7 @@ dependencies {
 	compile gradleApi()
 	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 	compile "com.google.guava:guava:$guavaVersion"
+	compile "commons-io:commons-io:1.4"
 	compile "org.projectlombok:lombok:$lombokVersion"
 	
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"
@@ -107,7 +114,7 @@ apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.4'
+	gradleVersion = '2.5'
 }
 
 // ======== License =======
@@ -115,6 +122,9 @@ license {
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 	header file('copyright/HEADER')
 	strictCheck true
+	mapping {
+		java = 'SLASHSTAR_STYLE'
+	}
 }
 
 // ======== IDE ========

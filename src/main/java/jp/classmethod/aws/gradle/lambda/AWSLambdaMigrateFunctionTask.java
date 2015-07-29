@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Classmethod, Inc.
+ * Copyright 2013-2015 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			updateStack(lambda, getFunctionResult);
 		} catch (ResourceNotFoundException e) {
 			getLogger().warn(e.getMessage());
+			getLogger().warn("Creating function... {}", functionName);
 			createFunction(lambda);
 		}
 	}
