@@ -3,17 +3,19 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		jcenter()
 	}
 	dependencies {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'groovy'
+apply plugin: 'license'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'license'
 
 defaultTasks 'clean', 'build'
 
@@ -38,6 +40,10 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
 	from javadoc.destinationDir
+}
+
+javadoc {
+	failOnError = false
 }
 
 artifacts {
@@ -108,7 +114,7 @@ apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.4'
+	gradleVersion = '2.5'
 }
 
 // ======== License =======
@@ -116,6 +122,9 @@ license {
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 	header file('copyright/HEADER')
 	strictCheck true
+	mapping {
+		java = 'SLASHSTAR_STYLE'
+	}
 }
 
 // ======== IDE ========
