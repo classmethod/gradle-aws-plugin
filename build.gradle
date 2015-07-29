@@ -68,6 +68,7 @@ dependencies {
 	compile gradleApi()
 	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 	compile "com.google.guava:guava:$guavaVersion"
+	compile "commons-io:commons-io:1.4"
 	compile "org.projectlombok:lombok:$lombokVersion"
 	
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"
