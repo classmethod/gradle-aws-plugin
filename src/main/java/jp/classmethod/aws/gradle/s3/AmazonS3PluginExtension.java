@@ -21,6 +21,7 @@ import lombok.Setter;
 
 import org.gradle.api.Project;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -39,6 +40,9 @@ public class AmazonS3PluginExtension {
 	@Getter @Setter
 	private String region;
 		
+	@Getter @Setter
+	private Integer maxErrorRetry = -1;
+
 	@Getter(lazy = true)
 	private final AmazonS3 client = initClient();
 
@@ -48,7 +52,11 @@ public class AmazonS3PluginExtension {
 
 	private AmazonS3 initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		AmazonS3Client client = aws.createClient(AmazonS3Client.class, profileName);
+
+		ClientConfiguration clientConfiguration = new ClientConfiguration();
+		clientConfiguration.setMaxErrorRetry(maxErrorRetry);
+
+		AmazonS3Client client = aws.createClient(AmazonS3Client.class, profileName, clientConfiguration);
 		if (region != null) {
 			client.setRegion(RegionUtils.getRegion(region));
 		}

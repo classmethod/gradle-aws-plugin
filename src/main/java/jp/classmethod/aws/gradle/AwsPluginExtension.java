@@ -81,6 +81,10 @@ public class AwsPluginExtension {
 	}
 	
 	public <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass, String profileName) {
+		return createClient(serviceClass, profileName, null);
+	}
+
+	public <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass, String profileName, ClientConfiguration config) {
 		if (profileName == null) {
 			if (this.profileName == null) {
 				throw new IllegalStateException("default profileName is null");
@@ -89,7 +93,7 @@ public class AwsPluginExtension {
 		}
 		
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
-		return createClient(serviceClass, credentialsProvider, null);
+		return createClient(serviceClass, credentialsProvider, config);
 	}
 	
 	private static <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass,

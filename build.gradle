@@ -4,13 +4,18 @@ buildscript {
 	repositories {
 		mavenCentral()
 		jcenter()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 	dependencies {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
 		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+		classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
 	}
 }
 
+apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'license'
@@ -21,7 +26,7 @@ defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
-version = '0.20-SNAPSHOT'
+version = '0.20'
 
 sourceCompatibility = targetCompatibility = 1.8
 

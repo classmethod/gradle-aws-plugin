@@ -72,10 +72,11 @@ Add like this to your build.gradle :
 buildscript {
   repositories {
     mavenCentral()
-    maven { url 'http://public-maven.classmethod.info/release' }
+    maven { url "http://dl.bintray.com/classmethod/maven" }
+
   }
   dependencies {
-    classpath 'jp.classmethod.aws:gradle-aws-plugin:0.14'
+    classpath 'jp.classmethod.aws:gradle-aws-plugin:0.19'
   }
 }
 

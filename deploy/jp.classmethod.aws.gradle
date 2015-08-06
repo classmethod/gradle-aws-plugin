@@ -69,3 +69,22 @@ bintray {
 		labels = ['AWS', 'Gradle']
 	}
 }
+
+pluginBundle {
+	website = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+	vcsUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+	description = 'Gradle plugin to manage Amazon Web Services'
+	tags = ['AWS']
+
+	plugins {
+		awsPlugin {
+			id = 'jp.classmethod.aws'
+			displayName = 'Gradle AWS plugin'
+		}
+	}
+	mavenCoordinates {
+		groupId = project.group
+		artifactId = project.artifactId
+		version = project.version
+	}
+}
