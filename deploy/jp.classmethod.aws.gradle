@@ -81,6 +81,42 @@ pluginBundle {
 			id = 'jp.classmethod.aws'
 			displayName = 'Gradle AWS plugin'
 		}
+		awsBeanstalkPlugin {
+			id = 'jp.classmethod.aws.beanstalk'
+			displayName = 'Gradle AWS Elastic Beanstalk plugin'
+		}
+		awsCloudFormationPlugin {
+			id = 'jp.classmethod.aws.cloudformation'
+			displayName = 'Gradle AWS CloudFormation plugin'
+		}
+		awsEC2Plugin {
+			id = 'jp.classmethod.aws.ec2'
+			displayName = 'Gradle Amazon EC2 plugin'
+		}
+		awsELBPlugin {
+			id = 'jp.classmethod.aws.elb'
+			displayName = 'Gradle Amazon Elastic Load Balancing plugin'
+		}
+		awsIAMPlugin {
+			id = 'jp.classmethod.aws.iam'
+			displayName = 'Gradle AWS Identity and Access Management plugin'
+		}
+		awsLambdaPlugin {
+			id = 'jp.classmethod.aws.lambda'
+			displayName = 'Gradle AWS Lambda plugin'
+		}
+		awsRDSPlugin {
+			id = 'jp.classmethod.aws.rds'
+			displayName = 'Gradle Amazon RDS plugin'
+		}
+		awsRoute53Plugin {
+			id = 'jp.classmethod.aws.route53'
+			displayName = 'Gradle Amazon Route53 plugin'
+		}
+		awsS3Plugin {
+			id = 'jp.classmethod.aws.s3'
+			displayName = 'Gradle Amazon S3 plugin'
+		}
 	}
 	mavenCoordinates {
 		groupId = project.group
