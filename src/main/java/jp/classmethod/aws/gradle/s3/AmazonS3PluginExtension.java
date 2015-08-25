@@ -54,7 +54,7 @@ public class AmazonS3PluginExtension {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
 
 		ClientConfiguration clientConfiguration = new ClientConfiguration();
-		clientConfiguration.setMaxErrorRetry(maxErrorRetry);
+		if (maxErrorRetry > 0) clientConfiguration.setMaxErrorRetry(maxErrorRetry);
 
 		AmazonS3Client client = aws.createClient(AmazonS3Client.class, profileName, clientConfiguration);
 		if (region != null) {

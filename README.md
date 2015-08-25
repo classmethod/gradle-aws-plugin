@@ -80,7 +80,7 @@ buildscript {
   }
 }
 
-apply plugin: 'aws'
+apply plugin: 'jp.classmethod.aws'
 
 aws {
   profileName 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
@@ -94,7 +94,7 @@ These credentials are used to make API accesses by default.
 ### S3 files tasks
 
 ```
-apply plugin: 'aws-s3'
+apply plugin: 'jp.classmethod.aws.s3'
 
 task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
   bucketName 'foobar.example.com'
@@ -108,7 +108,7 @@ Look [S3 example 1](samples/01-s3-upload-simple) and [S3 example 2](samples/02-s
 ### EC2 instance tasks
 
 ```
-apply plugin: 'aws-ec2'
+apply plugin: 'jp.classmethod.aws.ec2'
 
 // You can overwrite default credentials and region settings like this:
 // ec2 {
@@ -131,7 +131,7 @@ Look [EC2 example](samples/03-ec2) for more information.
 ### RDS DB instance tasks
 
 ```
-apply plugin: "aws-rds"
+apply plugin: "jp.classmethod.aws.rds"
 
 // You can overwrite default credentials and region settings like this:
 // rds {
@@ -168,7 +168,7 @@ Look [RDS example](samples/07-rds) for more information.
 ### Route 53 hosted zone tasks
 
 ```
-apply plugin: 'aws-route53'
+apply plugin: 'jp.classmethod.aws.route53'
 
 ask createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
 	hostedZoneName "foobar.example.com"
@@ -186,7 +186,7 @@ Look [Route 53 example](samples/04-route53) for more information.
 ### Elastic Beanstalk environemnt tasks
 
 ```
-apply plugin: 'aws-beanstalk'
+apply plugin: 'jp.classmethod.aws.beanstalk'
 beanstalk {
   String extension = project.war.archiveName.tokenize('.').last()
   String timestamp = new Date().format("yyyyMMdd'_'HHmmss", TimeZone.default)
@@ -229,7 +229,7 @@ Look [Elastic Beanstalk example](samples/05-beanstalk) for more information.
 ### CloudFormation stack tasks
 
 ```
-apply plugin: 'aws-cloudformation'
+apply plugin: 'jp.classmethod.aws.cloudformation'
 
 cloudFormation {
   stackName 'foobar-stack'
@@ -252,8 +252,8 @@ Look [CloudFormation example](samples/06-cloudformation) for more information.
 ### Lambda function tasks
 
 ```
-apply plugin:'base'
-apply plugin: "aws-lambda"
+apply plugin: "base"
+apply plugin: "jp.classmethod.aws.lambda"
 aws {
 	profileName "default"
 	region "ap-northeast-1"
