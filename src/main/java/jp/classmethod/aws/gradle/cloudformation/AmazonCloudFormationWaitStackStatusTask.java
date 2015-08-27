@@ -102,10 +102,11 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				found = true;
 				lastStatus = stack.getStackStatus();
 				if (successStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack "+stackName+" is now "+lastStatus+".");
+					getLogger().info("Status of stack {} is now {}.", stackName, lastStatus);
+					printOutputs(stack);
 					break;
 				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack "+stackName+" is "+lastStatus+"...");
+					getLogger().info("Status of stack {} is {}...", stackName, lastStatus);
 					Thread.sleep(loopWait * 1000);
 				} else {
 					// waitStatusesでもsuccessStatusesないステータスはfailとする
@@ -119,5 +120,11 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				}
 			}
 		}
+	}
+
+	private void printOutputs(Stack stack) {
+		getLogger().info("==== Outputs ====");
+		stack.getOutputs().stream()
+			.forEach(o -> getLogger().info("{} ({}) = {}", o.getOutputKey(), o.getDescription(), o.getOutputValue()));
 	}
 }
