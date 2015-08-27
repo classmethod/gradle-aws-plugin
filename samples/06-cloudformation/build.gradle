@@ -3,8 +3,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
-		maven { url "http://public-maven.classmethod.info/release" }
-		maven { url "http://public-maven.classmethod.info/snapshot" }
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
 		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
@@ -14,8 +13,8 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'spring-boot'
-apply plugin: 'aws-s3'
-apply plugin: 'aws-cloudformation'
+apply plugin: "jp.classmethod.aws.s3"
+apply plugin: "jp.classmethod.aws.cloudformation"
 
 // ==== Project settings
 
@@ -47,8 +46,8 @@ dependencies {
 // ==== AWS settings
 
 aws {
-	profileName "default"
-	region "ap-northeast-1"
+	profileName = "default"
+	region = "ap-northeast-1"
 }
 
 cloudFormation {
