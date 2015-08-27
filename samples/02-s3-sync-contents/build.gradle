@@ -9,18 +9,17 @@ import jp.classmethod.aws.gradle.s3.SyncTask;
 buildscript {
 	repositories {
 		mavenCentral()
-		maven { url "http://public-maven.classmethod.info/release" }
-		maven { url "http://public-maven.classmethod.info/snapshot" }
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
 		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
 	}
 }
 
-apply plugin: "aws-s3"
+apply plugin: "jp.classmethod.aws.s3"
 aws {
-	profileName "default"
-	region "ap-northeast-1"
+	profileName = "default"
+	region = "ap-northeast-1"
 }
 
 task createBucket(type: CreateBucketTask) {

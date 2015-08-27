@@ -3,8 +3,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
-		maven { url "http://public-maven.classmethod.info/release" }
-		maven { url "http://public-maven.classmethod.info/snapshot" }
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
 		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
@@ -14,7 +13,7 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'spring-boot'
-apply plugin: "aws-beanstalk"
+apply plugin: "jp.classmethod.aws.beanstalk"
 
 // ==== Project settings
 
@@ -47,8 +46,8 @@ dependencies {
 // ==== AWS settings
 
 aws {
-	profileName "default"
-	region "ap-northeast-1"
+	profileName = "default"
+	region = "ap-northeast-1"
 }
 
 beanstalk {

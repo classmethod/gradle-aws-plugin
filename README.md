@@ -72,18 +72,17 @@ Add like this to your build.gradle :
 buildscript {
   repositories {
     mavenCentral()
-    maven { url "http://dl.bintray.com/classmethod/maven" }
-
+    maven { url "https://plugins.gradle.org/m2/" }
   }
   dependencies {
-    classpath 'jp.classmethod.aws:gradle-aws-plugin:0.19'
+    classpath "jp.classmethod.aws:gradle-aws-plugin:0.21"
   }
 }
 
 apply plugin: 'jp.classmethod.aws'
 
 aws {
-  profileName 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
+  profileName = 'credentials-profile-name-in-your-profile-configuration-file (~/.aws/credentials)'
   region = 'ap-northeast-1'
 }
 ```
@@ -255,12 +254,12 @@ Look [CloudFormation example](samples/06-cloudformation) for more information.
 apply plugin: "base"
 apply plugin: "jp.classmethod.aws.lambda"
 aws {
-	profileName "default"
-	region "ap-northeast-1"
+	profileName = "default"
+	region = "ap-northeast-1"
 }
 
 lambda {
-	region "us-east-1"
+	region = "us-east-1"
 }
 
 task zip(type: Zip) {
