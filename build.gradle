@@ -17,7 +17,6 @@ buildscript {
 
 apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'java'
-apply plugin: 'groovy'
 apply plugin: 'license'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -26,7 +25,7 @@ defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
 group = 'jp.classmethod.aws'
-version = "0.21"
+version = "0.21.1"
 
 sourceCompatibility = targetCompatibility = 1.8
 
@@ -77,7 +76,6 @@ repositories {
 
 dependencies {
 	compile gradleApi()
-	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-io:commons-io:1.4"
 	compile "org.projectlombok:lombok:$lombokVersion"
@@ -98,18 +96,6 @@ dependencies {
 	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
 
 	deployerJars "org.springframework.build:aws-maven:4.7.0.RELEASE"
-}
-
-// ======== cross compile ========
-sourceSets {
-	main {
-		groovy {
-			srcDirs = [ 'src/main/groovy', 'src/main/java' ] // override the default locations, rather than adding additional ones
-		}
-		java {
-			srcDirs = [] // don't compile Java code twice
-		}
-	}
 }
 
 // ======== deploy artifacts ========
