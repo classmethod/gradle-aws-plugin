@@ -55,15 +55,16 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 		AmazonS3ProgressiveFileUploadTask awsUploadWar = project.getTasks()
 				.create("awsEbUploadBundle", AmazonS3ProgressiveFileUploadTask.class, task ->{
 			WarPlugin war = project.getPlugins().findPlugin(WarPlugin.class);
+			War warTask = war == null ? null : (War) project.getTasks().getByName(WarPlugin.WAR_TASK_NAME);
 			if (war != null) {
-				task.dependsOn(war);
+				task.dependsOn(warTask);
 			}
 			task.onlyIf(t -> ebExt.getVersion().getFile() != null || war != null);
 			task.doFirst(t -> {
 				task.setBucketName(ebExt.getVersion().getBucket());
 				task.setKey(ebExt.getVersion().getKey());
-				if (war != null && ebExt.getVersion().getFile() == null) {
-					task.setFile(((War) project.getTasks().getByName(WarPlugin.WAR_TASK_NAME)).getArchivePath());
+				if (warTask != null && ebExt.getVersion().getFile() == null) {
+					task.setFile(warTask.getArchivePath());
 				} else {
 					task.setFile(ebExt.getVersion().getFile());
 				}
