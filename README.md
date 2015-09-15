@@ -87,7 +87,7 @@ aws {
 }
 ```
 
-These credentials are used to make API accesses by default.
+These credentials are used to make API accesses by default. The format of the credentials file is described in the [Amazon AWS Docs](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html#credentials-file-format).
 
 
 ### S3 files tasks
