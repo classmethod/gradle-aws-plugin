@@ -19,6 +19,9 @@ import groovy.lang.Closure;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +40,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
 public class SyncTask extends ConventionTask {
-	
+
 	private static String md5(File file) {
 		try {
 			return Files.hash(file, Hashing.md5()).toString();
@@ -59,10 +62,13 @@ public class SyncTask extends ConventionTask {
 	private boolean delete;
 	
 	@Getter @Setter
+	private int threads = 5;
+	
+	@Getter @Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
 	@TaskAction
-	public void uploadAction() {
+	public void uploadAction() throws InterruptedException {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		String prefix = getPrefix();
@@ -83,37 +89,23 @@ public class SyncTask extends ConventionTask {
 		}
 	}
 	
-	private void upload(AmazonS3 s3, String prefix) {
+	private void upload(AmazonS3 s3, String prefix) throws InterruptedException {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		File source = getSource();
-
+		
+		ExecutorService es = Executors.newFixedThreadPool(threads);
+		getLogger().info("Start uploading");
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
 			public void visitFile(FileVisitDetails element) {
-				String relativePath = prefix + element.getRelativePath().toString();
-				String key = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
-				
-				boolean doUpload = false;
-				try {
-					ObjectMetadata metadata = s3.getObjectMetadata(bucketName, key);
-					if (metadata.getETag().equalsIgnoreCase(md5(element.getFile())) == false) {
-						doUpload = true;
-					}
-				} catch (AmazonS3Exception e) {
-					doUpload = true;
-				}
-				
-				if (doUpload) {
-					getLogger().info(" => s3://"+bucketName+"/"+key);
-					Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
-					s3.putObject(new PutObjectRequest(getBucketName(), key, element.getFile())
-						.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));
-				} else {
-					getLogger().info(" => s3://{}/{} (SKIP)", bucketName, key);
-				}
+				es.execute(new UploadTask(s3, element));
 			}
 		});
+		
+		es.shutdown();
+		es.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		getLogger().info("Finish uploading");
 	}
 	
 	private void deleteAbsent(AmazonS3 s3, String prefix) {
@@ -134,5 +126,42 @@ public class SyncTask extends ConventionTask {
 		String pathPrefix = getSource().toString();
 		pathPrefix += pathPrefix.endsWith("/") ? "" : "/";
 		return pathPrefix;
+	}
+	
+	
+	private class UploadTask implements Runnable {
+		
+		private AmazonS3 s3;
+		private FileVisitDetails element;
+
+		public UploadTask(AmazonS3 s3, FileVisitDetails element) {
+			this.s3 = s3;
+			this.element = element;
+		}
+
+		@Override
+		public void run() {
+			String relativePath = prefix + element.getRelativePath().toString();
+			String key = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
+			
+			boolean doUpload = false;
+			try {
+				ObjectMetadata metadata = s3.getObjectMetadata(bucketName, key);
+				if (metadata.getETag().equalsIgnoreCase(md5(element.getFile())) == false) {
+					doUpload = true;
+				}
+			} catch (AmazonS3Exception e) {
+				doUpload = true;
+			}
+			
+			if (doUpload) {
+				getLogger().info(" => s3://{}/{}", bucketName, key);
+				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
+				s3.putObject(new PutObjectRequest(getBucketName(), key, element.getFile())
+					.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));
+			} else {
+				getLogger().info(" => s3://{}/{} (SKIP)", bucketName, key);
+			}
+		}
 	}
 }

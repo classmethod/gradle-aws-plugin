@@ -65,8 +65,13 @@ public class AwsPluginExtension {
 	@Getter
 	@Setter
 	private String region = Regions.US_EAST_1.getName();
-	
-	
+
+	@Setter
+	private String proxyHost;
+
+	@Setter
+	private int proxyPort = -1;
+
 	public AwsPluginExtension(Project project) {
 		this.project = project;
 	}
@@ -93,6 +98,10 @@ public class AwsPluginExtension {
 		}
 		
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
+		if (this.proxyHost != null && this.proxyPort > 0) {
+			config.setProxyHost(this.proxyHost);
+			config.setProxyPort(this.proxyPort);
+		}
 		return createClient(serviceClass, credentialsProvider, config);
 	}
 	

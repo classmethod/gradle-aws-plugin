@@ -87,7 +87,7 @@ aws {
 }
 ```
 
-These credentials are used to make API accesses by default.
+These credentials are used to make API accesses by default. The format of the credentials file is described in the [Amazon AWS Docs](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html#credentials-file-format).
 
 
 ### S3 files tasks
@@ -297,7 +297,9 @@ Copyright (C) 2013-2015 [Classmethod, Inc.](http://classmethod.jp/)
 
 Distributed under the Apache License v2.0.  See the file copyright/LICENSE.txt.
 
-Development
------------
+Development and Contribution
+----------------------------
+We will open for contributions.
+
 To contribute to the plugin or make your own modifications, including the ability
 to publish your build artifacts to your own maven repository see: [development](docs/development.md).
