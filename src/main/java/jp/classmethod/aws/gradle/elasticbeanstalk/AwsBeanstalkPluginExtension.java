@@ -31,6 +31,7 @@ import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
+import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksResult;
 
 
 public class AwsBeanstalkPluginExtension {
@@ -116,5 +117,13 @@ public class AwsBeanstalkPluginExtension {
 		elbName = elbName.substring(0, elbName.indexOf("."));
 		elbName = elbName.substring(0, elbName.lastIndexOf("-"));
 		return elbName;
+	}
+	
+	public String latestSolutionStackName(String os, String platform) {
+		ListAvailableSolutionStacksResult lassr = getClient().listAvailableSolutionStacks();
+		return lassr.getSolutionStacks().stream()
+				.filter(n -> n.startsWith(os) && n.contains(" running " + platform))
+				.findFirst()
+				.get();
 	}
 }
