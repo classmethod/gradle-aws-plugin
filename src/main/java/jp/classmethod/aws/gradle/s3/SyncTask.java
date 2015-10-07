@@ -30,6 +30,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -93,13 +94,14 @@ public class SyncTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		File source = getSource();
+		Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 		
 		ExecutorService es = Executors.newFixedThreadPool(threads);
 		getLogger().info("Start uploading");
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
 			public void visitFile(FileVisitDetails element) {
-				es.execute(new UploadTask(s3, element));
+				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, getLogger()));
 			}
 		});
 		
@@ -129,21 +131,27 @@ public class SyncTask extends ConventionTask {
 	}
 	
 	
-	private class UploadTask implements Runnable {
+	private static class UploadTask implements Runnable {
 		
 		private AmazonS3 s3;
 		private FileVisitDetails element;
+		private String bucketName;
+		private String prefix;
+		private Closure<ObjectMetadata> metadataProvider;
+		private Logger logger;
 
-		public UploadTask(AmazonS3 s3, FileVisitDetails element) {
+		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix, Closure<ObjectMetadata> metadataProvider, Logger logger) {
 			this.s3 = s3;
 			this.element = element;
+			this.bucketName = bucketName;
+			this.prefix = prefix;
+			this.metadataProvider = metadataProvider;
+			this.logger = logger;
 		}
 
 		@Override
 		public void run() {
 			// to enable conventionMappings feature
-			String bucketName = getBucketName();
-			String prefix = getPrefix();
 			
 			String relativePath = prefix + element.getRelativePath().toString();
 			String key = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
@@ -159,12 +167,11 @@ public class SyncTask extends ConventionTask {
 			}
 			
 			if (doUpload) {
-				getLogger().info(" => s3://{}/{}", bucketName, key);
-				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
-				s3.putObject(new PutObjectRequest(getBucketName(), key, element.getFile())
-					.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));
+				logger.info(" => s3://{}/{}", bucketName, key);
+				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
+					.withMetadata(metadataProvider == null ? null : metadataProvider.call(bucketName, key, element.getFile())));
 			} else {
-				getLogger().info(" => s3://{}/{} (SKIP)", bucketName, key);
+				logger.info(" => s3://{}/{} (SKIP)", bucketName, key);
 			}
 		}
 	}
