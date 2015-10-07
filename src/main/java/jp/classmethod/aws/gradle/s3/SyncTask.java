@@ -141,6 +141,10 @@ public class SyncTask extends ConventionTask {
 
 		@Override
 		public void run() {
+			// to enable conventionMappings feature
+			String bucketName = getBucketName();
+			String prefix = getPrefix();
+			
 			String relativePath = prefix + element.getRelativePath().toString();
 			String key = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
 			
