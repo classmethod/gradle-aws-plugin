@@ -40,6 +40,9 @@ public class AWSLambdaUpdateFunctionCodeTask extends ConventionTask {
 	
 	@Getter @Setter
 	private File zipFile;
+
+	@Getter @Setter
+	private S3File s3File;
 	
 	@Getter
 	private UpdateFunctionCodeResult updateFunctionCode;
@@ -57,19 +60,32 @@ public class AWSLambdaUpdateFunctionCodeTask extends ConventionTask {
 		
 		if (functionName == null)
 			throw new GradleException("functionName is required");
-		
+
+		if ((zipFile == null && s3File == null) || (zipFile != null && s3File != null)) {
+			throw new GradleException("exactly one of zipFile or s3File is required");
+		}
+
 		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
-		
-		try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
-				FileChannel channel = raf.getChannel()) {
-			MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-			buffer.load();
-			UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()
-				.withFunctionName(getFunctionName())
-				.withZipFile(buffer);
-			updateFunctionCode = lambda.updateFunctionCode(request);
-			getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
+
+		UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()
+				.withFunctionName(getFunctionName());
+		if (zipFile != null) {
+			try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
+				 FileChannel channel = raf.getChannel()) {
+				MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+				buffer.load();
+				request = request.withZipFile(buffer);
+			}
+		} else {
+			// assume s3File is not null
+			s3File.validate();
+			request = request
+					.withS3Bucket(s3File.getBucketName())
+					.withS3Key(s3File.getKey())
+					.withS3ObjectVersion(s3File.getObjectVersion());
 		}
+		UpdateFunctionCodeResult updateFunctionCode = lambda.updateFunctionCode(request);
+		getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
 	}
 }

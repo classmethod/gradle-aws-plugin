@@ -68,11 +68,13 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
 	@Getter @Setter
 	private File zipFile;
-	
+
+	@Getter @Setter
+	private S3File s3File;
+
 	@Getter
 	private CreateFunctionResult createFunctionResult;
 
-	
 	public AWSLambdaMigrateFunctionTask() {
 		setDescription("Create / Update Lambda function.");
 		setGroup("AWS");
@@ -84,10 +86,17 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		String functionName = getFunctionName();
 		
 		if (functionName == null) throw new GradleException("functionName is required");
-		
+
+		if ((zipFile == null && s3File == null) || (zipFile != null && s3File != null)) {
+			throw new GradleException("exactly one of zipFile or s3File is required");
+		}
+		if (s3File != null) {
+			s3File.validate();
+		}
+
 		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
-		
+
 		try {
 			GetFunctionResult getFunctionResult = lambda.getFunction(new GetFunctionRequest().withFunctionName(functionName));
 			updateStack(lambda, getFunctionResult);
@@ -99,11 +108,22 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	}
 
 	private void createFunction(AWSLambda lambda) throws IOException {
-		try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
-				FileChannel channel = raf.getChannel()) {
-			MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-			buffer.load();
-			CreateFunctionRequest request = new CreateFunctionRequest()
+		FunctionCode functionCode;
+		if (zipFile != null) {
+			try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
+				 FileChannel channel = raf.getChannel()) {
+				MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+				buffer.load();
+				functionCode = new FunctionCode().withZipFile(buffer);
+			}
+		} else {
+			// assume s3File is not null
+			functionCode = new FunctionCode()
+					.withS3Bucket(s3File.getBucketName())
+					.withS3Key(s3File.getKey())
+					.withS3ObjectVersion(s3File.getObjectVersion());
+		}
+		CreateFunctionRequest request = new CreateFunctionRequest()
 				.withFunctionName(getFunctionName())
 				.withRuntime(getRuntime())
 				.withRole(getRole())
@@ -111,10 +131,9 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 				.withDescription(getFunctionDescription())
 				.withTimeout(getTimeout())
 				.withMemorySize(getMemorySize())
-				.withCode(new FunctionCode().withZipFile(buffer));
-			createFunctionResult = lambda.createFunction(request);
-			getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
-		}
+				.withCode(functionCode);
+		createFunctionResult = lambda.createFunction(request);
+		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
 	}
 
 	private void updateStack(AWSLambda lambda, GetFunctionResult getFunctionResult) throws IOException {
@@ -123,16 +142,24 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	}
 
 	private void updateFunctionCode(AWSLambda lambda) throws IOException {
-		try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
-				FileChannel channel = raf.getChannel()) {
-			MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-			buffer.load();
-			UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()
-				.withFunctionName(getFunctionName())
-				.withZipFile(buffer);
-			UpdateFunctionCodeResult updateFunctionCode = lambda.updateFunctionCode(request);
-			getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
+		UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()
+				.withFunctionName(getFunctionName());
+		if (zipFile != null) {
+			try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
+				 FileChannel channel = raf.getChannel()) {
+				MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+				buffer.load();
+				request = request.withZipFile(buffer);
+			}
+		} else {
+			// assume s3File is not null
+			request = request
+					.withS3Bucket(s3File.getBucketName())
+					.withS3Key(s3File.getKey())
+					.withS3ObjectVersion(s3File.getObjectVersion());
 		}
+		UpdateFunctionCodeResult updateFunctionCode = lambda.updateFunctionCode(request);
+		getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
 	}
 
 	private void updateFunctionConfiguration(AWSLambda lambda, GetFunctionResult getFunctionResult) {
