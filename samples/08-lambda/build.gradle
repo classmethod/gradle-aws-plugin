@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.model.InvocationType;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
+import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateFunctionTask;
 
 buildscript {
 	repositories {
@@ -20,18 +21,25 @@ buildscript {
 apply plugin:'base'
 apply plugin: "jp.classmethod.aws.lambda"
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
+	profileName = "marklogic"
+	region = "us-west-2"
 }
 
 lambda {
-	region = "us-east-1"
+	region = "us-west-2"
 }
 
 task zip(type: Zip) {
 	from "function/"
 	destinationDir file("build")
 }
+task createFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+	functionName = "foobar"
+	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+	zipFile = zip.archivePath
+	handler = "DecodeBase64.handler"
+}
+
 
 task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	functionName = "foobar"
