@@ -81,8 +81,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 					.withEnvironmentName(envName)
 					.withDescription(envDesc)
 					.withTemplateName(templateName)
-					.withVersionLabel(versionLabel)
-					.withTier(tier.toEnvironmentTier());
+					.withVersionLabel(versionLabel);
 			if (tier == Tier.WebServer) {
 				req.withCNAMEPrefix(cnamePrefix);
 			}
@@ -96,8 +95,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 					.withEnvironmentName(envName)
 					.withDescription(envDesc)
 					.withTemplateName(templateName)
-					.withVersionLabel(versionLabel)
-					.withTier(tier.toEnvironmentTier()));
+					.withVersionLabel(versionLabel));
 			getLogger().info("environment "+envName+" @ "+appName+" ("+environmentId+") updated");
 		}
 	}
