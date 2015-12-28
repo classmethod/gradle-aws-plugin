@@ -3,6 +3,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 public class Hello {
+  
     public static class RequestClass {
       private String name;
       private int value;
