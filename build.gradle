@@ -24,7 +24,7 @@ apply plugin: 'idea'
 defaultTasks 'clean', 'build'
 
 // ======== deployment options (dispatched on group name) ========
-group = 'jp.classmethod.aws'
+group =   'org.xmlsh.aws'
 version = "0.23-SNAPSHOT"
 
 sourceCompatibility = targetCompatibility = 1.8

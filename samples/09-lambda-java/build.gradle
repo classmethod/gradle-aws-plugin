@@ -6,21 +6,34 @@ import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateFunctionTask;
-import com.amazonaws.services.lambda.model.Runtime;
 
 buildscript {
   repositories {
-    mavenCentral()
+    mavenLocal();
+    jcenter();
     maven { url "https://plugins.gradle.org/m2/" }
 
   }
   dependencies {
     classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+
   }
+}
+
+
+repositories {
+  jcenter()
 }
 
 apply plugin:'base'
 apply plugin: "jp.classmethod.aws.lambda"
+apply plugin: 'java'
+apply plugin: 'eclipse'
+dependencies {
+  compile 'com.amazonaws:aws-lambda-java-core:1.1.0'
+  compile 'com.amazonaws:aws-lambda-java-events:1.1.0'
+}
+
 aws {
   profileName = "marklogic"
   region = "us-west-2"
@@ -30,27 +43,37 @@ lambda {
   region = "us-west-2"
 }
 
+
 task zip(type: Zip) {
-  from "function/"
-  destinationDir file("build")
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
 }
+
+build.dependsOn zip
+
+
 task createFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-  functionName = "foobar"
+  functionName = "helloJava"
   role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
   zipFile = zip.archivePath
-  handler = "DecodeBase64.handler"
+  handler = "example.Hello::myHandler"
+  runtime = "java8"
+
 }
 
 
 task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-  functionName = "foobar"
+  functionName = "helloJava"
   role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
   zipFile = zip.archivePath
-  handler = "DecodeBase64.handler"
+  handler = "example.Hello::myHandler"
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
-  functionName = "foobar"
+  functionName = "helloJava"
   invocationType = InvocationType.RequestResponse
   payload = file("sample-input/input.txt")
   doLast {
@@ -59,6 +82,12 @@ task invokeFunction(type: AWSLambdaInvokeTask) {
 }
 
 task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
-  functionName = "foobar"
+  functionName = "helloJava"
 }
 
+cleanEclipse << { 
+   delete 'bin'
+   delete '.settings'
+}
+
+clean.dependsOn cleanEclipse
