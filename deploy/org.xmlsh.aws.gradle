@@ -1,0 +1,158 @@
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'ivy-publish'
+apply plugin: 'com.jfrog.bintray'
+
+publishing {
+    repositories {
+        maven {
+            url "${awsRepoBucket}/maven2"
+            credentials(AwsCredentials) { 
+                accessKey "$awsAccessKey"
+                secretKey  "$awsSecretKey"
+
+            }
+        }
+
+        ivy {
+            url "${awsRepoBucket}/ivyrepo"
+            credentials(AwsCredentials) { 
+                accessKey "$awsAccessKey"
+                secretKey  "$awsSecretKey"
+
+            }
+       } 
+    }
+  publications {
+      mavenJava(MavenPublication) {
+        from components.java
+            artifact sourcesJar {
+                classifier "sources"
+        }
+
+        artifact javadocJar {
+          classifier "javadoc"
+        }
+    }
+/*
+    ivyJava(IvyPublication) {
+      from components.java
+      artifact(sourceJar) {
+          type "source"
+          conf "runtime"
+      }
+      descriptor.withXml {
+        asNode().info[0].appendNode('description', description)
+    }
+   }
+*/
+  }
+}
+/*
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			assert project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey'): "AWS credential is required"
+			def awsCredentials = [
+				userName: awsAccessKey,
+				passphrase: awsSecretKey
+			]
+
+			configuration = configurations.deployerJars
+			repository(url: "s3://public-maven.classmethod.info/release") {
+				authentication(awsCredentials)
+			}
+			snapshotRepository(url: "s3://public-maven.classmethod.info/snapshot") {
+				authentication(awsCredentials)
+			}
+		}
+	}
+}
+
+[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
+	pom.project {
+		inceptionYear '2013'
+		packaging 'jar'
+		licenses {
+			license {
+				name 'The Apache Software License, Version 2.0'
+				url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+				distribution 'repo'
+			}
+		}
+	}
+}
+
+bintray {
+	user = bintrayUser
+	key = bintrayApiKey
+
+	publications = ['mavenStuff']
+	pkg {
+		repo = 'maven'
+		name = "gradle-aws-plugin"
+		desc = 'Gradle plugin to manage AWS resources'
+		userOrg = 'classmethod'
+		websiteUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+		issueTrackerUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin/issues'
+		vcsUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin.git'
+		licenses = ['Apache-2.0']
+		labels = ['AWS', 'Gradle']
+	}
+}
+
+pluginBundle {
+	website = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+	vcsUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+	description = 'Gradle plugin to manage Amazon Web Services'
+	tags = ['AWS']
+
+	plugins {
+		awsPlugin {
+			id = 'jp.classmethod.aws'
+			displayName = 'Gradle AWS plugin'
+		}
+		awsBeanstalkPlugin {
+			id = 'jp.classmethod.aws.beanstalk'
+			displayName = 'Gradle AWS Elastic Beanstalk plugin'
+		}
+		awsCloudFormationPlugin {
+			id = 'jp.classmethod.aws.cloudformation'
+			displayName = 'Gradle AWS CloudFormation plugin'
+		}
+		awsEC2Plugin {
+			id = 'jp.classmethod.aws.ec2'
+			displayName = 'Gradle Amazon EC2 plugin'
+		}
+		awsELBPlugin {
+			id = 'jp.classmethod.aws.elb'
+			displayName = 'Gradle Amazon Elastic Load Balancing plugin'
+		}
+		awsIAMPlugin {
+			id = 'jp.classmethod.aws.iam'
+			displayName = 'Gradle AWS Identity and Access Management plugin'
+		}
+		awsLambdaPlugin {
+			id = 'jp.classmethod.aws.lambda'
+			displayName = 'Gradle AWS Lambda plugin'
+		}
+		awsRDSPlugin {
+			id = 'jp.classmethod.aws.rds'
+			displayName = 'Gradle Amazon RDS plugin'
+		}
+		awsRoute53Plugin {
+			id = 'jp.classmethod.aws.route53'
+			displayName = 'Gradle Amazon Route53 plugin'
+		}
+		awsS3Plugin {
+			id = 'jp.classmethod.aws.s3'
+			displayName = 'Gradle Amazon S3 plugin'
+		}
+	}
+	mavenCoordinates {
+		groupId = project.group
+		artifactId = project.artifactId
+		version = project.version
+	}
+}
+*/
