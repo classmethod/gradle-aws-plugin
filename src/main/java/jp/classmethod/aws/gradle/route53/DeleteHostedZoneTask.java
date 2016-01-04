@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Classmethod, Inc.
+ * Copyright 2013-2016 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
