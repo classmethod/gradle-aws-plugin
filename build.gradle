@@ -62,7 +62,7 @@ configurations {
 // ======== library versions ========
 ext {
 	lombokVersion = '1.16.2'
-	awsJavaSdkVersion = '1.10.44'
+	awsJavaSdkVersion = '1.10.58'
 	groovyVersion = '2.3.7'
 	junitVersion = '4.+'
 	hamcrestVersion = '1.3'
