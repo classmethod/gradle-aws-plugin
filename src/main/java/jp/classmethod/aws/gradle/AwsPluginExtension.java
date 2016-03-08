@@ -99,6 +99,9 @@ public class AwsPluginExtension {
 		
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
 		if (this.proxyHost != null && this.proxyPort > 0) {
+			if (config == null) {
+				config = new ClientConfiguration();
+			}
 			config.setProxyHost(this.proxyHost);
 			config.setProxyPort(this.proxyPort);
 		}
