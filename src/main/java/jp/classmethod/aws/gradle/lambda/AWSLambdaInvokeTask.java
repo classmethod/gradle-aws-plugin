@@ -52,6 +52,9 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 	private String clientContext;
 	
 	@Getter @Setter
+	private String qualifier;
+
+	@Getter @Setter
 	private Object payload;
 	
 	@Getter
@@ -76,7 +79,8 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 				.withFunctionName(functionName)
 				.withInvocationType(getInvocationType())
 				.withLogType(getLogType())
-				.withClientContext(getClientContext());
+				.withClientContext(getClientContext())
+				.withQualifier(getQualifier());
 		setupPayload(request);
 		invokeResult = lambda.invoke(request);
 		getLogger().info("Invoke Lambda function requested: {}", functionName);

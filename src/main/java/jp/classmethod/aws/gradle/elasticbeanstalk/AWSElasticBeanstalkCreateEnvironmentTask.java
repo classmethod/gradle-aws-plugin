@@ -81,13 +81,15 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 					.withEnvironmentName(envName)
 					.withDescription(envDesc)
 					.withTemplateName(templateName)
-					.withVersionLabel(versionLabel)
-					.withTier(tier.toEnvironmentTier());
-			if (tier == Tier.WebServer) {
-				req.withCNAMEPrefix(cnamePrefix);
+					.withVersionLabel(versionLabel);
+			if (tier != null) {
+				req.withTier(tier.toEnvironmentTier());
+				if (tier == Tier.WebServer) {
+					req.withCNAMEPrefix(cnamePrefix);
+				}
 			}
 			CreateEnvironmentResult result = eb.createEnvironment(req);
-			getLogger().info("environment "+envName+" @ "+appName+" ("+result.getEnvironmentId()+") created");
+			getLogger().info("environment {} @ {} ({}) created", envName, appName, result.getEnvironmentId());
 		} else {
 			String environmentId = der.getEnvironments().get(0).getEnvironmentId();
 
@@ -98,7 +100,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 					.withTemplateName(templateName)
 					.withVersionLabel(versionLabel)
 					.withTier(tier.toEnvironmentTier()));
-			getLogger().info("environment "+envName+" @ "+appName+" ("+environmentId+") updated");
+			getLogger().info("environment {} @ {} ({}) updated", envName, appName, environmentId);
 		}
 	}
 }

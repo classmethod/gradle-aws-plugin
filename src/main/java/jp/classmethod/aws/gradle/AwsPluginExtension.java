@@ -16,7 +16,10 @@
 package jp.classmethod.aws.gradle;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
+import jp.classmethod.aws.gradle.auth.AwsCliConfigProfileCredentialsProvider;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +28,6 @@ import org.gradle.api.Project;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
@@ -44,16 +46,6 @@ public class AwsPluginExtension {
 	
 	public static final String NAME = "aws";
 	
-	private static final AWSCredentialsProvider EMPTY = new AWSCredentialsProvider() {
-		
-		public void refresh() {
-		}
-		
-		public AWSCredentials getCredentials() {
-			return null;
-		}
-	};
-
 	@Getter
 	@Setter
 	private Project project;
@@ -77,12 +69,18 @@ public class AwsPluginExtension {
 	}
 	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
-		return new AWSCredentialsProviderChain(
-				new EnvironmentVariableCredentialsProvider(),
-				new SystemPropertiesCredentialsProvider(),
-				Strings.isNullOrEmpty(profileName) == false ? new ProfileCredentialsProvider(profileName) : EMPTY,
-				new ProfileCredentialsProvider(this.profileName),
-				new InstanceProfileCredentialsProvider());
+		List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
+		providers.add(new EnvironmentVariableCredentialsProvider());
+		providers.add(new SystemPropertiesCredentialsProvider());
+		if (Strings.isNullOrEmpty(profileName) == false) {
+			providers.add(new AwsCliConfigProfileCredentialsProvider(profileName));
+			providers.add(new ProfileCredentialsProvider(profileName));
+		}
+		providers.add(new AwsCliConfigProfileCredentialsProvider(this.profileName));
+		providers.add(new ProfileCredentialsProvider(this.profileName));
+		providers.add(new InstanceProfileCredentialsProvider());
+		
+		return new AWSCredentialsProviderChain(providers.toArray(new AWSCredentialsProvider[providers.size()]));
 	}
 	
 	public <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass, String profileName) {
@@ -99,6 +97,9 @@ public class AwsPluginExtension {
 		
 		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
 		if (this.proxyHost != null && this.proxyPort > 0) {
+			if (config == null) {
+				config = new ClientConfiguration();
+			}
 			config.setProxyHost(this.proxyHost);
 			config.setProxyPort(this.proxyPort);
 		}

@@ -29,7 +29,6 @@ import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.CreateFunctionRequest;
 import com.amazonaws.services.lambda.model.CreateFunctionResult;
@@ -84,6 +83,8 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	public void createOrUpdateFunction() throws FileNotFoundException, IOException {
 		// to enable conventionMappings feature
 		String functionName = getFunctionName();
+		File zipFile = getZipFile();
+		S3File s3File = getS3File();
 		
 		if (functionName == null) throw new GradleException("functionName is required");
 
@@ -108,10 +109,14 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	}
 
 	private void createFunction(AWSLambda lambda) throws IOException {
+		// to enable conventionMappings feature
+		File zipFile = getZipFile();
+		S3File s3File = getS3File();
+		
 		FunctionCode functionCode;
 		if (zipFile != null) {
 			try (RandomAccessFile raf = new RandomAccessFile(getZipFile(), "r");
-				 FileChannel channel = raf.getChannel()) {
+					FileChannel channel = raf.getChannel()) {
 				MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
 				buffer.load();
 				functionCode = new FunctionCode().withZipFile(buffer);
@@ -142,6 +147,10 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	}
 
 	private void updateFunctionCode(AWSLambda lambda) throws IOException {
+		// to enable conventionMappings feature
+		File zipFile = getZipFile();
+		S3File s3File = getS3File();
+		
 		UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()
 				.withFunctionName(getFunctionName());
 		if (zipFile != null) {
