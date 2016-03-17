@@ -68,10 +68,12 @@ ext {
 	hamcrestVersion = "1.3"
 	mockitoCoreVersion = "1.9.5"
 	guavaVersion = "18.0"
+	sparWingsVersion = "0.11"
 }
 
 repositories {
 	mavenCentral()
+	maven { url "http://dl.bintray.com/dai0304/spar-wings" } // for spar-wings
 }
 
 dependencies {
@@ -90,6 +92,8 @@ dependencies {
 	compile "com.amazonaws:aws-java-sdk-cloudformation:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-lambda:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-iam:$awsJavaSdkVersion"
+	
+	compile "jp.xet.spar-wings:spar-wings-awscli-config:$sparWingsVersion"
 	
 	// tests
 	testCompile "junit:junit:$junitVersion"
