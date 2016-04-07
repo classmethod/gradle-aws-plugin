@@ -21,6 +21,9 @@ import lombok.Setter;
 
 import org.gradle.util.Configurable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EbEnvironmentExtension implements Configurable<Void> {
 	
 	@Getter @Setter
@@ -37,8 +40,10 @@ public class EbEnvironmentExtension implements Configurable<Void> {
 	
 	@Getter @Setter
 	private String versionLabel;
-	
-	
+
+	@Getter @Setter
+	private Map<String, String> tags = new HashMap<String, String>();
+
 	@Override
 	@SuppressWarnings("rawtypes")
 	public Void configure(Closure closure) {

@@ -77,6 +77,10 @@ beanstalk {
 		envDesc = "foobar demo application blue environemnt"
 		templateName = "development"
 		versionLabel = "05-beanstalk-${versionDesc}"
+		tags = [
+				VERSION: "${versionDesc}".toString(),
+				GROUP: "Eng"
+		]
 	}
 }
 

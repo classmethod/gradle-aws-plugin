@@ -15,6 +15,11 @@
  */
 package jp.classmethod.aws.gradle.elasticbeanstalk;
 
+import com.amazonaws.services.elasticbeanstalk.model.Tag;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +32,12 @@ import com.amazonaws.services.elasticbeanstalk.model.CreateEnvironmentResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 
@@ -51,6 +62,9 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 	@Getter @Setter
 	private Tier tier = Tier.WebServer;
 
+	@Getter @Setter
+	private Map<String, String> tags = new HashMap<String, String>();
+
 	public AWSElasticBeanstalkCreateEnvironmentTask(){
 		setDescription("Create/Migrate ElasticBeanstalk Environment."); 
 		setGroup("AWS");
@@ -66,6 +80,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 		String templateName = getTemplateName();
 		String versionLabel = getVersionLabel();
 		Tier tier = getTier();
+		Map<String, String> tags = getTags();
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
@@ -75,6 +90,17 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 				.withEnvironmentNames(envName)
 				.withIncludeDeleted(false));
 
+		List<Tag> ebTags = tags
+				.entrySet()
+				.stream()
+				.map(entry -> {
+					Tag t = new Tag();
+					t.setKey(entry.getKey());
+					t.setValue(entry.getValue());
+					return t;
+				})
+				.collect(Collectors.toList());
+
 		if (der.getEnvironments() == null || der.getEnvironments().isEmpty()) {
 			CreateEnvironmentRequest req = new CreateEnvironmentRequest()
 					.withApplicationName(appName)
@@ -82,12 +108,18 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 					.withDescription(envDesc)
 					.withTemplateName(templateName)
 					.withVersionLabel(versionLabel);
+
 			if (tier != null) {
 				req.withTier(tier.toEnvironmentTier());
 				if (tier == Tier.WebServer) {
 					req.withCNAMEPrefix(cnamePrefix);
 				}
 			}
+
+			if (ebTags!= null && !ebTags.isEmpty()) {
+				req.withTags(ebTags);
+			}
+
 			CreateEnvironmentResult result = eb.createEnvironment(req);
 			getLogger().info("environment {} @ {} ({}) created", envName, appName, result.getEnvironmentId());
 		} else {
