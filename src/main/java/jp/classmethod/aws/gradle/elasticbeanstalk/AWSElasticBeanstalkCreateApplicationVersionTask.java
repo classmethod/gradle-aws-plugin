@@ -62,7 +62,7 @@ public class AWSElasticBeanstalkCreateApplicationVersionTask extends ConventionT
 				.withSourceBundle(new S3Location(getBucketName(), getKey())));
 			getLogger().info("version "+versionLabel+" @ "+appName+" created");
 		} catch (AmazonServiceException e) {
-			if (e.getMessage().endsWith("already exists.") == false) {
+			if (!e.getMessage().contains("already exists.")) {
 				throw e;
 			}
 			getLogger().warn("version "+versionLabel+" @ "+appName+" already exists.");
