@@ -104,6 +104,9 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 				if (Strings.isNullOrEmpty(ebExt.getEnvironment().getCnamePrefix()) == false) {
 					task.setCnamePrefix(ebExt.getEnvironment().getCnamePrefix());
 				}
+				if (ebExt.getEnvironment().getTags() != null) {
+					task.setTags(ebExt.getEnvironment().getTags());
+				}
 			});
 		});
 		
