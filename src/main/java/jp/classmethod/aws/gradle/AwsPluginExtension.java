@@ -19,7 +19,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.classmethod.aws.gradle.auth.AwsCliConfigProfileCredentialsProvider;
+import jp.xet.sparwings.aws.auth.AwsCliConfigProfileCredentialsProvider;
 import lombok.Getter;
 import lombok.Setter;
 

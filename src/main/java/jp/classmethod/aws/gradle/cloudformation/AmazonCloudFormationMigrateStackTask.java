@@ -38,6 +38,7 @@ import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.UpdateStackRequest;
 import com.amazonaws.services.cloudformation.model.UpdateStackResult;
+import com.google.common.base.Strings;
 
 
 public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
@@ -53,6 +54,9 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	@Getter @Setter
 	private boolean capabilityIam;
+	
+	@Getter @Setter
+	private String stackPolicyUrl;
 	
 	@Getter @Setter
 	private List<String> stableStatuses = Arrays.asList(
@@ -106,6 +110,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
+		String stackPolicyUrl = getStackPolicyUrl();
 		
 		getLogger().info("update stack: {}", stackName);
 		UpdateStackRequest req = new UpdateStackRequest()
@@ -114,6 +119,9 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 				.withParameters(cfnStackParams);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+		}
+		if (Strings.isNullOrEmpty(stackPolicyUrl)== false) {
+			req.setStackPolicyURL(stackPolicyUrl);
 		}
 		UpdateStackResult updateStackResult = cfn.updateStack(req);
 		getLogger().info("update requested: {}", updateStackResult.getStackId());
@@ -134,6 +142,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
+		String stackPolicyUrl = getStackPolicyUrl();
 
 		getLogger().info("create stack: {}", stackName);
 		
@@ -143,6 +152,9 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 				.withParameters(cfnStackParams);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+		}
+		if (Strings.isNullOrEmpty(stackPolicyUrl)== false) {
+			req.setStackPolicyURL(stackPolicyUrl);
 		}
 		CreateStackResult createStackResult = cfn.createStack(req);
 		getLogger().info("create requested: {}", createStackResult.getStackId());
