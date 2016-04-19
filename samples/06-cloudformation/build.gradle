@@ -3,6 +3,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		mavenLocal()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
@@ -56,6 +57,9 @@ cloudFormation {
 	templateFile project.file('src/main/cloudformation/06-cloudformation.template')
 	templateBucket "cf-templates-1r72h3gknbax2-${aws.region}"
 	templateKeyPrefix "06-cloudformation"
+	stackPolicyFile project.file('src/main/cloudformation/stackpolicy.json')
+	stackPolicyBucket "cf-templates-1r72h3gknbax2-${aws.region}"
+	stackPolicyKeyPrefix "06-cloudformation"
 	stackName "gradlecfn"
 	conventionMapping.stackParams = {
 		def stackParams
@@ -68,7 +72,7 @@ cloudFormation {
 			// default values
 			stackParams = [
 				KeyName: "sample-key",
-				EnvironmentType: "development"
+				EnvironmentType: "local"
 			]
 		}
 		if (project.uploadBundle.didWork) {
@@ -126,5 +130,6 @@ task awsFullUndeploy(dependsOn: awsCfnDeleteStackAndWaitCompleted) {
 
 awsCfnMigrateStack.mustRunAfter uploadBundle
 awsCfnMigrateStack.dependsOn awsCfnUploadTemplate
+awsCfnMigrateStack.dependsOn awsCfnUploadStackPolicy
 awsCfnWaitStackComplete.loopTimeout = 10800 // = 3hr
 awsCfnWaitStackDeleted.loopTimeout = 10800 // = 3hr

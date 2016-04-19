@@ -61,10 +61,25 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 					});
 				});
 		
+		AmazonS3FileUploadTask awsCfnUploadPolicy =
+				project.getTasks().create("awsCfnUploadStackPolicy", AmazonS3FileUploadTask.class, task -> {
+					task.setDescription("Upload cfn stack policy file to the Amazon S3 bucket.");
+					task.conventionMapping("file", () -> cfnExt.getStackPolicyFile());
+					task.conventionMapping("bucketName", () -> cfnExt.getStackPolicyBucket());
+					task.conventionMapping("key", () -> {
+						String name = cfnExt.getStackPolicyFile().getName();
+						return createKey(name, project.getVersion(), cfnExt.getStackPolicyKeyPrefix());
+					});
+					task.doLast(t -> {
+						cfnExt.setStackPolicyURL(((AmazonS3FileUploadTask) t).getResourceUrl());
+					});
+				});
+		
 		AmazonCloudFormationMigrateStackTask awsCfnMigrateStack = project.getTasks()
 				.create("awsCfnMigrateStack", AmazonCloudFormationMigrateStackTask.class, task -> {
 					task.setDescription("Create/Migrate cfn stack.");
 					task.mustRunAfter(awsCfnUploadTemplate);
+					task.mustRunAfter(awsCfnUploadPolicy);
 					task.conventionMapping("stackName", () -> cfnExt.getStackName());
 					task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
 					task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
@@ -73,6 +88,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 									.withParameterValue(it.getValue().toString()))
 							.collect(Collectors.toList()));
 					task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+					task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
 				});
 		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
