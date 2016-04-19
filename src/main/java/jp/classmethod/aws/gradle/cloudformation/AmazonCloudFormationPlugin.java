@@ -91,6 +91,21 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 					task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
 				});
 		
+		@SuppressWarnings("unused")
+		AmazonCloudFormationCreateChangeSetTask awsCfnCreateChangeSet = project.getTasks()
+				.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
+					task.setDescription("Create cfn change set.");
+					task.mustRunAfter(awsCfnUploadTemplate);
+					task.conventionMapping("stackName", () -> cfnExt.getStackName());
+					task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+					task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
+							.map(it -> new Parameter()
+									.withParameterKey(it.getKey().toString())
+									.withParameterValue(it.getValue().toString()))
+							.collect(Collectors.toList()));
+					task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				});
+		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
 			task.setDescription("Wait cfn stack for *_COMPLETE status.");
 			task.mustRunAfter(awsCfnMigrateStack);
