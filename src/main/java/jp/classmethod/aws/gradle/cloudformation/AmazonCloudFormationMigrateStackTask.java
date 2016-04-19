@@ -29,6 +29,8 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.Capability;
+import com.amazonaws.services.cloudformation.model.CreateChangeSetRequest;
+import com.amazonaws.services.cloudformation.model.CreateChangeSetResult;
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
 import com.amazonaws.services.cloudformation.model.CreateStackResult;
 import com.amazonaws.services.cloudformation.model.DeleteStackRequest;
@@ -56,7 +58,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	private boolean capabilityIam;
 	
 	@Getter @Setter
-	private String stackPolicyUrl;
+	private String cfnStackPolicyUrl;
 	
 	@Getter @Setter
 	private List<String> stableStatuses = Arrays.asList(
@@ -110,9 +112,9 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
-		String stackPolicyUrl = getStackPolicyUrl();
+		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
 		
-		getLogger().info("update stack: {}", stackName);
+		getLogger().info("Update stack: {}", stackName);
 		UpdateStackRequest req = new UpdateStackRequest()
 				.withStackName(stackName)
 				.withTemplateURL(cfnTemplateUrl)
@@ -120,11 +122,11 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
-		if (Strings.isNullOrEmpty(stackPolicyUrl)== false) {
-			req.setStackPolicyURL(stackPolicyUrl);
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl)== false) {
+			req.setStackPolicyURL(cfnStackPolicyUrl);
 		}
 		UpdateStackResult updateStackResult = cfn.updateStack(req);
-		getLogger().info("update requested: {}", updateStackResult.getStackId());
+		getLogger().info("Update requested: {}", updateStackResult.getStackId());
 	}
 	
 	private void deleteStack(AmazonCloudFormation cfn) throws InterruptedException {
@@ -142,7 +144,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
-		String stackPolicyUrl = getStackPolicyUrl();
+		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
 
 		getLogger().info("create stack: {}", stackName);
 		
@@ -153,8 +155,8 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
-		if (Strings.isNullOrEmpty(stackPolicyUrl)== false) {
-			req.setStackPolicyURL(stackPolicyUrl);
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl)== false) {
+			req.setStackPolicyURL(cfnStackPolicyUrl);
 		}
 		CreateStackResult createStackResult = cfn.createStack(req);
 		getLogger().info("create requested: {}", createStackResult.getStackId());

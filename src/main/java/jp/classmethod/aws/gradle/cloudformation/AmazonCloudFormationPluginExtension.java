@@ -85,6 +85,22 @@ public class AmazonCloudFormationPluginExtension {
 	
 	@Getter
 	@Setter
+	private String stackPolicyURL;
+	
+	@Getter
+	@Setter
+	private File stackPolicyFile;
+	
+	@Getter
+	@Setter
+	private String stackPolicyBucket;
+	
+	@Getter
+	@Setter
+	private String stackPolicyKeyPrefix;
+	
+	@Getter
+	@Setter
 	private boolean capabilityIam;
 	
 	@Getter(lazy = true)
