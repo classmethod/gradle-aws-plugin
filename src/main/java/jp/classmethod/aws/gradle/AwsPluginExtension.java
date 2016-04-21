@@ -64,12 +64,18 @@ public class AwsPluginExtension {
 	@Setter
 	private int proxyPort = -1;
 
+	@Setter
+	private AWSCredentialsProvider credentialsProvider;
+
 	public AwsPluginExtension(Project project) {
 		this.project = project;
 	}
 	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
 		List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
+		if(credentialsProvider != null) {
+			providers.add(credentialsProvider);
+		}
 		providers.add(new EnvironmentVariableCredentialsProvider());
 		providers.add(new SystemPropertiesCredentialsProvider());
 		if (Strings.isNullOrEmpty(profileName) == false) {
