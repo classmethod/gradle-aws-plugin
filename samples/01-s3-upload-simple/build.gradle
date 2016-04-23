@@ -1,10 +1,18 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
 
-import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
-import jp.classmethod.aws.gradle.s3.CreateBucketTask;
-import jp.classmethod.aws.gradle.s3.DeleteBucketTask;
+import com.amazonaws.auth.policy.Policy
+import com.amazonaws.auth.policy.Principal
+import com.amazonaws.auth.policy.Statement
+import com.amazonaws.auth.policy.actions.S3Actions
+import com.amazonaws.auth.policy.resources.S3BucketResource
+import com.amazonaws.auth.policy.resources.S3ObjectResource
+import com.amazonaws.services.s3.model.ObjectMetadata
+
+import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask
+import jp.classmethod.aws.gradle.s3.BucketPolicyTask
+import jp.classmethod.aws.gradle.s3.CreateBucketTask
+import jp.classmethod.aws.gradle.s3.DeleteBucketTask
 
 buildscript {
 	repositories {
@@ -22,23 +30,39 @@ aws {
 	region = "ap-northeast-1"
 }
 
+def myBucketName = 'gradle-aws-plugin-sample'
+
 task createBucket(type: CreateBucketTask) {
-	bucketName "gradle-aws-plugin-sample"
+	bucketName myBucketName
 	ifNotExists true
 }
 
 task deleteBucket(type: DeleteBucketTask) {
-	bucketName "gradle-aws-plugin-sample"
+	bucketName myBucketName
 	ifExists true
 	deleteObjects true
 }
 
 task uploadContent(type: AmazonS3FileUploadTask, dependsOn: createBucket) {
 	file file("target-file.txt") // must be directory
-	bucketName "gradle-aws-plugin-sample"
-	key "01-s3-upload-simple/"
+	bucketName myBucketName
+	key "01-s3-upload-simple.txt"
 	
 	def m = new ObjectMetadata()
 	m.setCacheControl("no-cache, no-store")
 	objectMetadata = m
+}
+
+task setBucketPolicy(type: BucketPolicyTask, dependsOn: createBucket) {
+	bucketName myBucketName
+	policy new Policy().withStatements(
+			new Statement(Statement.Effect.Allow)
+					.withPrincipals(Principal.AllUsers)
+					.withActions(S3Actions.GetObject)
+					.withResources(new S3ObjectResource(myBucketName, "*")),
+			new Statement(Statement.Effect.Allow)
+					.withPrincipals(Principal.AllUsers)
+					.withActions(S3Actions.ListObjects)
+					.withResources(new S3BucketResource(myBucketName))
+	)
 }
