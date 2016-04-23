@@ -81,10 +81,6 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	@Setter
 	private boolean capabilityIam;
 	
-	@Getter(lazy = true)
-	private final AmazonCloudFormation client = initClient();
-	
-	
 	public AmazonCloudFormationPluginExtension(Project project) {
 		super(project, AmazonCloudFormationClient.class);
 	}

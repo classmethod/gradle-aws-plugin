@@ -16,10 +16,10 @@
 package jp.classmethod.aws.gradle.route53;
 
 import com.amazonaws.services.route53.AmazonRoute53Client;
-import jp.classmethod.aws.gradle.common.BasePluginExtention;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 import org.gradle.api.Project;
 
-public class AmazonRoute53PluginExtension extends BasePluginExtention<AmazonRoute53Client> {
+public class AmazonRoute53PluginExtension extends BasePluginExtension<AmazonRoute53Client> {
 	
 	public static final String NAME = "route53";
 			

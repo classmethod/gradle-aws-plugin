@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.gradle.api.Project;
 
-public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient> extends BasePluginExtention<T> {
+public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient> extends BasePluginExtension<T> {
 
     @Getter
     @Setter
@@ -30,6 +30,8 @@ public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient> ex
     /**
      * Most clients require a region to be set, but a few allow it to be optional.
      * For optional clients, subclasses should override and return false.
+     *
+     * @return true if region is required (default), else false.
      */
     protected boolean isRegionRequired() {
         return true;

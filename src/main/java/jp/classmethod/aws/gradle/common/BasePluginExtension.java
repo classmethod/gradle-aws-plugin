@@ -5,9 +5,10 @@ import com.amazonaws.ClientConfiguration;
 import jp.classmethod.aws.gradle.AwsPluginExtension;
 import lombok.Getter;
 import lombok.Setter;
+import org.gradle.api.Nullable;
 import org.gradle.api.Project;
 
-public abstract class BasePluginExtention<T extends AmazonWebServiceClient> {
+public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 
     private final Class<T> awsClientClass;
 
@@ -21,7 +22,7 @@ public abstract class BasePluginExtention<T extends AmazonWebServiceClient> {
     @Getter(lazy = true)
     private final T client = initClient();
 
-    public BasePluginExtention(Project project, Class<T> awsClientClass) {
+    public BasePluginExtension(Project project, Class<T> awsClientClass) {
         this.project = project;
         this.awsClientClass = awsClientClass;
     }
@@ -33,7 +34,10 @@ public abstract class BasePluginExtention<T extends AmazonWebServiceClient> {
 
     /**
      * Allow subclasses to build a custom client configuration.
+     *
+     * @return  AWS ClientConfiguration
      */
+    @Nullable
     protected ClientConfiguration buildClientConfiguration() {
         return null;
     }
