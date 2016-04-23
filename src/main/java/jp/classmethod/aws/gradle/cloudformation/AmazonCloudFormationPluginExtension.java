@@ -15,49 +15,27 @@
  */
 package jp.classmethod.aws.gradle.cloudformation;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import jp.classmethod.aws.gradle.AwsPluginExtension;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
+import com.amazonaws.services.cloudformation.model.*;
+import com.amazonaws.services.cloudformation.model.Stack;
+import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.gradle.api.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.cloudformation.AmazonCloudFormation;
-import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
-import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
-import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
-import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
-import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
-import com.amazonaws.services.cloudformation.model.Parameter;
-import com.amazonaws.services.cloudformation.model.Stack;
-import com.amazonaws.services.cloudformation.model.StackResource;
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class AmazonCloudFormationPluginExtension {
+public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginExtension<AmazonCloudFormationClient> {
 	
 	private static Logger logger = LoggerFactory.getLogger(AmazonCloudFormationPluginExtension.class);
 	
 	public static final String NAME = "cloudFormation";
-	
-	@Getter
-	private final Project project;
-	
-	@Getter
-	@Setter
-	private String profileName;
-	
-	@Getter
-	@Setter
-	private String region;
 	
 	@Getter
 	@Setter
@@ -108,14 +86,7 @@ public class AmazonCloudFormationPluginExtension {
 	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
-		this.project = project;
-	}
-	
-	private AmazonCloudFormation initClient() {
-		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		AmazonCloudFormationClient client = aws.createClient(AmazonCloudFormationClient.class, profileName);
-		client.setRegion(aws.getActiveRegion(region));
-		return client;
+		super(project, AmazonCloudFormationClient.class);
 	}
 	
 	public Optional<Stack> getStack() {

@@ -15,49 +15,25 @@
  */
 package jp.classmethod.aws.gradle.elasticbeanstalk;
 
-import groovy.lang.Closure;
-
-import java.util.List;
-
-import jp.classmethod.aws.gradle.AwsPluginExtension;
-import lombok.Getter;
-import lombok.Setter;
-
-import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.Project;
-
-import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksResult;
+import groovy.lang.Closure;
+import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import lombok.Getter;
+import lombok.Setter;
+import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.Project;
+
+import java.util.List;
 
 
-public class AwsBeanstalkPluginExtension {
+public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<AWSElasticBeanstalkClient> {
 	
 	public static final String NAME = "beanstalk";
 
-	@Getter @Setter
-	private	Project project;
-	
-	@Getter @Setter
-	private	String profileName;
-	
-	@Getter @Setter
-	private String region;
-		
-	@Getter(lazy = true)
-	private final AWSElasticBeanstalk client = initClient();
-	
-	private AWSElasticBeanstalk initClient() {
-		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		AWSElasticBeanstalkClient client = aws.createClient(AWSElasticBeanstalkClient.class, profileName);
-		client.setRegion(aws.getActiveRegion(region));
-		return client;
-	}
-
-	
 	@Getter @Setter
 	private	String appName;
 	
@@ -89,7 +65,7 @@ public class AwsBeanstalkPluginExtension {
 	
 	
 	public AwsBeanstalkPluginExtension(Project project) {
-		this.project = project;
+		super(project, AWSElasticBeanstalkClient.class);
 		this.version = new EbAppVersionExtension();
 		this.configurationTemplates = project.container(EbConfigurationTemplateExtension.class);
 		this.environment = new EbEnvironmentExtension();

@@ -15,35 +15,16 @@
  */
 package jp.classmethod.aws.gradle.route53;
 
-import jp.classmethod.aws.gradle.AwsPluginExtension;
-import lombok.Getter;
-import lombok.Setter;
-
+import com.amazonaws.services.route53.AmazonRoute53Client;
+import jp.classmethod.aws.gradle.common.BasePluginExtention;
 import org.gradle.api.Project;
 
-import com.amazonaws.services.route53.AmazonRoute53;
-import com.amazonaws.services.route53.AmazonRoute53Client;
-
-
-public class AmazonRoute53PluginExtension {
+public class AmazonRoute53PluginExtension extends BasePluginExtention<AmazonRoute53Client> {
 	
 	public static final String NAME = "route53";
 			
-	@Getter @Setter
-	private	Project project;
-	
-	@Getter @Setter
-	private	String profileName;
-	
-	@Getter(lazy = true)
-	private final AmazonRoute53 client = initClient();
-
 	public AmazonRoute53PluginExtension(Project project) {
-		this.project = project;
+		super(project, AmazonRoute53Client.class);
 	}
 
-	private AmazonRoute53 initClient() {
-		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(AmazonRoute53Client.class, profileName);
-	}
 }
