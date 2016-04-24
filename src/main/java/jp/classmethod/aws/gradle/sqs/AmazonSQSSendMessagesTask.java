@@ -33,9 +33,8 @@ public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 
     private static final int MAX_MESSAGE_SEND_BATCH_SIZE = 10;
 
-    @Getter
-    @Setter
-    public Stream<String> messages;
+    @Getter @Setter
+    private Stream<String> messages;
 
     public AmazonSQSSendMessagesTask() {
         setDescription("Send messages to SQS");
