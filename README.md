@@ -61,6 +61,8 @@ Current Features / Supported AWS Products
   * Send messages
   * Delete messages
   * Read messages
+* SNS
+  * Publish message
 
 Requirements
 ------------
@@ -318,6 +320,26 @@ task viewMessages(type: AmazonSQSMessageConsumerTask) {
 ```
 
 Look [SQS example](samples/09-sqs) for more information.
+
+### SNS tasks
+```
+apply plugin: "jp.classmethod.aws.sns"
+
+task publishMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message 'Test body'
+	subject 'Optional test subject'
+}
+
+task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message JsonOutput.toJson(['default': 'Default message body.',
+							   'email'  : 'Email message body.',
+							   'sms': 'SMS message body.'])
+	messageStructure 'json'
+}
+```
+Look [SNS example](samples/10-sns) for more information.
 
 License
 -------
