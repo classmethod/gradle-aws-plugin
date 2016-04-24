@@ -23,8 +23,7 @@ import org.gradle.api.Project;
 
 public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient> extends BasePluginExtension<T> {
 
-    @Getter
-    @Setter
+    @Getter @Setter
     private String region;
 
     public BaseRegionAwarePluginExtension(Project project, Class<T> awsClientClass) {
