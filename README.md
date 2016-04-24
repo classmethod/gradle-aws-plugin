@@ -12,7 +12,7 @@ Current Features / Supported AWS Products
   * Upload object(s)
   * Delete object(s)
   * File sync
-  * Set Bucket Policy
+  * Set bucket policy
 * EC2
   * Run instance
   * Start instance
@@ -57,6 +57,10 @@ Current Features / Supported AWS Products
   * Attach role policy
 * ELB
   * (TBD)
+* SQS
+  * Send messages
+  * Delete messages
+  * Read messages
 
 Requirements
 ------------
@@ -291,6 +295,29 @@ task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
 
 Look [Lambda example](samples/08-lambda) for more information.
 
+### SQS tasks
+
+```
+apply plugin: "jp.classmethod.aws.sqs"
+
+task sendMessages(type: AmazonSQSSendMessagesTask) {
+	queueName 'gradle-aws-plugin-sample'
+	messages Stream.of("Test 1", "Test 2")
+}
+
+task deleteMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName 'gradle-aws-plugin-sample'
+	showMessages false
+}
+
+task viewMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName 'gradle-aws-plugin-sample'
+	deleteMessages false
+	maxNumberOfMessages 50
+}
+```
+
+Look [SQS example](samples/09-sqs) for more information.
 
 License
 -------
