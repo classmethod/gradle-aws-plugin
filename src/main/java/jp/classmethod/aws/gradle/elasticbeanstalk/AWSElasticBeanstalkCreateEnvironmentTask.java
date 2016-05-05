@@ -120,14 +120,30 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 		} else {
 			String environmentId = der.getEnvironments().get(0).getEnvironmentId();
 
-			eb.updateEnvironment(new UpdateEnvironmentRequest()
+			// Only these two values are required to deploy the a application
+			UpdateEnvironmentRequest req = new UpdateEnvironmentRequest()
 					.withEnvironmentId(environmentId)
-					.withEnvironmentName(envName)
-					.withDescription(envDesc)
-					.withTemplateName(templateName)
-					.withVersionLabel(versionLabel)
-					.withTier(tier.toEnvironmentTier()));
+					.withVersionLabel(versionLabel);
+
+			// All other variables are optional and refer to the environment
+			if (isNotBlank(envName)) {
+				req.withEnvironmentName(envName);
+			}
+			if (isNotBlank(envDesc)) {
+				req.withDescription(envDesc);
+			}
+			if (isNotBlank(templateName)) {
+				req.withTemplateName(templateName);
+			}
+
+			eb.updateEnvironment(req);
+
 			getLogger().info("environment {} @ {} ({}) updated", envName, appName, environmentId);
 		}
+	}
+
+	// simple helper method to not include apache commons lang's StringUtils only for this
+	private boolean isNotBlank(String str) {
+		return str != null && !str.trim().isEmpty();
 	}
 }
