@@ -115,7 +115,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		AmazonCloudFormationWaitStackStatusTask awsCfnWaitStackComplete =
 				project.getTasks().create("awsCfnWaitStackComplete", AmazonCloudFormationWaitStackStatusTask.class,
 						task -> {
-							task.setDescription("Wait cfn stack for CREATE_COMPETE or UPDATE_COMPLETE status.");
+							task.setDescription("Wait cfn stack for CREATE_COMPLETE or UPDATE_COMPLETE status.");
 							task.mustRunAfter(awsCfnMigrateStack);
 							task.setSuccessStatuses(Arrays.asList("CREATE_COMPLETE", "UPDATE_COMPLETE"));
 							task.conventionMapping("stackName", () -> cfnExt.getStackName());
@@ -123,7 +123,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		
 		project.getTasks().create("awsCfnMigrateStackAndWaitCompleted")
 			.dependsOn(awsCfnMigrateStack, awsCfnWaitStackComplete)
-			.setDescription("Create/Migrate cfn stack, and wait stack for CREATE_COMPETE or UPDATE_COMPLETE status.");
+			.setDescription("Create/Migrate cfn stack, and wait stack for CREATE_COMPLETE or UPDATE_COMPLETE status.");
 		
 		AmazonCloudFormationDeleteStackTask awsCfnDeleteStack =
 				project.getTasks().create("awsCfnDeleteStack", AmazonCloudFormationDeleteStackTask.class, task -> {
