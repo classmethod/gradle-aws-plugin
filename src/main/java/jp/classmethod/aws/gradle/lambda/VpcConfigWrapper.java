@@ -42,7 +42,7 @@ public class VpcConfigWrapper {
 		boolean missingSubnet = subnetIds == null || subnetIds.isEmpty();
 		boolean missingSecurityGroup = securityGroupIds == null || securityGroupIds.isEmpty();
 		if (missingSubnet || missingSecurityGroup) {
-			throw new GradleException("At least one subnet ID and one one security group are required for a VpcConfig");
+			throw new GradleException("At least one subnet ID and one security group are required for a VpcConfig");
 		}
 	}
 

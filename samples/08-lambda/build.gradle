@@ -42,6 +42,14 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 
 	// optional publish value
 	publish = true
+}
+
+task migrateFunctionWithVpc(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+	functionName = "foobar"
+	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+	zipFile = zip.archivePath
+	handler = "DecodeBase64.handler"
+
 	// optional VPC config
 	vpc = new VpcConfigWrapper()
 	vpc.subnetIds = ["subnet-A", "subnet-B"]
