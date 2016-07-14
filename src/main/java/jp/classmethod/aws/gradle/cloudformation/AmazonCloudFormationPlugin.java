@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,27 +21,28 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import jp.classmethod.aws.gradle.AwsPlugin;
-import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
-import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
-
 import org.apache.commons.io.FilenameUtils;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
 
+import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
+import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
+
 public class AmazonCloudFormationPlugin implements Plugin<Project> {
+	
 	
 	@Override
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getPluginManager().apply(AmazonS3Plugin.class);
-		project.getExtensions().create(AmazonCloudFormationPluginExtension.NAME, AmazonCloudFormationPluginExtension.class,
+		project.getExtensions().create(AmazonCloudFormationPluginExtension.NAME,
+				AmazonCloudFormationPluginExtension.class,
 				project);
 		applyTasks(project);
 	}
-	
 	
 	private void applyTasks(Project project) {
 		AmazonCloudFormationPluginExtension cfnExt =
@@ -76,35 +77,35 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 				});
 		
 		AmazonCloudFormationMigrateStackTask awsCfnMigrateStack = project.getTasks()
-				.create("awsCfnMigrateStack", AmazonCloudFormationMigrateStackTask.class, task -> {
-					task.setDescription("Create/Migrate cfn stack.");
-					task.mustRunAfter(awsCfnUploadTemplate);
-					task.mustRunAfter(awsCfnUploadPolicy);
-					task.conventionMapping("stackName", () -> cfnExt.getStackName());
-					task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
-					task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
-							.map(it -> new Parameter()
-									.withParameterKey(it.getKey().toString())
-									.withParameterValue(it.getValue().toString()))
-							.collect(Collectors.toList()));
-					task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
-					task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
-				});
+			.create("awsCfnMigrateStack", AmazonCloudFormationMigrateStackTask.class, task -> {
+				task.setDescription("Create/Migrate cfn stack.");
+				task.mustRunAfter(awsCfnUploadTemplate);
+				task.mustRunAfter(awsCfnUploadPolicy);
+				task.conventionMapping("stackName", () -> cfnExt.getStackName());
+				task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+				task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
+					.map(it -> new Parameter()
+						.withParameterKey(it.getKey().toString())
+						.withParameterValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
+				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
+			});
 		
 		@SuppressWarnings("unused")
 		AmazonCloudFormationCreateChangeSetTask awsCfnCreateChangeSet = project.getTasks()
-				.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
-					task.setDescription("Create cfn change set.");
-					task.mustRunAfter(awsCfnUploadTemplate);
-					task.conventionMapping("stackName", () -> cfnExt.getStackName());
-					task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
-					task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
-							.map(it -> new Parameter()
-									.withParameterKey(it.getKey().toString())
-									.withParameterValue(it.getValue().toString()))
-							.collect(Collectors.toList()));
-					task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
-				});
+			.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
+				task.setDescription("Create cfn change set.");
+				task.mustRunAfter(awsCfnUploadTemplate);
+				task.conventionMapping("stackName", () -> cfnExt.getStackName());
+				task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+				task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
+					.map(it -> new Parameter()
+						.withParameterKey(it.getKey().toString())
+						.withParameterValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
+				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+			});
 		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
 			task.setDescription("Wait cfn stack for *_COMPLETE status.");
@@ -144,23 +145,21 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 			.dependsOn(awsCfnDeleteStack, awsCfnWaitStackDeleted)
 			.setDescription("Delete cfn stack, and wait stack for DELETE_COMPLETE status.");
 	}
-
-
+	
 	private String createKey(String name, Object version, String prefix) {
 		String path = name.substring(FilenameUtils.getPrefix(name).length());
 		String baseName = FilenameUtils.getBaseName(name);
 		String extension = FilenameUtils.getExtension(name);
 		return String.format("%s/%s/%s-%s-%s%s", new Object[] {
-				prefix,
-				path,
-				baseName,
-				version,
-				createTimestamp(),
-				extension.length() > 0 ? "." + extension : ""
-			});
+			prefix,
+			path,
+			baseName,
+			version,
+			createTimestamp(),
+			extension.length() > 0 ? "." + extension : ""
+		});
 	}
-
-
+	
 	private String createTimestamp() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmmss");
 		sdf.setTimeZone(TimeZone.getDefault());

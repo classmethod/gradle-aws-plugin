@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,17 +31,21 @@ import com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
 public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask {
 	
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String appName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String envName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String envId;
 	
-	public AWSElasticBeanstalkTerminateEnvironmentTask(){
-		setDescription("Terminate(Delete) ElasticBeanstalk Environment."); 
+	
+	public AWSElasticBeanstalkTerminateEnvironmentTask() {
+		setDescription("Terminate(Delete) ElasticBeanstalk Environment.");
 		setGroup("AWS");
 	}
 	
@@ -51,7 +55,7 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 		String appName = getAppName();
 		String envName = getEnvName();
 		String envId = getEnvId();
-				
+		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
@@ -61,7 +65,7 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 				.withEnvironmentNames(envName));
 			
 			if (der.getEnvironments() == null || der.getEnvironments().isEmpty()) {
-				getLogger().warn("environment "+envName+" @ "+appName+" not found");
+				getLogger().warn("environment " + envName + " @ " + appName + " not found");
 				return;
 			}
 			
@@ -73,12 +77,12 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 			eb.terminateEnvironment(new TerminateEnvironmentRequest()
 				.withEnvironmentId(envId)
 				.withEnvironmentName(envName));
-			getLogger().info("environment "+envName+" ("+envId+") @ "+appName+" termination requested");
+			getLogger().info("environment " + envName + " (" + envId + ") @ " + appName + " termination requested");
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("No Environment found") == false) {
 				throw e;
 			}
-			getLogger().warn("environment "+envName+" ("+envId+") @ "+appName+" not found");
+			getLogger().warn("environment " + envName + " (" + envId + ") @ " + appName + " not found");
 		}
 	}
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,33 +35,43 @@ import com.amazonaws.services.elasticbeanstalk.model.Tag;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest;
 
 public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
-
-	@Getter @Setter
+	
+	
+	@Getter
+	@Setter
 	private String appName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String envName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String envDesc = "";
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String cnamePrefix = java.util.UUID.randomUUID().toString();
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String templateName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String versionLabel;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private Tier tier = Tier.WebServer;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private Map<String, String> tags = new HashMap<String, String>();
-
-	public AWSElasticBeanstalkCreateEnvironmentTask(){
-		setDescription("Create/Migrate ElasticBeanstalk Environment."); 
+	
+	
+	public AWSElasticBeanstalkCreateEnvironmentTask() {
+		setDescription("Create/Migrate ElasticBeanstalk Environment.");
 		setGroup("AWS");
 	}
 	
@@ -79,52 +89,52 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
-
+		
 		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
-				.withApplicationName(appName)
-				.withEnvironmentNames(envName)
-				.withIncludeDeleted(false));
-
+			.withApplicationName(appName)
+			.withEnvironmentNames(envName)
+			.withIncludeDeleted(false));
+		
 		List<Tag> ebTags = tags
-				.entrySet()
-				.stream()
-				.map(entry -> {
-					Tag t = new Tag();
-					t.setKey(entry.getKey());
-					t.setValue(entry.getValue());
-					return t;
-				})
-				.collect(Collectors.toList());
-
+			.entrySet()
+			.stream()
+			.map(entry -> {
+				Tag t = new Tag();
+				t.setKey(entry.getKey());
+				t.setValue(entry.getValue());
+				return t;
+			})
+			.collect(Collectors.toList());
+		
 		if (der.getEnvironments() == null || der.getEnvironments().isEmpty()) {
 			CreateEnvironmentRequest req = new CreateEnvironmentRequest()
-					.withApplicationName(appName)
-					.withEnvironmentName(envName)
-					.withDescription(envDesc)
-					.withTemplateName(templateName)
-					.withVersionLabel(versionLabel);
-
+				.withApplicationName(appName)
+				.withEnvironmentName(envName)
+				.withDescription(envDesc)
+				.withTemplateName(templateName)
+				.withVersionLabel(versionLabel);
+			
 			if (tier != null) {
 				req.withTier(tier.toEnvironmentTier());
 				if (tier == Tier.WebServer) {
 					req.withCNAMEPrefix(cnamePrefix);
 				}
 			}
-
-			if (ebTags!= null && !ebTags.isEmpty()) {
+			
+			if (ebTags != null && !ebTags.isEmpty()) {
 				req.withTags(ebTags);
 			}
-
+			
 			CreateEnvironmentResult result = eb.createEnvironment(req);
 			getLogger().info("environment {} @ {} ({}) created", envName, appName, result.getEnvironmentId());
 		} else {
 			String environmentId = der.getEnvironments().get(0).getEnvironmentId();
-
+			
 			// Only these two values are required to deploy the a application
 			UpdateEnvironmentRequest req = new UpdateEnvironmentRequest()
-					.withEnvironmentId(environmentId)
-					.withVersionLabel(versionLabel);
-
+				.withEnvironmentId(environmentId)
+				.withVersionLabel(versionLabel);
+			
 			// All other variables are optional and refer to the environment
 			if (isNotBlank(envName)) {
 				req.withEnvironmentName(envName);
@@ -135,13 +145,13 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask {
 			if (isNotBlank(templateName)) {
 				req.withTemplateName(templateName);
 			}
-
+			
 			eb.updateEnvironment(req);
-
+			
 			getLogger().info("environment {} @ {} ({}) updated", envName, appName, environmentId);
 		}
 	}
-
+	
 	// simple helper method to not include apache commons lang's StringUtils only for this
 	private boolean isNotBlank(String str) {
 		return str != null && !str.trim().isEmpty();

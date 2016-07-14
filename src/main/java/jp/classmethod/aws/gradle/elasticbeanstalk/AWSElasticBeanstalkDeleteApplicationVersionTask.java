@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,23 +24,28 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationVersionRequest;
 
-
 public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String applicationName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String versionLabel;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String bucketName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private boolean deleteSourceBundle = true;
-
-	public AWSElasticBeanstalkDeleteApplicationVersionTask(){
-		setDescription("Delete ElasticBeanstalk Application Version."); 
+	
+	
+	public AWSElasticBeanstalkDeleteApplicationVersionTask() {
+		setDescription("Delete ElasticBeanstalk Application Version.");
 		setGroup("AWS");
 	}
 	
@@ -50,7 +55,7 @@ public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionT
 		String applicationName = getApplicationName();
 		String versionLabel = getVersionLabel();
 		boolean deleteSourceBundle = isDeleteSourceBundle();
-
+		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
@@ -58,6 +63,6 @@ public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionT
 			.withApplicationName(applicationName)
 			.withVersionLabel(versionLabel)
 			.withDeleteSourceBundle(deleteSourceBundle));
-		getLogger().info("version "+versionLabel+" deleted");
+		getLogger().info("version " + versionLabel + " deleted");
 	}
 }

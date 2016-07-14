@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,17 +24,20 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteConfigurationTemplateRequest;
 
-
 public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String applicationName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String templateName;
 	
-	public AWSElasticBeanstalkDeleteConfigurationTemplateTask(){
-		setDescription("Delete ElasticBeanstalk Configuration Templates."); 
+	
+	public AWSElasticBeanstalkDeleteConfigurationTemplateTask() {
+		setDescription("Delete ElasticBeanstalk Configuration Templates.");
 		setGroup("AWS");
 	}
 	
@@ -43,7 +46,7 @@ public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends Conventi
 		// to enable conventionMappings feature
 		String applicationName = getApplicationName();
 		String templateName = getTemplateName();
-
+		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
@@ -51,6 +54,6 @@ public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends Conventi
 			.withApplicationName(applicationName)
 			.withTemplateName(templateName));
 		
-		getLogger().info ("configuration template "+templateName+" @ "+applicationName+" deleted");
+		getLogger().info("configuration template " + templateName + " @ " + applicationName + " deleted");
 	}
 }

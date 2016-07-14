@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,35 +26,42 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
-
 public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
-
-	@Getter @Setter
+	
+	
+	@Getter
+	@Setter
 	private String bucketName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String key;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private File file;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private ObjectMetadata objectMetadata;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String resourceUrl;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private boolean overwrite = false;
-
+	
+	
 	protected ObjectMetadata existingObjectMetadata() {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		String key = getKey();
-
+		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
-
+		
 		try {
 			// to enable conventionMapping, you must reference field via getters
 			return s3.getObjectMetadata(bucketName, key);
@@ -65,7 +72,7 @@ public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
 		}
 		return null;
 	}
-
+	
 	protected boolean exists() {
 		return existingObjectMetadata() != null;
 	}

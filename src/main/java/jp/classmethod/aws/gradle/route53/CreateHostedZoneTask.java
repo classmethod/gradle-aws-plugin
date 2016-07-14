@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,17 +33,21 @@ import com.amazonaws.services.route53.model.HostedZoneConfig;
 
 public class CreateHostedZoneTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String hostedZoneName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String callerReference;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String comment;
 	
 	// after did work
-
+	
 	@Getter
 	private CreateHostedZoneResult createHostedZoneResult;
 	
@@ -57,10 +61,11 @@ public class CreateHostedZoneTask extends ConventionTask {
 	@TaskAction
 	public void createHostedZone() throws UnknownHostException {
 		// to enable conventionMappings feature
-		String hostedZoneName= getHostedZoneName();
-		String callerReference = getCallerReference() != null ? getCallerReference() : InetAddress.getLocalHost().getHostName();
+		String hostedZoneName = getHostedZoneName();
+		String callerReference =
+				getCallerReference() != null ? getCallerReference() : InetAddress.getLocalHost().getHostName();
 		String comment = getComment();
-
+		
 		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
 		AmazonRoute53 route53 = ext.getClient();
 		

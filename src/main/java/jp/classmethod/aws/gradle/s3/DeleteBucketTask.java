@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,15 +28,18 @@ import com.amazonaws.services.s3.model.ObjectListing;
 
 public class DeleteBucketTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	String bucketName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	boolean ifExists;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	boolean deleteObjects;
-	
 	
 	
 	public DeleteBucketTask() {
@@ -49,8 +52,9 @@ public class DeleteBucketTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		boolean ifExists = isIfExists();
-
-		if (bucketName == null) throw new GradleException("bucketName is not specified");
+		
+		if (bucketName == null)
+			throw new GradleException("bucketName is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
@@ -77,7 +81,7 @@ public class DeleteBucketTask extends ConventionTask {
 	private boolean exists(AmazonS3 s3) {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
-
+		
 		try {
 			s3.getBucketLocation(bucketName);
 			return true;

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,20 +35,24 @@ import com.amazonaws.services.elasticbeanstalk.model.DeleteConfigurationTemplate
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateConfigurationTemplateRequest;
 
-
 public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends ConventionTask {
-
-	@Getter @Setter
+	
+	
+	@Getter
+	@Setter
 	private String appName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private Collection<EbConfigurationTemplateExtension> configurationTemplates = new ArrayList<>();
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String defaultSolutionStackName = "64bit Amazon Linux 2013.09 running Tomcat 7 Java 7";
-
-	public AWSElasticBeanstalkCreateConfigurationTemplateTask(){
-		setDescription("Create / Migrate ElasticBeanstalk Configuration Templates."); 
+	
+	
+	public AWSElasticBeanstalkCreateConfigurationTemplateTask() {
+		setDescription("Create / Migrate ElasticBeanstalk Configuration Templates.");
 		setGroup("AWS");
 	}
 	
@@ -56,62 +60,62 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 	public void createTemplate() {
 		// to enable conventionMappings feature
 		String appName = getAppName();
-
+		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		configurationTemplates.forEach(config -> {
 			String templateName = config.getName();
 			String templateDesc = config.getDesc();
-			String solutionStackName = config.getSolutionStackName() != null ? config.getSolutionStackName() : getDefaultSolutionStackName();
+			String solutionStackName = config.getSolutionStackName() != null ? config.getSolutionStackName()
+					: getDefaultSolutionStackName();
 			boolean deleteTemplateIfExists = config.isRecreate();
-
+			
 			try {
 				List<ConfigurationOptionSetting> optionSettings = loadConfigurationOptions(config.getOptionSettings());
 				List<ApplicationDescription> existingApps = eb.describeApplications(new DescribeApplicationsRequest()
-						.withApplicationNames(appName)).getApplications();
+					.withApplicationNames(appName)).getApplications();
 				if (existingApps.isEmpty()) {
-					throw new IllegalArgumentException("App with name '"+appName+"' does not exist");
+					throw new IllegalArgumentException("App with name '" + appName + "' does not exist");
 				}
-
+				
 				if (existingApps.get(0).getConfigurationTemplates().contains(templateName)) {
 					if (deleteTemplateIfExists) {
 						eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()
-								.withApplicationName(appName)
-								.withTemplateName(templateName));
+							.withApplicationName(appName)
+							.withTemplateName(templateName));
 						getLogger().info("configuration template {} @ {} deleted", templateName, appName);
-					}
-					else {
+					} else {
 						eb.updateConfigurationTemplate(new UpdateConfigurationTemplateRequest()
-								.withApplicationName(appName)
-								.withTemplateName(templateName)
-								.withDescription(templateDesc)
-								.withOptionSettings(optionSettings));
+							.withApplicationName(appName)
+							.withTemplateName(templateName)
+							.withDescription(templateDesc)
+							.withOptionSettings(optionSettings));
 						getLogger().info("configuration template {} @ {} updated", templateName, appName);
 						return;
 					}
 				}
-
+				
 				eb.createConfigurationTemplate(new CreateConfigurationTemplateRequest()
-						.withApplicationName(appName)
-						.withTemplateName(templateName)
-						.withDescription(templateDesc)
-						.withSolutionStackName(solutionStackName)
-						.withOptionSettings(optionSettings));
+					.withApplicationName(appName)
+					.withTemplateName(templateName)
+					.withDescription(templateDesc)
+					.withSolutionStackName(solutionStackName)
+					.withOptionSettings(optionSettings));
 				getLogger().info("configuration template {} @ {} created", templateName, appName);
 			} catch (IOException e) {
 				getLogger().error("IOException", e);
 			}
 		});
 	}
-
+	
 	List<ConfigurationOptionSetting> loadConfigurationOptions(String json) {
 		List<ConfigurationOptionSetting> options = new ArrayList<>();
 		@SuppressWarnings("unchecked")
-		Collection<Map<String,Object>> c = (Collection<Map<String,Object>>) new groovy.json.JsonSlurper().parseText(json);
-		c.forEach(it ->
-			options.add(new ConfigurationOptionSetting((String) it.get("Namespace"), (String) it.get("OptionName"), (String) it.get("Value")))
-		);
+		Collection<Map<String, Object>> c =
+				(Collection<Map<String, Object>>) new groovy.json.JsonSlurper().parseText(json);
+		c.forEach(it -> options.add(new ConfigurationOptionSetting((String) it.get("Namespace"),
+				(String) it.get("OptionName"), (String) it.get("Value"))));
 		return options;
 	}
 }

@@ -56,21 +56,6 @@ spotless {
 		customReplaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
 //		customReplaceRegex 'Remove indent before line comment', '^\\t*//', '//'
 	}
-	
-	// this will create two tasks: spotlessMiscCheck and spotlessMiscApply
-	format 'misc', {
-		// target determines which files this format will apply to
-		// - if you pass a string or a list of strings, they will be treated
-		//	   as 'include' parameters to a fileTree in the root directory
-		// - if you pass a FileCollection, it will pass through untouched
-		//	   e.g. project.files('build.gradle', 'settings.gradle')
-		// - if you pass anything else, it will be sent to project.files(yourArg)
-		target '**/*.gradle', '**/*.md', '**/.gitignore'
-		
-		// spotless has built-in rules for the most basic formatting tasks
-		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
-		endWithNewline()
-	}
 }
 
 // ======== create source and javadoc bundles ========

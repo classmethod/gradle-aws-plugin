@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,30 +31,37 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.google.common.base.Strings;
 
-
 public class AmazonEC2RunInstanceTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String ami;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String keyName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> securityGroupIds;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String userData;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String instanceType;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String subnetId;
-
+	
 	@Getter
 	private RunInstancesResult runInstancesResult;
-
+	
+	
 	public AmazonEC2RunInstanceTask() {
 		setDescription("Start EC2 instance.");
 		setGroup("AWS");
@@ -69,20 +76,21 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 		String userData = getUserData();
 		String instanceType = getInstanceType();
 		String subnetId = getSubnetId();
-
-		if (ami == null) throw new GradleException("AMI ID is required");
+		
+		if (ami == null)
+			throw new GradleException("AMI ID is required");
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		RunInstancesRequest request = new RunInstancesRequest()
-				.withImageId(ami)
-				.withKeyName(keyName)
-				.withMinCount(1)
-				.withMaxCount(1)
-				.withSecurityGroupIds(securityGroupIds)
-				.withInstanceType(instanceType)
-				.withSubnetId(subnetId);
+			.withImageId(ami)
+			.withKeyName(keyName)
+			.withMinCount(1)
+			.withMaxCount(1)
+			.withSecurityGroupIds(securityGroupIds)
+			.withInstanceType(instanceType)
+			.withSubnetId(subnetId);
 		if (Strings.isNullOrEmpty(this.userData) == false) {
 			request.setUserData(new String(Base64.getEncoder().encode(userData.getBytes())));
 		}

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,16 +15,21 @@
  */
 package jp.classmethod.aws.gradle.elasticloadbalancing;
 
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 import org.gradle.api.Project;
 
-public class AmazonElasticLoadBalancingPluginExtension extends BaseRegionAwarePluginExtension<AmazonElasticLoadBalancingClient> {
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+
+import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+
+public class AmazonElasticLoadBalancingPluginExtension
+		extends BaseRegionAwarePluginExtension<AmazonElasticLoadBalancingClient> {
+	
 	
 	public static final String NAME = "elb";
+	
 	
 	public AmazonElasticLoadBalancingPluginExtension(Project project) {
 		super(project, AmazonElasticLoadBalancingClient.class);
 	}
-
+	
 }

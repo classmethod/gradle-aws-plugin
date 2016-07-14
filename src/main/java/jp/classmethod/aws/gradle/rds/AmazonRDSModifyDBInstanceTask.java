@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,64 +28,81 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.ModifyDBInstanceRequest;
 
-
 public class AmazonRDSModifyDBInstanceTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String dbInstanceIdentifier;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Integer allocatedStorage;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbInstanceClass;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String masterUserPassword;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> vpcSecurityGroupIds;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String preferredMaintenanceWindow;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbParameterGroupName;
 	
-	@Getter @Setter
-	private	Integer backupRetentionPeriod;
+	@Getter
+	@Setter
+	private Integer backupRetentionPeriod;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String preferredBackupWindow;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean multiAZ;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String engineVersion;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean autoMinorVersionUpgrade;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Integer iops;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String optionGroupName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String storageType;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String tdeCredentialArn;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String tdeCredentialPassword;
 	
 	@Getter
 	private DBInstance dbInstance;
-
-
+	
+	
 	public AmazonRDSModifyDBInstanceTask() {
 		setDescription("Modify RDS instance.");
 		setGroup("AWS");
@@ -96,29 +113,30 @@ public class AmazonRDSModifyDBInstanceTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String dbInstanceIdentifier = getDbInstanceIdentifier();
 		
-		if (dbInstanceIdentifier == null) throw new GradleException("dbInstanceIdentifier is required");
+		if (dbInstanceIdentifier == null)
+			throw new GradleException("dbInstanceIdentifier is required");
 		
 		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		ModifyDBInstanceRequest request = new ModifyDBInstanceRequest()
-				.withDBInstanceIdentifier(dbInstanceIdentifier)
-				.withAllocatedStorage(getAllocatedStorage())
-				.withDBInstanceClass(getDbInstanceClass())
-				.withMasterUserPassword(getMasterUserPassword())
-				.withVpcSecurityGroupIds(getVpcSecurityGroupIds())
-				.withPreferredMaintenanceWindow(getPreferredMaintenanceWindow())
-				.withDBParameterGroupName(getDbParameterGroupName())
-				.withBackupRetentionPeriod(getBackupRetentionPeriod())
-				.withPreferredBackupWindow(getPreferredBackupWindow())
-				.withMultiAZ(getMultiAZ())
-				.withEngineVersion(getEngineVersion())
-				.withAutoMinorVersionUpgrade(getAutoMinorVersionUpgrade())
-				.withIops(getIops())
-				.withOptionGroupName(getOptionGroupName())
-				.withStorageType(getStorageType())
-				.withTdeCredentialArn(getTdeCredentialArn())
-				.withTdeCredentialPassword(getTdeCredentialPassword());
+			.withDBInstanceIdentifier(dbInstanceIdentifier)
+			.withAllocatedStorage(getAllocatedStorage())
+			.withDBInstanceClass(getDbInstanceClass())
+			.withMasterUserPassword(getMasterUserPassword())
+			.withVpcSecurityGroupIds(getVpcSecurityGroupIds())
+			.withPreferredMaintenanceWindow(getPreferredMaintenanceWindow())
+			.withDBParameterGroupName(getDbParameterGroupName())
+			.withBackupRetentionPeriod(getBackupRetentionPeriod())
+			.withPreferredBackupWindow(getPreferredBackupWindow())
+			.withMultiAZ(getMultiAZ())
+			.withEngineVersion(getEngineVersion())
+			.withAutoMinorVersionUpgrade(getAutoMinorVersionUpgrade())
+			.withIops(getIops())
+			.withOptionGroupName(getOptionGroupName())
+			.withStorageType(getStorageType())
+			.withTdeCredentialArn(getTdeCredentialArn())
+			.withTdeCredentialPassword(getTdeCredentialPassword());
 		dbInstance = rds.modifyDBInstance(request);
 		getLogger().info("Modify RDS instance requested: {}", dbInstance.getDBInstanceIdentifier());
 	}

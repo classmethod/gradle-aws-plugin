@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,18 +20,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.gradle.api.Project;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 
 import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
-import lombok.Getter;
-import lombok.Setter;
-
 
 public class AWSElasticBeanstalkUploadBundleTask extends AmazonS3FileUploadTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String extension = "zip";
 	
 	@Getter
@@ -55,11 +57,11 @@ public class AWSElasticBeanstalkUploadBundleTask extends AmazonS3FileUploadTask 
 		String artifactId = project.property("artifactId").toString();
 		
 		setBucketName(eb.createStorageLocation().getS3Bucket());
-		setKey(String.format("eb-apps/%s/%s-%s.%s", new Object[]{
-				artifactId,
-				artifactId,
-				versionLabel,
-				extension
+		setKey(String.format("eb-apps/%s/%s-%s.%s", new Object[] {
+			artifactId,
+			artifactId,
+			versionLabel,
+			extension
 		}));
 		
 		super.upload();
