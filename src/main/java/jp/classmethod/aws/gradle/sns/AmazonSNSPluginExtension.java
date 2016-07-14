@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.gradle.identitymanagement;
+package jp.classmethod.aws.gradle.sns;
 
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import jp.classmethod.aws.gradle.common.BasePluginExtension;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 import org.gradle.api.Project;
 
+public class AmazonSNSPluginExtension extends BaseRegionAwarePluginExtension<AmazonSNSClient> {
 
-public class AmazonIdentityManagementPluginExtension extends BasePluginExtension<AmazonIdentityManagementClient> {
-	
-	public static final String NAME = "iam";
-	
-	public AmazonIdentityManagementPluginExtension(Project project) {
-		super(project, AmazonIdentityManagementClient.class);
-	}
+    public static final String NAME = "sns";
+
+    public AmazonSNSPluginExtension(Project project) {
+        super(project, AmazonSNSClient.class);
+    }
 
 }

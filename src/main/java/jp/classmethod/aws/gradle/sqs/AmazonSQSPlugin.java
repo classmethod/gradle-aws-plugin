@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.gradle.identitymanagement;
+package jp.classmethod.aws.gradle.sqs;
 
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import jp.classmethod.aws.gradle.common.BasePluginExtension;
+import jp.classmethod.aws.gradle.AwsPlugin;
+import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+public class AmazonSQSPlugin implements Plugin<Project> {
 
-public class AmazonIdentityManagementPluginExtension extends BasePluginExtension<AmazonIdentityManagementClient> {
-	
-	public static final String NAME = "iam";
-	
-	public AmazonIdentityManagementPluginExtension(Project project) {
-		super(project, AmazonIdentityManagementClient.class);
-	}
-
+    public void apply(Project project) {
+        project.getPluginManager().apply(AwsPlugin.class);
+        project.getExtensions().create(AmazonSQSPluginExtension.NAME, AmazonSQSPluginExtension.class, project);
+    }
 }

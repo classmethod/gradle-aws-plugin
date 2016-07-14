@@ -1,0 +1,38 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import jp.classmethod.aws.gradle.sqs.AmazonSQSSendMessagesTask;
+import jp.classmethod.aws.gradle.sqs.AmazonSQSMessageConsumerTask;
+
+import java.util.stream.Stream;
+
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "jp.classmethod.aws.sqs"
+
+def myQueueName = 'gradle-aws-plugin-sample'
+
+task sendMessages(type: AmazonSQSSendMessagesTask) {
+	queueName myQueueName
+	messages Stream.generate { "Message ${UUID.randomUUID()}".toString() }.limit(250)
+}
+
+task deleteMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName myQueueName
+	showMessages false
+}
+
+task viewMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName myQueueName
+	deleteMessages false
+	maxNumberOfMessages 50
+}
