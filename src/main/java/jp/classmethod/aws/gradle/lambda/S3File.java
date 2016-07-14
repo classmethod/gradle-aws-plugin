@@ -22,6 +22,7 @@ import org.gradle.api.GradleException;
 
 public class S3File {
 	
+	
 	@Getter
 	@Setter
 	private String bucketName;

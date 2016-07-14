@@ -62,6 +62,7 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 			.withMetadata(getObjectMetadata()));
 		upload.addProgressListener(new ProgressListener() {
 			
+			
 			public void progressChanged(ProgressEvent event) {
 				getLogger().info("  {}% uploaded", upload.getProgress().getPercentTransferred());
 			}

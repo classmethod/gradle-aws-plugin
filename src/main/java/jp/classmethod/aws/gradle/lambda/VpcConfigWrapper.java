@@ -31,6 +31,7 @@ import com.amazonaws.services.lambda.model.VpcConfig;
  */
 public class VpcConfigWrapper {
 	
+	
 	@Getter
 	@Setter
 	private Collection<String> subnetIds;

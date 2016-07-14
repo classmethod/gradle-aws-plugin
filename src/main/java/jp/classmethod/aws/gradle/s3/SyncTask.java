@@ -113,6 +113,7 @@ public class SyncTask extends ConventionTask {
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
 			
+			
 			public void visitFile(FileVisitDetails element) {
 				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, getLogger()));
 			}
