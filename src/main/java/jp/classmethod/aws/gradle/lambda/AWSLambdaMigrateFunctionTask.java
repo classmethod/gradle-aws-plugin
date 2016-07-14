@@ -41,6 +41,7 @@ import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
+import com.amazonaws.services.lambda.model.VpcConfig;
 
 public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
@@ -70,6 +71,12 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 
 	@Getter @Setter
 	private S3File s3File;
+
+	@Getter @Setter
+	private VpcConfigWrapper vpc;
+
+	@Getter @Setter
+	private Boolean publish;
 
 	@Getter
 	private CreateFunctionResult createFunctionResult;
@@ -136,6 +143,8 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 				.withDescription(getFunctionDescription())
 				.withTimeout(getTimeout())
 				.withMemorySize(getMemorySize())
+				.withPublish(getPublish())
+				.withVpcConfig(getVpcConfig())
 				.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
@@ -178,8 +187,16 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			.withHandler(getHandler())
 			.withDescription(getFunctionDescription())
 			.withTimeout(getTimeout())
+			.withVpcConfig(getVpcConfig())
 			.withMemorySize(getMemorySize());
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}", updateFunctionConfiguration.getFunctionArn());
+	}
+
+	private VpcConfig getVpcConfig() {
+		if (getVpc() != null) {
+			return getVpc().toVpcConfig();
+		}
+		return null;
 	}
 }

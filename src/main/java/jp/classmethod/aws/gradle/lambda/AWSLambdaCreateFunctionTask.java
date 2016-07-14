@@ -34,6 +34,7 @@ import com.amazonaws.services.lambda.model.CreateFunctionRequest;
 import com.amazonaws.services.lambda.model.CreateFunctionResult;
 import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.lambda.model.Runtime;
+import com.amazonaws.services.lambda.model.VpcConfig;
 
 public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	
@@ -63,6 +64,12 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 
 	@Getter @Setter
 	private S3File s3File;
+
+	@Getter @Setter
+	private VpcConfigWrapper vpc;
+
+	@Getter @Setter
+	private Boolean publish;
 
 	@Getter
 	private CreateFunctionResult createFunctionResult;
@@ -114,8 +121,17 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 			.withDescription(getFunctionDescription())
 			.withTimeout(getTimeout())
 			.withMemorySize(getMemorySize())
+			.withPublish(getPublish())
+			.withVpcConfig(getVpcConfig())
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
+	}
+
+	private VpcConfig getVpcConfig() {
+		if (getVpc() != null) {
+			return getVpc().toVpcConfig();
+		}
+		return null;
 	}
 }
