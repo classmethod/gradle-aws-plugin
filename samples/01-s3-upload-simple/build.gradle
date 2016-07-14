@@ -1,6 +1,5 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-
 import com.amazonaws.auth.policy.Policy
 import com.amazonaws.auth.policy.Principal
 import com.amazonaws.auth.policy.Statement
@@ -44,7 +43,7 @@ task deleteBucket(type: DeleteBucketTask) {
 }
 
 task uploadContent(type: AmazonS3FileUploadTask, dependsOn: createBucket) {
-	file file("target-file.txt") // must be directory
+	file file("target-file.txt") // must be a file
 	bucketName myBucketName
 	key "01-s3-upload-simple.txt"
 	

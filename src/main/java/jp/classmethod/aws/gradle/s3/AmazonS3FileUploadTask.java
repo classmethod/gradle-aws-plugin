@@ -59,7 +59,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 			getLogger().info("uploading... "+bucketName+"/"+key);
 			s3.putObject(new PutObjectRequest(bucketName, key, file)
 				.withMetadata(getObjectMetadata()));
-			getLogger().info("upload completed: "+getResourceUrl());
+			getLogger().info("upload completed: " + ((AmazonS3Client) s3).getResourceUrl(bucketName, key));
 		} else {
 			getLogger().info("s3://{}/{} already exists with matching md5 sum -- skipped", bucketName, key);
 		}
