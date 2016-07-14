@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package jp.classmethod.aws.gradle.ec2;
-
-import groovy.lang.GString;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,8 +26,10 @@ import org.gradle.api.internal.ConventionTask;
 
 import com.amazonaws.services.ec2.model.IpPermission;
 
+import groovy.lang.GString;
 
 abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTask {
+	
 	
 	protected Collection<IpPermission> parse(Object e) {
 		if (e instanceof IpPermission) {
@@ -39,7 +39,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 		if (e instanceof Collection) {
 			elements = (Collection<?>) e;
 		} else {
-			elements =  Collections.singleton(e);
+			elements = Collections.singleton(e);
 		}
 		
 		return elements.stream().map(it -> {
@@ -54,7 +54,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 				if (expression.contains(":") == false) {
 					throw new ParseException(expression);
 				}
-			
+				
 				String protocol;
 				int fromPort;
 				int toPort;
@@ -77,7 +77,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 					if (portExpression.contains("-")) {
 						String[] ports = portExpression.split("-", 2);
 						fromPort = Integer.parseInt(ports[0]);
-						toPort   = Integer.parseInt(ports[1]);
+						toPort = Integer.parseInt(ports[1]);
 					} else {
 						fromPort = toPort = Integer.parseInt(portExpression);
 					}

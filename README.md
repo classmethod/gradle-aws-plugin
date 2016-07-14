@@ -12,7 +12,7 @@ Current Features / Supported AWS Products
   * Upload object(s)
   * Delete object(s)
   * File sync
-  * Set Bucket Policy
+  * Set bucket policy
 * EC2
   * Run instance
   * Start instance
@@ -57,6 +57,12 @@ Current Features / Supported AWS Products
   * Attach role policy
 * ELB
   * (TBD)
+* SQS
+  * Send messages
+  * Delete messages
+  * Read messages
+* SNS
+  * Publish message
 
 Requirements
 ------------
@@ -291,6 +297,49 @@ task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
 
 Look [Lambda example](samples/08-lambda) for more information.
 
+### SQS tasks
+
+```
+apply plugin: "jp.classmethod.aws.sqs"
+
+task sendMessages(type: AmazonSQSSendMessagesTask) {
+	queueName 'gradle-aws-plugin-sample'
+	messages Stream.of("Test 1", "Test 2")
+}
+
+task deleteMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName 'gradle-aws-plugin-sample'
+	showMessages false
+}
+
+task viewMessages(type: AmazonSQSMessageConsumerTask) {
+	queueName 'gradle-aws-plugin-sample'
+	deleteMessages false
+	maxNumberOfMessages 50
+}
+```
+
+Look [SQS example](samples/09-sqs) for more information.
+
+### SNS tasks
+```
+apply plugin: "jp.classmethod.aws.sns"
+
+task publishMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message 'Test body'
+	subject 'Optional test subject'
+}
+
+task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message JsonOutput.toJson(['default': 'Default message body.',
+							   'email'  : 'Email message body.',
+							   'sms': 'SMS message body.'])
+	messageStructure 'json'
+}
+```
+Look [SNS example](samples/10-sns) for more information.
 
 License
 -------

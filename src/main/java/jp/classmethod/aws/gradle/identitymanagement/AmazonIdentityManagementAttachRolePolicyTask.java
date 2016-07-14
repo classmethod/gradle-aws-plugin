@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,17 +28,21 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.model.AttachRolePolicyRequest;
 
-
 public class AmazonIdentityManagementAttachRolePolicyTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String path = "/";
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String roleName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> policyArns = new ArrayList<>();
+	
 	
 	public AmazonIdentityManagementAttachRolePolicyTask() {
 		setDescription("Attach managed policies to role.");
@@ -50,9 +54,11 @@ public class AmazonIdentityManagementAttachRolePolicyTask extends ConventionTask
 		// to enable conventionMappings feature
 		String roleName = getRoleName();
 		
-		if (roleName == null) throw new GradleException("roleName is required");
+		if (roleName == null)
+			throw new GradleException("roleName is required");
 		
-		AmazonIdentityManagementPluginExtension ext = getProject().getExtensions().getByType(AmazonIdentityManagementPluginExtension.class);
+		AmazonIdentityManagementPluginExtension ext =
+				getProject().getExtensions().getByType(AmazonIdentityManagementPluginExtension.class);
 		AmazonIdentityManagement iam = ext.getClient();
 		
 		policyArns.stream().forEach(policyArn -> {

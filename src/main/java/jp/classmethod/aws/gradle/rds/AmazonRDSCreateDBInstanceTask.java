@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,94 +28,121 @@ import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
 import com.amazonaws.services.rds.model.DBInstance;
 
-
 public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String dbName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbInstanceIdentifier;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Integer allocatedStorage;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbInstanceClass;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String engine;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String masterUsername;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String masterUserPassword;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> vpcSecurityGroupIds;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbSubnetGroupName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String preferredMaintenanceWindow;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String dbParameterGroupName;
 	
-	@Getter @Setter
-	private	Integer backupRetentionPeriod;
+	@Getter
+	@Setter
+	private Integer backupRetentionPeriod;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String preferredBackupWindow;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Integer port;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean multiAZ;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String engineVersion;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean autoMinorVersionUpgrade;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String licenseModel;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Integer iops;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String optionGroupName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean publiclyAccessible;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String characterSetName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String storageType;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String tdeCredentialArn;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String tdeCredentialPassword;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Boolean storageEncrypted;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String kmsKeyId;
 	
 	@Getter
 	private DBInstance dbInstance;
-
-
+	
+	
 	public AmazonRDSCreateDBInstanceTask() {
 		setDescription("Create RDS instance.");
 		setGroup("AWS");
@@ -128,41 +155,44 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 		String dbInstanceClass = getDbInstanceClass();
 		String engine = getEngine();
 		
-		if (dbInstanceClass == null) throw new GradleException("dbInstanceClass is required");
-		if (dbInstanceIdentifier == null) throw new GradleException("dbInstanceIdentifier is required");
-		if (engine == null) throw new GradleException("engine is required");
+		if (dbInstanceClass == null)
+			throw new GradleException("dbInstanceClass is required");
+		if (dbInstanceIdentifier == null)
+			throw new GradleException("dbInstanceIdentifier is required");
+		if (engine == null)
+			throw new GradleException("engine is required");
 		
 		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		CreateDBInstanceRequest request = new CreateDBInstanceRequest()
-				.withDBName(getDbName())
-				.withDBInstanceIdentifier(dbInstanceIdentifier)
-				.withAllocatedStorage(getAllocatedStorage())
-				.withDBInstanceClass(dbInstanceClass)
-				.withEngine(engine)
-				.withMasterUsername(getMasterUsername())
-				.withMasterUserPassword(getMasterUserPassword())
-				.withVpcSecurityGroupIds(getVpcSecurityGroupIds())
-				.withDBSubnetGroupName(getDbSubnetGroupName())
-				.withPreferredMaintenanceWindow(getPreferredMaintenanceWindow())
-				.withDBParameterGroupName(getDbParameterGroupName())
-				.withBackupRetentionPeriod(getBackupRetentionPeriod())
-				.withPreferredBackupWindow(getPreferredBackupWindow())
-				.withPort(getPort())
-				.withMultiAZ(getMultiAZ())
-				.withEngineVersion(getEngineVersion())
-				.withAutoMinorVersionUpgrade(getAutoMinorVersionUpgrade())
-				.withLicenseModel(getLicenseModel())
-				.withIops(getIops())
-				.withOptionGroupName(getOptionGroupName())
-				.withPubliclyAccessible(getPubliclyAccessible())
-				.withCharacterSetName(getCharacterSetName())
-				.withStorageType(getStorageType())
-				.withTdeCredentialArn(getTdeCredentialArn())
-				.withTdeCredentialPassword(getTdeCredentialPassword())
-				.withStorageEncrypted(getStorageEncrypted())
-				.withKmsKeyId(getKmsKeyId());
+			.withDBName(getDbName())
+			.withDBInstanceIdentifier(dbInstanceIdentifier)
+			.withAllocatedStorage(getAllocatedStorage())
+			.withDBInstanceClass(dbInstanceClass)
+			.withEngine(engine)
+			.withMasterUsername(getMasterUsername())
+			.withMasterUserPassword(getMasterUserPassword())
+			.withVpcSecurityGroupIds(getVpcSecurityGroupIds())
+			.withDBSubnetGroupName(getDbSubnetGroupName())
+			.withPreferredMaintenanceWindow(getPreferredMaintenanceWindow())
+			.withDBParameterGroupName(getDbParameterGroupName())
+			.withBackupRetentionPeriod(getBackupRetentionPeriod())
+			.withPreferredBackupWindow(getPreferredBackupWindow())
+			.withPort(getPort())
+			.withMultiAZ(getMultiAZ())
+			.withEngineVersion(getEngineVersion())
+			.withAutoMinorVersionUpgrade(getAutoMinorVersionUpgrade())
+			.withLicenseModel(getLicenseModel())
+			.withIops(getIops())
+			.withOptionGroupName(getOptionGroupName())
+			.withPubliclyAccessible(getPubliclyAccessible())
+			.withCharacterSetName(getCharacterSetName())
+			.withStorageType(getStorageType())
+			.withTdeCredentialArn(getTdeCredentialArn())
+			.withTdeCredentialPassword(getTdeCredentialPassword())
+			.withStorageEncrypted(getStorageEncrypted())
+			.withKmsKeyId(getKmsKeyId());
 		dbInstance = rds.createDBInstance(request);
 		getLogger().info("Create RDS instance requested: {}", dbInstance.getDBInstanceIdentifier());
 	}

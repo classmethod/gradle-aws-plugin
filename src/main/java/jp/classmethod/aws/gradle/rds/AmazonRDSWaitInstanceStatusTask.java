@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,33 +32,36 @@ import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 
-
 public class AmazonRDSWaitInstanceStatusTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String dbInstanceIdentifier;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> successStatuses = Arrays.asList(
-		"available",
-		"backing-up",
-		"terminated"
-	);
-
-	@Getter @Setter
-	private List<String> waitStatuses = Arrays.asList(
-		"creating",
-		"deleting",
-		"modifying",
-		"rebooting",
-		"renaming",
-		"resetting-master-credentials"
-	);
+			"available",
+			"backing-up",
+			"terminated");
 	
-	@Getter @Setter
+	@Getter
+	@Setter
+	private List<String> waitStatuses = Arrays.asList(
+			"creating",
+			"deleting",
+			"modifying",
+			"rebooting",
+			"renaming",
+			"resetting-master-credentials");
+	
+	@Getter
+	@Setter
 	private int loopTimeout = 900; // sec
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int loopWait = 10; // sec
 	
 	@Getter
@@ -67,11 +70,12 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask {
 	@Getter
 	private String lastStatus;
 	
+	
 	public AmazonRDSWaitInstanceStatusTask() {
 		setDescription("Wait RDS instance for specific status.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void waitInstanceForStatus() {
 		// to enable conventionMappings feature
@@ -80,8 +84,9 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask {
 		List<String> waitStatuses = getWaitStatuses();
 		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
-
-		if (dbInstanceIdentifier == null) throw new GradleException("dbInstanceIdentifier is not specified");
+		
+		if (dbInstanceIdentifier == null)
+			throw new GradleException("dbInstanceIdentifier is not specified");
 		
 		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
@@ -110,7 +115,8 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask {
 					}
 				} else {
 					// fail when current status is not waitStatuses or successStatuses
-					throw new GradleException("Status of " + dbInstanceIdentifier + " is " + lastStatus + ".  It seems to be failed.");
+					throw new GradleException(
+							"Status of " + dbInstanceIdentifier + " is " + lastStatus + ".  It seems to be failed.");
 				}
 			} catch (DBInstanceNotFoundException e) {
 				throw new GradleException(dbInstanceIdentifier + " is not exists", e);

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,48 +16,31 @@
 package jp.classmethod.aws.gradle.cloudformation;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import jp.classmethod.aws.gradle.AwsPluginExtension;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.gradle.api.Project;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
-import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
-import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
-import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
-import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
-import com.amazonaws.services.cloudformation.model.Parameter;
+import com.amazonaws.services.cloudformation.model.*;
 import com.amazonaws.services.cloudformation.model.Stack;
-import com.amazonaws.services.cloudformation.model.StackResource;
 
-public class AmazonCloudFormationPluginExtension {
+import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+
+public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginExtension<AmazonCloudFormationClient> {
+	
 	
 	private static Logger logger = LoggerFactory.getLogger(AmazonCloudFormationPluginExtension.class);
 	
 	public static final String NAME = "cloudFormation";
-	
-	@Getter
-	private final Project project;
-	
-	@Getter
-	@Setter
-	private String profileName;
-	
-	@Getter
-	@Setter
-	private String region;
 	
 	@Getter
 	@Setter
@@ -103,19 +86,9 @@ public class AmazonCloudFormationPluginExtension {
 	@Setter
 	private boolean capabilityIam;
 	
-	@Getter(lazy = true)
-	private final AmazonCloudFormation client = initClient();
-	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
-		this.project = project;
-	}
-	
-	private AmazonCloudFormation initClient() {
-		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		AmazonCloudFormationClient client = aws.createClient(AmazonCloudFormationClient.class, profileName);
-		client.setRegion(aws.getActiveRegion(region));
-		return client;
+		super(project, AmazonCloudFormationClient.class);
 	}
 	
 	public Optional<Stack> getStack() {
@@ -126,7 +99,7 @@ public class AmazonCloudFormationPluginExtension {
 		if (getProject().getGradle().getStartParameter().isOffline() == false) {
 			try {
 				DescribeStacksResult describeStacksResult = getClient().describeStacks(new DescribeStacksRequest()
-				.withStackName(stackName));
+					.withStackName(stackName));
 				List<Stack> stacks = describeStacksResult.getStacks();
 				if (stacks.isEmpty() == false) {
 					return stacks.stream().findAny();
@@ -180,26 +153,26 @@ public class AmazonCloudFormationPluginExtension {
 	
 	public String findStackParameterValue(List<Parameter> cfnStackParameters, String key) {
 		Optional<Parameter> param = cfnStackParameters.stream()
-				.filter(p -> p.getParameterKey().equals(key))
-				.findAny();
+			.filter(p -> p.getParameterKey().equals(key))
+			.findAny();
 		if (param.isPresent() == false) {
 			logger.warn("WARN: cfn stack parameter {} is not found", key);
 			return "***unknown***";
 		}
 		return param.get().getParameterValue();
 	}
-
+	
 	public String getPhysicalResourceId(String logicalResourceId) {
 		return findPhysicalResourceId(getStackResources(), logicalResourceId);
 	}
-
+	
 	public String getPhysicalResourceId(String stackName, String logicalResourceId) {
 		return findPhysicalResourceId(getStackResources(stackName), logicalResourceId);
 	}
 	
 	public String findPhysicalResourceId(List<StackResource> cfnPhysicalResources, String logicalResourceId) {
 		Optional<StackResource> cfnPhysicalResource = cfnPhysicalResources.stream()
-				.filter(r -> r.getLogicalResourceId().equals(logicalResourceId)).findAny();
+			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId)).findAny();
 		if (cfnPhysicalResource.isPresent() == false) {
 			logger.warn("WARN: cfn physical resource {} is not found", logicalResourceId);
 			return "***unknown***";
@@ -209,8 +182,8 @@ public class AmazonCloudFormationPluginExtension {
 	
 	public List<Parameter> toParameters(Map<String, String> map) {
 		return map.entrySet().stream()
-				.map(e -> new Parameter().withParameterKey(e.getKey()).withParameterValue(e.getValue()))
-				.collect(Collectors.toList());
+			.map(e -> new Parameter().withParameterKey(e.getKey()).withParameterValue(e.getValue()))
+			.collect(Collectors.toList());
 	}
 	
 	public Map<String, String> toMap(List<Parameter> parameters) {

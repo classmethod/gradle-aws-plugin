@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.model.InvocationType;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
+import jp.classmethod.aws.gradle.lambda.VpcConfigWrapper
 
 buildscript {
 	repositories {
@@ -38,6 +39,22 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
 	zipFile = zip.archivePath
 	handler = "DecodeBase64.handler"
+
+	// optional publish value
+	publish = true
+}
+
+task migrateFunctionWithVpc(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+	functionName = "foobar"
+	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+	zipFile = zip.archivePath
+	handler = "DecodeBase64.handler"
+
+	// optional VPC config
+	vpc = new VpcConfigWrapper()
+	vpc.subnetIds = ["subnet-A", "subnet-B"]
+	vpc.securityGroupIds = ["sg-A", "sg-B"]
+
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {

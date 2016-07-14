@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package jp.classmethod.aws.gradle.lambda;
-
-import groovy.lang.Closure;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,28 +35,38 @@ import com.amazonaws.services.lambda.model.LogType;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import groovy.lang.Closure;
+
 public class AWSLambdaInvokeTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String functionName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private InvocationType invocationType;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private LogType logType = LogType.None;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String clientContext;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String qualifier;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private Object payload;
 	
 	@Getter
 	private InvokeResult invokeResult;
+	
 	
 	public AWSLambdaInvokeTask() {
 		setDescription("Invoke Lambda function.");
@@ -70,22 +78,23 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String functionName = getFunctionName();
 		
-		if (functionName == null) throw new GradleException("functionName is required");
+		if (functionName == null)
+			throw new GradleException("functionName is required");
 		
 		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		InvokeRequest request = new InvokeRequest()
-				.withFunctionName(functionName)
-				.withInvocationType(getInvocationType())
-				.withLogType(getLogType())
-				.withClientContext(getClientContext())
-				.withQualifier(getQualifier());
+			.withFunctionName(functionName)
+			.withInvocationType(getInvocationType())
+			.withLogType(getLogType())
+			.withClientContext(getClientContext())
+			.withQualifier(getQualifier());
 		setupPayload(request);
 		invokeResult = lambda.invoke(request);
 		getLogger().info("Invoke Lambda function requested: {}", functionName);
 	}
-
+	
 	private void setupPayload(InvokeRequest request) throws IOException {
 		Object payload = getPayload();
 		String str;

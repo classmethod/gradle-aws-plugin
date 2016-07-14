@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,6 @@
  */
 package jp.classmethod.aws.gradle.s3;
 
-import groovy.lang.Closure;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,18 +28,25 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+import groovy.lang.Closure;
+
 public class BulkUploadTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String bucketName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String prefix;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private FileTree source;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
 	
@@ -50,23 +56,24 @@ public class BulkUploadTask extends ConventionTask {
 		String bucketName = getBucketName();
 		String prefix = getNormalizedPrefix();
 		FileTree source = getSource();
-
+		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		getLogger().info("uploading... {} to s3://{}/{}", source, bucketName, prefix);
 		source.visit(new EmptyFileVisitor() {
+			
 			public void visitFile(FileVisitDetails element) {
 				String key = prefix + element.getRelativePath();
 				getLogger().info(" => s3://{}/{}", bucketName, key);
 				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
-					.withMetadata(metadataProvider == null ? null : metadataProvider.call(getBucketName(), key, element.getFile())));
+					.withMetadata(metadataProvider == null ? null
+							: metadataProvider.call(getBucketName(), key, element.getFile())));
 			}
 		});
 	}
-
-
+	
 	private String getNormalizedPrefix() {
 		String prefix = getPrefix();
 		if (prefix.startsWith("/")) {

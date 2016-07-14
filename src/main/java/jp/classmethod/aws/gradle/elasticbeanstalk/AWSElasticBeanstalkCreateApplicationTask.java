@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,15 +28,19 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsResult;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateApplicationRequest;
 
 public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
-
-	@Getter @Setter
+	
+	
+	@Getter
+	@Setter
 	private String appName;
-
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String appDesc = "";
-
-	public AWSElasticBeanstalkCreateApplicationTask(){
-		setDescription("Create/Migrate ElasticBeanstalk Application."); 
+	
+	
+	public AWSElasticBeanstalkCreateApplicationTask() {
+		setDescription("Create/Migrate ElasticBeanstalk Application.");
 		setGroup("AWS");
 	}
 	
@@ -48,19 +52,19 @@ public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
 		
 		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
-
+		
 		DescribeApplicationsResult existingApps = eb.describeApplications(new DescribeApplicationsRequest()
-				.withApplicationNames(appName));
+			.withApplicationNames(appName));
 		if (existingApps.getApplications().isEmpty()) {
 			eb.createApplication(new CreateApplicationRequest()
-					.withApplicationName(appName)
-					.withDescription(appDesc));
-			getLogger().info("application "+appName+" ("+appDesc+") created");
+				.withApplicationName(appName)
+				.withDescription(appDesc));
+			getLogger().info("application " + appName + " (" + appDesc + ") created");
 		} else {
 			eb.updateApplication(new UpdateApplicationRequest()
-					.withApplicationName(appName)
-					.withDescription(appDesc));
-			getLogger().info("application "+appName+" ("+appDesc+") updated");
+				.withApplicationName(appName)
+				.withDescription(appDesc));
+			getLogger().info("application " + appName + " (" + appDesc + ") updated");
 		}
 	}
 }

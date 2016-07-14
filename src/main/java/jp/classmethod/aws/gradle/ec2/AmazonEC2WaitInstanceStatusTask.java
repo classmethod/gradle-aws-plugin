@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,30 +31,33 @@ import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 
-
 public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String instanceId;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> successStatuses = Arrays.asList(
-		"running",
-		"stopped",
-		"terminated"
-	);
-
-	@Getter @Setter
-	private List<String> waitStatuses = Arrays.asList(
-		"pending",
-		"shutting-down",
-		"stopping"
-	);
+			"running",
+			"stopped",
+			"terminated");
 	
-	@Getter @Setter
+	@Getter
+	@Setter
+	private List<String> waitStatuses = Arrays.asList(
+			"pending",
+			"shutting-down",
+			"stopping");
+	
+	@Getter
+	@Setter
 	private int loopTimeout = 900; // sec
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int loopWait = 10; // sec
 	
 	@Getter
@@ -63,11 +66,12 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 	@Getter
 	private String lastStatus;
 	
+	
 	public AmazonEC2WaitInstanceStatusTask() {
 		setDescription("Wait EC2 instance for specific status.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void waitInstanceForStatus() {
 		// to enable conventionMappings feature
@@ -76,8 +80,9 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 		List<String> waitStatuses = getWaitStatuses();
 		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
-
-		if (instanceId == null) throw new GradleException("instanceId is not specified");
+		
+		if (instanceId == null)
+			throw new GradleException("instanceId is not specified");
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
@@ -109,7 +114,8 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask {
 					}
 				} else {
 					// fail when current status is not waitStatuses or successStatuses
-					throw new GradleException("Status of "+instanceId+" is "+lastStatus+".  It seems to be failed.");
+					throw new GradleException(
+							"Status of " + instanceId + " is " + lastStatus + ".  It seems to be failed.");
 				}
 			} catch (AmazonServiceException e) {
 				if (found) {

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,6 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.Capability;
-import com.amazonaws.services.cloudformation.model.CreateChangeSetRequest;
-import com.amazonaws.services.cloudformation.model.CreateChangeSetResult;
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
 import com.amazonaws.services.cloudformation.model.CreateStackResult;
 import com.amazonaws.services.cloudformation.model.DeleteStackRequest;
@@ -42,28 +40,34 @@ import com.amazonaws.services.cloudformation.model.UpdateStackRequest;
 import com.amazonaws.services.cloudformation.model.UpdateStackResult;
 import com.google.common.base.Strings;
 
-
 public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
-	@Getter @Setter
+	
+	@Getter
+	@Setter
 	private String stackName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String cfnTemplateUrl;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<Parameter> cfnStackParams = new ArrayList<>();
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private boolean capabilityIam;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String cfnStackPolicyUrl;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<String> stableStatuses = Arrays.asList(
-		"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE"
-	);
+			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
+	
 	
 	public AmazonCloudFormationMigrateStackTask() {
 		setDescription("Create / Migrate cfn stack.");
@@ -77,14 +81,18 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<String> stableStatuses = getStableStatuses();
 		
-		if (stackName == null) throw new GradleException("stackName is not specified");
-		if (cfnTemplateUrl == null) throw new GradleException("cfnTemplateUrl is not specified");
+		if (stackName == null)
+			throw new GradleException("stackName is not specified");
+		if (cfnTemplateUrl == null)
+			throw new GradleException("cfnTemplateUrl is not specified");
 		
-		AmazonCloudFormationPluginExtension ext = getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext =
+				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		try {
-			DescribeStacksResult describeStackResult = cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
+			DescribeStacksResult describeStackResult =
+					cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
 			Stack stack = describeStackResult.getStacks().get(0);
 			if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
 				getLogger().warn("deleted stack {} already exists", stackName);
@@ -116,13 +124,13 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		
 		getLogger().info("Update stack: {}", stackName);
 		UpdateStackRequest req = new UpdateStackRequest()
-				.withStackName(stackName)
-				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams);
+			.withStackName(stackName)
+			.withTemplateURL(cfnTemplateUrl)
+			.withParameters(cfnStackParams);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
-		if (Strings.isNullOrEmpty(cfnStackPolicyUrl)== false) {
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 		}
 		UpdateStackResult updateStackResult = cfn.updateStack(req);
@@ -132,7 +140,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	private void deleteStack(AmazonCloudFormation cfn) throws InterruptedException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
-
+		
 		getLogger().info("delete stack: {}", stackName);
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName));
 		getLogger().info("delete requested: {}", stackName);
@@ -145,17 +153,17 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
-
+		
 		getLogger().info("create stack: {}", stackName);
 		
 		CreateStackRequest req = new CreateStackRequest()
-				.withStackName(stackName)
-				.withTemplateURL(cfnTemplateUrl)
-				.withParameters(cfnStackParams);
+			.withStackName(stackName)
+			.withTemplateURL(cfnTemplateUrl)
+			.withParameters(cfnStackParams);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
-		if (Strings.isNullOrEmpty(cfnStackPolicyUrl)== false) {
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 		}
 		CreateStackResult createStackResult = cfn.createStack(req);

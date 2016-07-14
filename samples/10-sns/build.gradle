@@ -1,0 +1,32 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import groovy.json.JsonOutput
+import jp.classmethod.aws.gradle.sns.AmazonSNSPublishMessageTask;
+
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "jp.classmethod.aws.sns"
+
+task publishMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message 'Test body'
+	subject 'Optional test subject'
+}
+
+task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
+	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	message JsonOutput.toJson(['default': 'Default message body.',
+							   'email'  : 'Email message body.',
+							   'sms': 'SMS message body.'])
+	messageStructure 'json'
+}

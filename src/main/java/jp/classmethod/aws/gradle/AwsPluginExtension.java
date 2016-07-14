@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.xet.sparwings.aws.auth.AwsCliConfigProfileCredentialsProvider;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,7 +41,10 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.identitymanagement.model.GetUserResult;
 import com.google.common.base.Strings;
 
+import jp.xet.sparwings.aws.auth.AwsCliConfigProfileCredentialsProvider;
+
 public class AwsPluginExtension {
+	
 	
 	public static final String NAME = "aws";
 	
@@ -57,23 +59,24 @@ public class AwsPluginExtension {
 	@Getter
 	@Setter
 	private String region = Regions.US_EAST_1.getName();
-
+	
 	@Setter
 	private String proxyHost;
-
+	
 	@Setter
 	private int proxyPort = -1;
-
+	
 	@Setter
 	private AWSCredentialsProvider credentialsProvider;
-
+	
+	
 	public AwsPluginExtension(Project project) {
 		this.project = project;
 	}
 	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
 		List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
-		if(credentialsProvider != null) {
+		if (credentialsProvider != null) {
 			providers.add(credentialsProvider);
 		}
 		providers.add(new EnvironmentVariableCredentialsProvider());
@@ -89,11 +92,12 @@ public class AwsPluginExtension {
 		return new AWSCredentialsProviderChain(providers.toArray(new AWSCredentialsProvider[providers.size()]));
 	}
 	
-	public <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass, String profileName) {
+	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName) {
 		return createClient(serviceClass, profileName, null);
 	}
-
-	public <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass, String profileName, ClientConfiguration config) {
+	
+	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName,
+			ClientConfiguration config) {
 		if (profileName == null) {
 			if (this.profileName == null) {
 				throw new IllegalStateException("default profileName is null");
@@ -112,7 +116,7 @@ public class AwsPluginExtension {
 		return createClient(serviceClass, credentialsProvider, config);
 	}
 	
-	private static <T extends AmazonWebServiceClient>T createClient(Class<T> serviceClass,
+	private static <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass,
 			AWSCredentialsProvider credentials, ClientConfiguration config) {
 		Constructor<T> constructor;
 		T client;

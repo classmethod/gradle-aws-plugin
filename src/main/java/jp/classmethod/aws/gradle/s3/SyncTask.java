@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 Classmethod, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package jp.classmethod.aws.gradle.s3;
-
-import groovy.lang.Closure;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,8 +38,11 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
-public class SyncTask extends ConventionTask {
+import groovy.lang.Closure;
 
+public class SyncTask extends ConventionTask {
+	
+	
 	private static String md5(File file) {
 		try {
 			return Files.hash(file, Hashing.md5()).toString();
@@ -49,24 +50,32 @@ public class SyncTask extends ConventionTask {
 			return "";
 		}
 	}
-
-	@Getter @Setter
+	
+	
+	@Getter
+	@Setter
 	private String bucketName;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String prefix = "";
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private File source;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private boolean delete;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int threads = 5;
 	
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
+	
 	
 	@TaskAction
 	public void uploadAction() throws InterruptedException {
@@ -74,16 +83,19 @@ public class SyncTask extends ConventionTask {
 		String bucketName = getBucketName();
 		String prefix = getPrefix();
 		File source = getSource();
-
-		if (bucketName == null) throw new GradleException("bucketName is not specified");
-		if (source == null) throw new GradleException("source is not specified");
-		if (source.isDirectory() == false) throw new GradleException("source must be directory");
+		
+		if (bucketName == null)
+			throw new GradleException("bucketName is not specified");
+		if (source == null)
+			throw new GradleException("source is not specified");
+		if (source.isDirectory() == false)
+			throw new GradleException("source must be directory");
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
-
+		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
-
+		
 		upload(s3, prefix);
 		if (isDelete()) {
 			deleteAbsent(s3, prefix);
@@ -100,6 +112,7 @@ public class SyncTask extends ConventionTask {
 		getLogger().info("Start uploading");
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
+			
 			public void visitFile(FileVisitDetails element) {
 				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, getLogger()));
 			}
@@ -123,7 +136,7 @@ public class SyncTask extends ConventionTask {
 			}
 		});
 	}
-
+	
 	private String getNormalizedPathPrefix() {
 		String pathPrefix = getSource().toString();
 		pathPrefix += pathPrefix.endsWith("/") ? "" : "/";
@@ -133,14 +146,22 @@ public class SyncTask extends ConventionTask {
 	
 	private static class UploadTask implements Runnable {
 		
+		
 		private AmazonS3 s3;
+		
 		private FileVisitDetails element;
+		
 		private String bucketName;
+		
 		private String prefix;
+		
 		private Closure<ObjectMetadata> metadataProvider;
+		
 		private Logger logger;
-
-		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix, Closure<ObjectMetadata> metadataProvider, Logger logger) {
+		
+		
+		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
+				Closure<ObjectMetadata> metadataProvider, Logger logger) {
 			this.s3 = s3;
 			this.element = element;
 			this.bucketName = bucketName;
@@ -148,7 +169,7 @@ public class SyncTask extends ConventionTask {
 			this.metadataProvider = metadataProvider;
 			this.logger = logger;
 		}
-
+		
 		@Override
 		public void run() {
 			// to enable conventionMappings feature
@@ -169,7 +190,8 @@ public class SyncTask extends ConventionTask {
 			if (doUpload) {
 				logger.info(" => s3://{}/{}", bucketName, key);
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
-					.withMetadata(metadataProvider == null ? null : metadataProvider.call(bucketName, key, element.getFile())));
+					.withMetadata(metadataProvider == null ? null
+							: metadataProvider.call(bucketName, key, element.getFile())));
 			} else {
 				logger.info(" => s3://{}/{} (SKIP)", bucketName, key);
 			}
