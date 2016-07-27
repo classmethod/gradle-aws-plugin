@@ -54,21 +54,23 @@ if (project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey')) 
 }
 
 
-bintray {
-	user = bintrayUser
-	key = bintrayApiKey
-
-	publications = ['mavenStuff']
-	pkg {
-		repo = 'maven'
-		name = "gradle-aws-plugin"
-		desc = 'Gradle plugin to manage AWS resources'
-		userOrg = 'classmethod'
-		websiteUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin'
-		issueTrackerUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin/issues'
-		vcsUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin.git'
-		licenses = ['Apache-2.0']
-		labels = ['AWS', 'Gradle']
+if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayApiKey')) {
+	bintray {
+		user = bintrayUser
+		key = bintrayApiKey
+	
+		publications = ['mavenStuff']
+		pkg {
+			repo = 'maven'
+			name = "gradle-aws-plugin"
+			desc = 'Gradle plugin to manage AWS resources'
+			userOrg = 'classmethod'
+			websiteUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin'
+			issueTrackerUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin/issues'
+			vcsUrl = 'https://github.com/classmethod-aws/gradle-aws-plugin.git'
+			licenses = ['Apache-2.0']
+			labels = ['AWS', 'Gradle']
+		}
 	}
 }
 
