@@ -15,15 +15,16 @@
  */
 package jp.classmethod.aws.gradle.s3;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
+import groovy.lang.Closure;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.gradle.api.GradleException;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
@@ -31,14 +32,11 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.TaskAction;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
-
-import groovy.lang.Closure;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class SyncTask extends ConventionTask {
 	
@@ -76,6 +74,13 @@ public class SyncTask extends ConventionTask {
 	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
+	@Getter
+	private CannedAccessControlList acl;
+	
+	
+	public void setAcl(String aclName) {
+		acl = CannedAccessControlList.valueOf(aclName);
+	}
 	
 	@TaskAction
 	public void uploadAction() throws InterruptedException {
@@ -107,6 +112,7 @@ public class SyncTask extends ConventionTask {
 		String bucketName = getBucketName();
 		File source = getSource();
 		Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
+		CannedAccessControlList acl = getAcl();
 		
 		ExecutorService es = Executors.newFixedThreadPool(threads);
 		getLogger().info("Start uploading");
@@ -115,7 +121,7 @@ public class SyncTask extends ConventionTask {
 			
 			
 			public void visitFile(FileVisitDetails element) {
-				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, getLogger()));
+				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, acl, getLogger()));
 			}
 		});
 		
@@ -158,16 +164,19 @@ public class SyncTask extends ConventionTask {
 		
 		private Closure<ObjectMetadata> metadataProvider;
 		
+		private CannedAccessControlList acl;
+		
 		private Logger logger;
 		
 		
 		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
-				Closure<ObjectMetadata> metadataProvider, Logger logger) {
+				Closure<ObjectMetadata> metadataProvider, CannedAccessControlList acl, Logger logger) {
 			this.s3 = s3;
 			this.element = element;
 			this.bucketName = bucketName;
 			this.prefix = prefix;
 			this.metadataProvider = metadataProvider;
+			this.acl = acl;
 			this.logger = logger;
 		}
 		
@@ -192,7 +201,8 @@ public class SyncTask extends ConventionTask {
 				logger.info(" => s3://{}/{}", bucketName, key);
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
 					.withMetadata(metadataProvider == null ? null
-							: metadataProvider.call(bucketName, key, element.getFile())));
+							: metadataProvider.call(bucketName, key, element.getFile()))
+					.withCannedAcl(acl));
 			} else {
 				logger.info(" => s3://{}/{} (SKIP)", bucketName, key);
 			}
