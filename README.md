@@ -96,6 +96,22 @@ aws {
 
 These credentials are used to make API accesses by default. The format of the credentials file is described in the [Amazon AWS Docs](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html#credentials-file-format).
 
+### S3 Create bucket
+
+```
+apply plugin: 'jp.classmethod.aws.s3'
+
+task createBucket(type: CreateBucketTask) {
+	bucketName myBucketName
+
+	// one of http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region values, us-east-1 by default
+	region regionName
+	// create bucket only if it does not exist, otherwise skip
+	ifNotExists true
+}
+```
+
+Look [S3 example 1](samples/01-s3-upload-simple)
 
 ### S3 files tasks
 
