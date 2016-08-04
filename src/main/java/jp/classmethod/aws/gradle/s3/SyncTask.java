@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.services.s3.model.StorageClass;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -71,6 +72,10 @@ public class SyncTask extends ConventionTask {
 	@Getter
 	@Setter
 	private int threads = 5;
+
+	@Getter
+	@Setter
+	private StorageClass storageClass = StorageClass.Standard;
 	
 	@Getter
 	@Setter
@@ -115,7 +120,7 @@ public class SyncTask extends ConventionTask {
 			
 			
 			public void visitFile(FileVisitDetails element) {
-				es.execute(new UploadTask(s3, element, bucketName, prefix, metadataProvider, getLogger()));
+				es.execute(new UploadTask(s3, element, bucketName, prefix, storageClass, metadataProvider, getLogger()));
 			}
 		});
 		
@@ -146,27 +151,29 @@ public class SyncTask extends ConventionTask {
 	
 	
 	private static class UploadTask implements Runnable {
-		
-		
+
+
 		private AmazonS3 s3;
-		
 		private FileVisitDetails element;
-		
+
 		private String bucketName;
-		
+
 		private String prefix;
-		
+
 		private Closure<ObjectMetadata> metadataProvider;
-		
+
+		private StorageClass storageClass;
+
 		private Logger logger;
 		
 		
 		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
-				Closure<ObjectMetadata> metadataProvider, Logger logger) {
+				StorageClass storageClass, Closure<ObjectMetadata> metadataProvider, Logger logger) {
 			this.s3 = s3;
 			this.element = element;
 			this.bucketName = bucketName;
 			this.prefix = prefix;
+			this.storageClass = storageClass;
 			this.metadataProvider = metadataProvider;
 			this.logger = logger;
 		}
@@ -191,6 +198,7 @@ public class SyncTask extends ConventionTask {
 			if (doUpload) {
 				logger.info(" => s3://{}/{}", bucketName, key);
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
+					.withStorageClass(storageClass)
 					.withMetadata(metadataProvider == null ? null
 							: metadataProvider.call(bucketName, key, element.getFile())));
 			} else {
