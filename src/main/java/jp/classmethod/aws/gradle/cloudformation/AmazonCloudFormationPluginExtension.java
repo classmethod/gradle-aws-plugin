@@ -52,6 +52,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	@Getter
 	@Setter
+	private Map<?, ?> stackTags = new HashMap<>();
+	
+	@Getter
+	@Setter
 	private String templateURL;
 	
 	@Getter

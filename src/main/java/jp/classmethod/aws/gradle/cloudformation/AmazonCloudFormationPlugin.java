@@ -26,6 +26,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
+import com.amazonaws.services.cloudformation.model.Tag;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
 import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
@@ -90,6 +91,11 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 					.collect(Collectors.toList()));
 				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
 				task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
+				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
+					.map(it -> new Tag()
+						.withKey(it.getKey().toString())
+						.withValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
 			});
 		
 		@SuppressWarnings("unused")
@@ -105,6 +111,11 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						.withParameterValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
 				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
+					.map(it -> new Tag()
+						.withKey(it.getKey().toString())
+						.withValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
 			});
 		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
