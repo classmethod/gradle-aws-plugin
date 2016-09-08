@@ -97,6 +97,10 @@ pluginBundle {
 			id = 'jp.classmethod.aws.ec2'
 			displayName = 'Gradle Amazon EC2 plugin'
 		}
+		awsECSPlugin {
+			id = 'jp.classmethod.aws.ecs'
+			displayName = 'Gradle Amazon ECS plugin'
+		}
 		awsELBPlugin {
 			id = 'jp.classmethod.aws.elb'
 			displayName = 'Gradle Amazon Elastic Load Balancing plugin'

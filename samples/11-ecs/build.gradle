@@ -1,0 +1,129 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import groovy.json.JsonOutput
+import jp.classmethod.aws.gradle.ecs.AmazonECSRunTaskTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSCreateClusterTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSDeleteClusterTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSDescribeClustersTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSDescribeTaskDefinitionTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSDescribeContainerInstancesTask
+import jp.classmethod.aws.gradle.ecs.AmazonECSPlugin
+import jp.classmethod.aws.gradle.ecs.AmazonECSPluginExtension
+import jp.classmethod.aws.gradle.ecs.AmazonECSRegisterTaskDefinitionTask
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://plugins.gradle.org/m2/" }
+
+  }
+  dependencies {
+    classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+  }
+}
+
+apply plugin: "jp.classmethod.aws.ecs"
+
+aws {
+  profileName = "default"
+  region = "ap-northeast-1"
+}
+
+task createCluster(type: AmazonECSCreateClusterTask) {
+  clusterName 'Docuwiki-cluster'
+
+  doLast {
+    println createClusterResult
+  }
+}
+
+task registerTaskDefinition(type: AmazonECSRegisterTaskDefinitionTask) {
+  family 'docuwiki'
+  taskRoleArn ''
+  networkMode 'bridge'
+  volumesJson ''
+  containerDefinitionsJson '''
+    {
+      "volumesFrom": [],
+      "memory": 900,
+      "extraHosts": null,
+      "dnsServers": null,
+      "disableNetworking": null,
+      "dnsSearchDomains": null,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "hostname": null,
+      "essential": true,
+      "entryPoint": null,
+      "mountPoints": [],
+      "name": "main",
+      "ulimits": null,
+      "dockerSecurityOptions": null,
+      "environment": [],
+      "links": null,
+      "workingDirectory": null,
+      "readonlyRootFilesystem": null,
+      "image": "bambucha/dokuwiki",
+      "command": null,
+      "user": null,
+      "dockerLabels": null,
+      "logConfiguration": null,
+      "cpu": 900,
+      "privileged": null,
+      "memoryReservation": null
+    }
+  '''
+
+  doLast {
+    println registerTaskDefinitionResult
+  }
+}
+
+task runTask(type: AmazonECSRunTaskTask) {
+  dependsOn registerTaskDefinition
+
+  doFirst {
+    registerTaskDefinition.registerTaskDefinitionResult.taskDefinition.with {
+      taskDefinition "$family:$revision"
+    }
+  }
+
+  cluster createCluster.clusterName
+  count 1
+  startedBy 'Gradle-ecs-script'
+
+  doLast {
+    println runTaskResult
+  }
+}
+
+task deleteCluster(type: AmazonECSDeleteClusterTask) {
+  cluster createCluster.clusterName
+
+  doLast {
+    println deleteClusterResult
+  }
+}
+
+task describeClusters(type: AmazonECSDescribeClustersTask) {
+  clusters createCluster.clusterName
+
+  doLast {
+    println describeClustersResult
+  }
+}
+
+task describeContainerInstances(type: AmazonECSDescribeContainerInstancesTask) {
+  cluster createCluster.clusterName
+  containerInstance 'badda31c-2499-4e6d-a903-98fb2c95c9e2'
+
+  doLast {
+    println describeContainerInstancesResult
+  }
+}
