@@ -1,7 +1,3 @@
-general:
-  artifacts:
-    - "build/reports/tests"
-
 checkout:
   post:
     - chmod +x ./gradlew
@@ -11,9 +7,15 @@ dependencies:
     - ./gradlew -v
     - ./gradlew testClasses
 
+general:
+  artifacts:
+    - "build/reports"
+
 machine:
   environment:
-    GRADLE_OPTS: -Xmx4G -Dorg.gradle.daemon=true
+    _JAVA_OPTIONS: -Xmx3G
+    GRADLE_OPTS: -Dorg.gradle.daemon=true
+    TERM: dumb
   java:
     version: oraclejdk8
   post:
