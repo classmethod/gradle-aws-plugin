@@ -54,7 +54,7 @@ public class AwsPluginExtension {
 	
 	@Getter
 	@Setter
-	private String profileName = "default";
+	private String profileName;
 	
 	@Getter
 	@Setter
@@ -99,9 +99,6 @@ public class AwsPluginExtension {
 	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName,
 			ClientConfiguration config) {
 		if (profileName == null) {
-			if (this.profileName == null) {
-				throw new IllegalStateException("default profileName is null");
-			}
 			profileName = this.profileName;
 		}
 		
