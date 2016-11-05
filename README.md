@@ -259,6 +259,10 @@ cloudFormation {
     Foo: 'bar',
     Baz: 'qux'
   ])
+  stackTags([
+    Bar: 'foo',
+    Baz: 'fox'
+  })
   capabilityIam true
   templateFile project.file("foobar.template")
   templateBucket 'example-bucket'

@@ -36,6 +36,7 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
+import com.amazonaws.services.cloudformation.model.Tag;
 
 public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	
@@ -51,6 +52,10 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Parameter> cfnStackParams = new ArrayList<>();
+	
+	@Getter
+	@Setter
+	private List<Tag> cfnStackTags = new ArrayList<>();
 	
 	@Getter
 	@Setter
@@ -98,6 +103,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
+		List<Tag> cfnStackTags = getCfnStackTags();
 		
 		String changeSetName = changeSetName(stackName);
 		getLogger().info("Create change set '{}' for stack '{}'", changeSetName, stackName);
@@ -105,7 +111,8 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 			.withChangeSetName(changeSetName)
 			.withStackName(stackName)
 			.withTemplateURL(cfnTemplateUrl)
-			.withParameters(cfnStackParams);
+			.withParameters(cfnStackParams)
+			.withTags(cfnStackTags);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
