@@ -36,6 +36,7 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
+import com.amazonaws.services.cloudformation.model.Tag;
 import com.amazonaws.services.cloudformation.model.UpdateStackRequest;
 import com.amazonaws.services.cloudformation.model.UpdateStackResult;
 import com.google.common.base.Strings;
@@ -54,6 +55,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Parameter> cfnStackParams = new ArrayList<>();
+	
+	@Getter
+	@Setter
+	private List<Tag> cfnStackTags = new ArrayList<>();
 	
 	@Getter
 	@Setter
@@ -120,13 +125,15 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
+		List<Tag> cfnStackTags = getCfnStackTags();
 		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
 		
 		getLogger().info("Update stack: {}", stackName);
 		UpdateStackRequest req = new UpdateStackRequest()
 			.withStackName(stackName)
 			.withTemplateURL(cfnTemplateUrl)
-			.withParameters(cfnStackParams);
+			.withParameters(cfnStackParams)
+			.withTags(cfnStackTags);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}
@@ -152,6 +159,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
+		List<Tag> cfnStackTags = getCfnStackTags();
 		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
 		
 		getLogger().info("create stack: {}", stackName);
@@ -159,7 +167,8 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		CreateStackRequest req = new CreateStackRequest()
 			.withStackName(stackName)
 			.withTemplateURL(cfnTemplateUrl)
-			.withParameters(cfnStackParams);
+			.withParameters(cfnStackParams)
+			.withTags(cfnStackTags);
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}

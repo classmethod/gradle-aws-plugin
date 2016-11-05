@@ -63,6 +63,7 @@ public class BulkUploadTask extends ConventionTask {
 		getLogger().info("uploading... {} to s3://{}/{}", source, bucketName, prefix);
 		source.visit(new EmptyFileVisitor() {
 			
+			
 			public void visitFile(FileVisitDetails element) {
 				String key = prefix + element.getRelativePath();
 				getLogger().info(" => s3://{}/{}", bucketName, key);

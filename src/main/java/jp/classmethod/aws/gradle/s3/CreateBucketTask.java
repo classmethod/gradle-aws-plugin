@@ -24,14 +24,35 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.Region;
 
 public class CreateBucketTask extends ConventionTask {
 	
 	
+	private static final String AWS_DEFAULT_REGION_NAME = "us-east-1 (default)";
+	
+	/**
+	 * Amazon S3 bucket names are globally unique, regardless of the AWS region in which you create the bucket.
+	 * http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+	 * See also http://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+	 */
 	@Getter
 	@Setter
 	public String bucketName;
 	
+	/**
+	 * Region identifier. Even empty value is correct.
+	 * By default, the bucket is created in the US East (N. Virginia) region.
+	 * See http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region for details
+	 * Also https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/model/Region.java
+	 */
+	@Getter
+	@Setter
+	public String region;
+	
+	/**
+	 * Create bucket only if it does not exists.
+	 */
 	@Getter
 	@Setter
 	public boolean ifNotExists;
@@ -47,15 +68,36 @@ public class CreateBucketTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		
+		final String region = getRegion();
+		
 		if (bucketName == null)
 			throw new GradleException("bucketName is not specified");
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
-		if (isIfNotExists() == false || exists(s3) == false) {
+		final boolean createIfNotExists = isIfNotExists();
+		
+		if (createIfNotExists && exists(s3)) {
+			getLogger().info("Bucket already exists and won't be created. Use 'ifNotExists' to override.");
+			return;
+		}
+		
+		String regionName = AWS_DEFAULT_REGION_NAME;
+		if (region == null) {
 			s3.createBucket(bucketName);
-			getLogger().info("S3 Bucket '{}' created", bucketName);
+		} else {
+			regionName = getAwsRegionName(region);
+			s3.createBucket(bucketName, region);
+		}
+		getLogger().info("S3 Bucket '{}' created at region '{}'", bucketName, regionName);
+	}
+	
+	private String getAwsRegionName(final String region) {
+		try {
+			return Region.fromValue(region).toString();
+		} catch (IllegalArgumentException e) {
+			throw new GradleException(e.getMessage());
 		}
 	}
 	

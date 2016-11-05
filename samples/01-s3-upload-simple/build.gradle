@@ -33,6 +33,9 @@ def myBucketName = 'gradle-aws-plugin-sample'
 
 task createBucket(type: CreateBucketTask) {
 	bucketName myBucketName
+
+	// one of http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region values, us-east-1 by default
+	region regionName
 	ifNotExists true
 }
 

@@ -80,6 +80,7 @@ cloudFormation {
 		}
 		return stackParams
 	}
+	stackTags << [MyTag: 'myValue']
 	capabilityIam true
 }
 
