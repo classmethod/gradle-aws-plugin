@@ -15,7 +15,6 @@
  */
 package jp.classmethod.aws.gradle.s3;
 
-import com.amazonaws.services.s3.model.Region;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,11 +24,13 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.Region;
 
 public class CreateBucketTask extends ConventionTask {
-
+	
+	
 	private static final String AWS_DEFAULT_REGION_NAME = "us-east-1 (default)";
-
+	
 	/**
 	 * Amazon S3 bucket names are globally unique, regardless of the AWS region in which you create the bucket.
 	 * http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
@@ -38,7 +39,7 @@ public class CreateBucketTask extends ConventionTask {
 	@Getter
 	@Setter
 	public String bucketName;
-
+	
 	/**
 	 * Region identifier. Even empty value is correct.
 	 * By default, the bucket is created in the US East (N. Virginia) region.
@@ -48,7 +49,7 @@ public class CreateBucketTask extends ConventionTask {
 	@Getter
 	@Setter
 	public String region;
-
+	
 	/**
 	 * Create bucket only if it does not exists.
 	 */
@@ -66,7 +67,7 @@ public class CreateBucketTask extends ConventionTask {
 	public void createBucket() {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
-
+		
 		final String region = getRegion();
 		
 		if (bucketName == null)
@@ -74,14 +75,14 @@ public class CreateBucketTask extends ConventionTask {
 		
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
-
+		
 		final boolean createIfNotExists = isIfNotExists();
 		
 		if (createIfNotExists && exists(s3)) {
 			getLogger().info("Bucket already exists and won't be created. Use 'ifNotExists' to override.");
 			return;
 		}
-
+		
 		String regionName = AWS_DEFAULT_REGION_NAME;
 		if (region == null) {
 			s3.createBucket(bucketName);
@@ -91,7 +92,7 @@ public class CreateBucketTask extends ConventionTask {
 		}
 		getLogger().info("S3 Bucket '{}' created at region '{}'", bucketName, regionName);
 	}
-
+	
 	private String getAwsRegionName(final String region) {
 		try {
 			return Region.fromValue(region).toString();
@@ -99,7 +100,7 @@ public class CreateBucketTask extends ConventionTask {
 			throw new GradleException(e.getMessage());
 		}
 	}
-
+	
 	private boolean exists(AmazonS3 s3) {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
