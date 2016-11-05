@@ -23,7 +23,7 @@ defaultTasks "clean", "build"
 
 // ======== deployment options (dispatched on group name) ========
 group = "jp.classmethod.aws"
-version = "0.30"
+version = "0.31-SNAPSHOT"
 
 sourceCompatibility = targetCompatibility = 1.8
 
