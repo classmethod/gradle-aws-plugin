@@ -22,6 +22,7 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+import com.amazonaws.services.lambda.model.FunctionConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,7 +57,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
 	@Getter
 	@Setter
-	private Runtime runtime = Runtime.Nodejs;
+	private Runtime runtime;
 	
 	@Getter
 	@Setter
@@ -196,14 +197,18 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	}
 	
 	private void updateFunctionConfiguration(AWSLambda lambda, GetFunctionResult getFunctionResult) {
+		FunctionConfiguration config = getFunctionResult.getConfiguration() != null ?
+						getFunctionResult.getConfiguration() :
+						new FunctionConfiguration().withRuntime(Runtime.Nodejs);
 		UpdateFunctionConfigurationRequest request = new UpdateFunctionConfigurationRequest()
-			.withFunctionName(getFunctionName())
-			.withRole(getRole())
-			.withHandler(getHandler())
-			.withDescription(getFunctionDescription())
-			.withTimeout(getTimeout())
+			.withFunctionName(getFunctionName() != null ? getFunctionName() : config.getFunctionName())
+			.withRole(getRole() != null ? getRole() : config.getRole())
+			.withRuntime(getRuntime() != null ? getRuntime() : Runtime.fromValue(config.getRuntime()))
+			.withHandler(getHandler() != null ? getHandler() : config.getHandler())
+			.withDescription(getFunctionDescription() != null ? getFunctionDescription() : config.getDescription())
+			.withTimeout(getTimeout() != null ? getTimeout() : config.getTimeout())
 			.withVpcConfig(getVpcConfig())
-			.withMemorySize(getMemorySize());
+			.withMemorySize(getMemorySize() != null ? getMemorySize() : config.getMemorySize());
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());
