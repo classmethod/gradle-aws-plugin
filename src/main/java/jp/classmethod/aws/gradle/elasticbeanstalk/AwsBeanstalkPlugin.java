@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,6 @@ import jp.classmethod.aws.gradle.s3.AmazonS3ProgressiveFileUploadTask;
  */
 public class AwsBeanstalkPlugin implements Plugin<Project> {
 	
-	
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getPluginManager().apply(AmazonS3Plugin.class);
@@ -42,7 +41,7 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 		applyTasks(project);
 	}
 	
-	private void applyTasks(final Project project) {
+	private void applyTasks(final Project project) { // NOPMD
 		AwsBeanstalkPluginExtension ebExt = project.getExtensions().findByType(AwsBeanstalkPluginExtension.class);
 		
 		AWSElasticBeanstalkCreateApplicationTask awsEbMigrateApplication = project.getTasks()
@@ -78,11 +77,8 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 				task.doFirst(t -> {
 					task.setAppName(ebExt.getAppName());
 					task.setVersionLabel(ebExt.getVersion().getLabel());
-					;
 					task.setBucketName(ebExt.getVersion().getBucket());
-					;
 					task.setKey(ebExt.getVersion().getKey());
-					;
 				});
 			});
 		
@@ -93,7 +89,6 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 						task.doFirst(t -> {
 							task.setAppName(ebExt.getAppName());
 							task.setConfigurationTemplates(ebExt.getConfigurationTemplates());
-							;
 						});
 					});
 		
@@ -103,7 +98,6 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 				task.doFirst(t -> {
 					task.setAppName(ebExt.getAppName());
 					task.setEnvName(ebExt.getEnvironment().getEnvName());
-					;
 					task.setEnvDesc(ebExt.getEnvironment().getEnvDesc());
 					task.setTemplateName(ebExt.getEnvironment().getTemplateName());
 					task.setVersionLabel(ebExt.getEnvironment().getVersionLabel());
@@ -122,7 +116,6 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 				task.doFirst(t -> {
 					task.setAppName(ebExt.getAppName());
 					task.setEnvName(ebExt.getEnvironment().getEnvName());
-					;
 				});
 			});
 		
@@ -132,7 +125,6 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 					task.doFirst(t -> {
 						task.setAppName(ebExt.getAppName());
 						task.setEnvName(ebExt.getEnvironment().getEnvName());
-						;
 					});
 				});
 		

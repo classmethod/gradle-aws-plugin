@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonServiceException;
@@ -44,7 +45,6 @@ import com.google.common.base.Strings;
 import jp.xet.sparwings.aws.auth.AwsCliConfigProfileCredentialsProvider;
 
 public class AwsPluginExtension {
-	
 	
 	public static final String NAME = "aws";
 	
@@ -98,19 +98,15 @@ public class AwsPluginExtension {
 	
 	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName,
 			ClientConfiguration config) {
-		if (profileName == null) {
-			profileName = this.profileName;
-		}
+		String profileNameToUse = profileName == null ? this.profileName : profileName;
 		
-		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
+		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileNameToUse);
+		ClientConfiguration configToUse = config == null ? new ClientConfiguration() : config;
 		if (this.proxyHost != null && this.proxyPort > 0) {
-			if (config == null) {
-				config = new ClientConfiguration();
-			}
-			config.setProxyHost(this.proxyHost);
-			config.setProxyPort(this.proxyPort);
+			configToUse.setProxyHost(this.proxyHost);
+			configToUse.setProxyPort(this.proxyPort);
 		}
-		return createClient(serviceClass, credentialsProvider, config);
+		return createClient(serviceClass, credentialsProvider, configToUse);
 	}
 	
 	private static <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass,
@@ -133,8 +129,8 @@ public class AwsPluginExtension {
 			}
 			
 			return client;
-		} catch (Exception e) {
-			throw new RuntimeException("Couldn't instantiate instance of " + serviceClass, e);
+		} catch (ReflectiveOperationException e) {
+			throw new GradleException("Couldn't instantiate instance of " + serviceClass, e);
 		}
 	}
 	
@@ -177,7 +173,7 @@ public class AwsPluginExtension {
 			if (arnIdx == -1) {
 				throw e;
 			}
-			int arnSpace = msg.indexOf(" ", arnIdx);
+			int arnSpace = msg.indexOf(' ', arnIdx);
 			return msg.substring(arnIdx, arnSpace);
 		}
 	}

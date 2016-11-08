@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
 
 public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 	
-	
 	private static final int MAX_MESSAGE_SEND_BATCH_SIZE = 10;
 	
 	@Getter
@@ -51,10 +50,12 @@ public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 		String queueUrl = getQueueUrl();
 		Stream<String> messages = getMessages();
 		
-		if (queueUrl == null)
+		if (queueUrl == null) {
 			throw new GradleException("Must specify either queueName or queueUrl");
-		if (messages == null)
+		}
+		if (messages == null) {
 			throw new GradleException("Must provide messages to send to SQS");
+		}
 		
 		AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
 		AmazonSQS sqs = ext.getClient();

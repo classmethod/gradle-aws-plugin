@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +42,6 @@ import com.google.common.io.Files;
 import groovy.lang.Closure;
 
 public class SyncTask extends ConventionTask {
-	
 	
 	private static String md5(File file) {
 		try {
@@ -89,12 +88,15 @@ public class SyncTask extends ConventionTask {
 		String prefix = getPrefix();
 		File source = getSource();
 		
-		if (bucketName == null)
+		if (bucketName == null) {
 			throw new GradleException("bucketName is not specified");
-		if (source == null)
+		}
+		if (source == null) {
 			throw new GradleException("source is not specified");
-		if (source.isDirectory() == false)
+		}
+		if (source.isDirectory() == false) {
 			throw new GradleException("source must be directory");
+		}
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 		
@@ -117,7 +119,6 @@ public class SyncTask extends ConventionTask {
 		getLogger().info("Start uploading");
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
-			
 			
 			public void visitFile(FileVisitDetails element) {
 				es.execute(
@@ -153,7 +154,6 @@ public class SyncTask extends ConventionTask {
 	
 	private static class UploadTask implements Runnable {
 		
-		
 		private AmazonS3 s3;
 		
 		private FileVisitDetails element;
@@ -169,7 +169,7 @@ public class SyncTask extends ConventionTask {
 		private Logger logger;
 		
 		
-		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
+		UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
 				StorageClass storageClass, Closure<ObjectMetadata> metadataProvider, Logger logger) {
 			this.s3 = s3;
 			this.element = element;

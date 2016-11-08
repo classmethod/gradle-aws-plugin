@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,6 @@ import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.RebootDBInstanceRequest;
 
 public class AmazonRDSRebootDBInstanceTask extends ConventionTask {
-	
 	
 	@Getter
 	@Setter
@@ -51,8 +50,9 @@ public class AmazonRDSRebootDBInstanceTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String dbInstanceIdentifier = getDbInstanceIdentifier();
 		
-		if (dbInstanceIdentifier == null)
+		if (dbInstanceIdentifier == null) {
 			throw new GradleException("dbInstanceIdentifier is required");
+		}
 		
 		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
