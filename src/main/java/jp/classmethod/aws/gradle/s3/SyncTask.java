@@ -80,15 +80,15 @@ public class SyncTask extends ConventionTask {
 	@Getter
 	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
-
+	
 	@Getter
 	private CannedAccessControlList acl;
-
-
+	
+	
 	public void setAcl(String aclName) {
 		acl = CannedAccessControlList.valueOf(aclName);
 	}
-
+	
 	@TaskAction
 	public void uploadAction() throws InterruptedException {
 		// to enable conventionMappings feature
@@ -123,7 +123,7 @@ public class SyncTask extends ConventionTask {
 		File source = getSource();
 		Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 		CannedAccessControlList acl = getAcl();
-
+		
 		ExecutorService es = Executors.newFixedThreadPool(threads);
 		getLogger().info("Start uploading");
 		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
@@ -131,7 +131,8 @@ public class SyncTask extends ConventionTask {
 			
 			public void visitFile(FileVisitDetails element) {
 				es.execute(
-						new UploadTask(s3, element, bucketName, prefix, storageClass, acl, metadataProvider, getLogger()));
+						new UploadTask(s3, element, bucketName, prefix, storageClass, acl, metadataProvider,
+								getLogger()));
 			}
 		});
 		
@@ -174,14 +175,15 @@ public class SyncTask extends ConventionTask {
 		private Closure<ObjectMetadata> metadataProvider;
 		
 		private StorageClass storageClass;
-
+		
 		private CannedAccessControlList acl;
-
+		
 		private Logger logger;
 		
 		
 		UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
-				StorageClass storageClass, CannedAccessControlList acl, Closure<ObjectMetadata> metadataProvider, Logger logger) {
+				StorageClass storageClass, CannedAccessControlList acl, Closure<ObjectMetadata> metadataProvider,
+				Logger logger) {
 			this.s3 = s3;
 			this.element = element;
 			this.bucketName = bucketName;
