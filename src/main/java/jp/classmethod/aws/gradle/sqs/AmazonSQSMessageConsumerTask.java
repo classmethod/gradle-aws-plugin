@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package jp.classmethod.aws.gradle.sqs;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
@@ -28,7 +29,6 @@ import com.amazonaws.services.sqs.model.DeleteMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
 public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
-	
 	
 	private static final int MAX_MESSAGE_CONSUME_BATCH_SIZE = 10;
 	
@@ -51,8 +51,9 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 	public void consumeMessages() {
 		String queueUrl = getQueueUrl();
 		
-		if (queueUrl == null)
+		if (queueUrl == null) {
 			throw new GradleException("Must specify either queueName or queueUrl");
+		}
 		
 		AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
 		AmazonSQS sqs = ext.getClient();
@@ -64,7 +65,8 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 			List<DeleteMessageBatchRequestEntry> messagesToDelete =
 					sqs.receiveMessage(request).getMessages().stream().map(message -> {
 						if (showMessages) {
-							getLogger().lifecycle(String.format("Read message id: %s, message body: %200s",
+							getLogger().lifecycle(String.format(Locale.ENGLISH,
+									"Read message id: %s, message body: %200s",
 									message.getMessageId(), message.getBody()));
 						}
 						return new DeleteMessageBatchRequestEntry(message.getMessageId(), message.getReceiptHandle());

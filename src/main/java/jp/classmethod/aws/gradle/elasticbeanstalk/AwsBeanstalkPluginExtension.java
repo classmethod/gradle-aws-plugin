@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,12 +29,11 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksResult;
 
-import groovy.lang.Closure;
-
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
+import groovy.lang.Closure;
+
 public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<AWSElasticBeanstalkClient> {
-	
 	
 	public static final String NAME = "beanstalk";
 	
@@ -106,8 +105,8 @@ public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<
 	
 	public String getElbName(EnvironmentDescription env) {
 		String elbName = env.getEndpointURL();
-		elbName = elbName.substring(0, elbName.indexOf("."));
-		elbName = elbName.substring(0, elbName.lastIndexOf("-"));
+		elbName = elbName.substring(0, elbName.indexOf('.'));
+		elbName = elbName.substring(0, elbName.lastIndexOf('-'));
 		return elbName;
 	}
 	
