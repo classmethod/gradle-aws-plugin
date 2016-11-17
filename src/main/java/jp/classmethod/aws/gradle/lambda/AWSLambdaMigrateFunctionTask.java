@@ -23,6 +23,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import com.amazonaws.services.lambda.model.FunctionConfiguration;
+import com.amazonaws.services.lambda.model.GetFunctionRequest;
+import com.amazonaws.services.lambda.model.GetFunctionResult;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -119,6 +121,8 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		AWSLambda lambda = ext.getClient();
 		
 		try {
+			GetFunctionResult getFunctionResult =
+							lambda.getFunction(new GetFunctionRequest().withFunctionName(functionName));
 			updateFunctionCode(lambda);
 			updateFunctionConfiguration(lambda, getFunctionResult);
 		} catch (ResourceNotFoundException e) {
@@ -190,8 +194,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
 	private void updateFunctionConfiguration(AWSLambda lambda, GetFunctionResult getFunctionResult) {
 		FunctionConfiguration config = getFunctionResult.getConfiguration() != null ?
-						getFunctionResult.getConfiguration() :
-						new FunctionConfiguration().withRuntime(Runtime.Nodejs);
+						getFunctionResult.getConfiguration() : new FunctionConfiguration().withRuntime(Runtime.Nodejs);
 		UpdateFunctionConfigurationRequest request = new UpdateFunctionConfigurationRequest()
 			.withFunctionName(getFunctionName() != null ? getFunctionName() : config.getFunctionName())
 			.withRole(getRole() != null ? getRole() : config.getRole())
