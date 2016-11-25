@@ -33,6 +33,9 @@ import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.CreateFunctionRequest;
 import com.amazonaws.services.lambda.model.CreateFunctionResult;
 import com.amazonaws.services.lambda.model.FunctionCode;
+import com.amazonaws.services.lambda.model.FunctionConfiguration;
+import com.amazonaws.services.lambda.model.GetFunctionRequest;
+import com.amazonaws.services.lambda.model.GetFunctionResult;
 import com.amazonaws.services.lambda.model.ResourceNotFoundException;
 import com.amazonaws.services.lambda.model.Runtime;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
@@ -53,7 +56,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
 	@Getter
 	@Setter
-	private Runtime runtime = Runtime.Nodejs;
+	private Runtime runtime;
 	
 	@Getter
 	@Setter
@@ -118,8 +121,15 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		AWSLambda lambda = ext.getClient();
 		
 		try {
+			GetFunctionResult getFunctionResult =
+					lambda.getFunction(new GetFunctionRequest().withFunctionName(functionName));
+			FunctionConfiguration config = getFunctionResult.getConfiguration();
+			if (config == null) {
+				config = new FunctionConfiguration().withRuntime(Runtime.Nodejs);
+			}
+			
 			updateFunctionCode(lambda);
-			updateFunctionConfiguration(lambda);
+			updateFunctionConfiguration(lambda, config);
 		} catch (ResourceNotFoundException e) {
 			getLogger().warn(e.getMessage());
 			getLogger().warn("Creating function... {}", functionName);
@@ -187,15 +197,52 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
 	}
 	
-	private void updateFunctionConfiguration(AWSLambda lambda) {
+	private void updateFunctionConfiguration(AWSLambda lambda, FunctionConfiguration config) {
+		String updateFunctionName = getFunctionName();
+		if (updateFunctionName == null) {
+			updateFunctionName = config.getFunctionName();
+		}
+		
+		String updateRole = getRole();
+		if (updateRole == null) {
+			updateRole = config.getRole();
+		}
+		
+		Runtime updateRuntime = getRuntime();
+		if (updateRuntime == null) {
+			updateRuntime = Runtime.fromValue(config.getRuntime());
+		}
+		
+		String updateHandler = getHandler();
+		if (updateHandler == null) {
+			updateHandler = config.getHandler();
+		}
+		
+		String updateDescription = getFunctionDescription();
+		if (updateDescription == null) {
+			updateDescription = config.getDescription();
+		}
+		
+		Integer updateTimeout = getTimeout();
+		if (updateTimeout == null) {
+			updateTimeout = config.getTimeout();
+		}
+		
+		Integer updateMemorySize = getMemorySize();
+		if (updateMemorySize == null) {
+			updateMemorySize = config.getMemorySize();
+		}
+		
 		UpdateFunctionConfigurationRequest request = new UpdateFunctionConfigurationRequest()
-			.withFunctionName(getFunctionName())
-			.withRole(getRole())
-			.withHandler(getHandler())
-			.withDescription(getFunctionDescription())
-			.withTimeout(getTimeout())
+			.withFunctionName(updateFunctionName)
+			.withRole(updateRole)
+			.withRuntime(updateRuntime)
+			.withHandler(updateHandler)
+			.withDescription(updateDescription)
+			.withTimeout(updateTimeout)
 			.withVpcConfig(getVpcConfig())
-			.withMemorySize(getMemorySize());
+			.withMemorySize(updateMemorySize);
+		
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());
