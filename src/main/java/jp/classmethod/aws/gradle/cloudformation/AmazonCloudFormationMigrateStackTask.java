@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +42,6 @@ import com.amazonaws.services.cloudformation.model.UpdateStackResult;
 import com.google.common.base.Strings;
 
 public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
-	
 	
 	@Getter
 	@Setter
@@ -86,10 +85,12 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<String> stableStatuses = getStableStatuses();
 		
-		if (stackName == null)
+		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
-		if (cfnTemplateUrl == null)
+		}
+		if (cfnTemplateUrl == null) {
 			throw new GradleException("cfnTemplateUrl is not specified");
+		}
 		
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
@@ -113,7 +114,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 				getLogger().warn("stack {} not found", stackName);
 				createStack(cfn);
 			} else if (e.getMessage().contains("No updates are to be performed.")) {
-				// ignore
+				getLogger().trace(e.getMessage());
 			} else {
 				throw e;
 			}

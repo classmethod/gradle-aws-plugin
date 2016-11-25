@@ -10,6 +10,9 @@ buildscript {
 		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
 		classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
 		classpath "com.diffplug.gradle.spotless:spotless:1.3.3"
+		classpath "de.thetaphi:forbiddenapis:2.2"
+		classpath 'org.ajoberstar:grgit:1.1.0'
+		classpath "de.aaschmid:gradle-cpd-plugin:1.0"
 	}
 }
 
@@ -18,12 +21,14 @@ apply plugin: "com.diffplug.gradle.spotless"
 apply plugin: "java"
 apply plugin: "eclipse"
 apply plugin: "idea"
+apply plugin: "com.diffplug.gradle.spotless"
+apply plugin: "jacoco"
 
 defaultTasks "clean", "build"
 
 // ======== deployment options (dispatched on group name) ========
 group = "jp.classmethod.aws"
-version = "0.30"
+version = "0.31"
 
 sourceCompatibility = targetCompatibility = 1.8
 
@@ -32,13 +37,119 @@ ext {
 	defaultEncoding = "UTF-8"
 }
 
-// ======== spotless ========
+// ======== code quality ========
+apply plugin: "checkstyle"
+apply plugin: "findbugs"
+apply plugin: "pmd"
+apply plugin: "cpd"
+apply plugin: "jacoco"
+apply plugin: "de.thetaphi.forbiddenapis"
+apply plugin: "com.diffplug.gradle.spotless"
 
+// compiler
+compileJava {
+	options.compilerArgs << "-Xlint"
+}
+
+// jacoco
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+	}
+}
+
+// checkstyle
+checkstyle {
+	toolVersion = "7.1.2"
+	configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+checkstyleTest {
+	configFile = file("config/checkstyle/checkstyle-test.xml")
+}
+
+// workaround: see https://issues.gradle.org/browse/GRADLE-2888
+task verifyNoCheckstyleWarningsInMain {
+	group = "verification"
+	description = "Fail if checkstyleMain result contains warnings"
+	doLast {
+		File warningsFile = file('build/reports/checkstyle/main.xml')
+		if (warningsFile.exists() && warningsFile.text.contains("<error ")) {
+			throw new GradleException("There were checkstyle warnings! For more info check $warningsFile")
+		}
+	}
+}
+checkstyleMain.finalizedBy verifyNoCheckstyleWarningsInMain
+task verifyNoCheckstyleWarningsInTest {
+	group = "verification"
+	description = "Fail if checkstyleTest result contains warnings"
+	doLast {
+		File warningsFile = file('build/reports/checkstyle/test.xml')
+		if (warningsFile.exists() && warningsFile.text.contains("<error ")) {
+			throw new GradleException("There were checkstyle warnings! For more info check $warningsFile")
+		}
+	}
+}
+checkstyleTest.finalizedBy verifyNoCheckstyleWarningsInTest
+
+// findbugs
+findbugs {
+	effort = "max"
+	includeFilter = file("config/findbugs/includeFilter.xml")
+	excludeFilter = file("config/findbugs/excludeFilter.xml")
+}
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+// pmd
+pmd {
+	consoleOutput = true
+}
+pmdMain {
+	ruleSetFiles = files("config/pmd/pmd-settings.xml")
+	ruleSets = []  // To apply only the custom rules
+}
+pmdTest {
+	ruleSetFiles = files("config/pmd/pmd-settings-test.xml")
+	ruleSets = []  // To apply only the custom rules
+}
+cpdCheck {
+	reports {
+		text.enabled = true
+		xml.enabled = false
+	}
+	source = sourceSets.main.allJava // only main source
+	ignoreFailures = true
+}
+
+// forbiddenapis
+forbiddenApisMain {
+	bundledSignatures += [
+		'jdk-system-out',
+		'jdk-unsafe-' + project.sourceCompatibility,
+		'jdk-internal-' + project.sourceCompatibility
+	]
+	signaturesFiles = fileTree(dir: "config/forbiddenapis", include: "*.txt")
+	ignoreFailures = false
+}
+forbiddenApisTest {
+	bundledSignatures += [
+		'jdk-system-out',
+		'jdk-internal-' + project.sourceCompatibility
+	]
+	ignoreFailures = false
+}
+
+// spotless
 spotless {
 	java {
-		licenseHeaderFile 'gradle/spotless.license.java'
-		importOrderFile   'gradle/spotless.importorder'
-		eclipseFormatFile 'gradle/spotless.eclipseformat.xml'
+		licenseHeaderFile 'config/spotless/spotless.license.java'
+		importOrderFile   'config/spotless/spotless.importorder'
+		eclipseFormatFile 'config/spotless/spotless.eclipseformat.xml'
 		
 		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
 		//    @Max(value = 9_999_999 L) // what Eclipse does
@@ -136,7 +247,7 @@ apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = "2.5"
+	gradleVersion = "2.12"
 }
 
 

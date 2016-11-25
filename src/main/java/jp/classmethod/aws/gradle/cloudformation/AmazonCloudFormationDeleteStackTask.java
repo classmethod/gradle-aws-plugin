@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,6 @@ import com.amazonaws.services.cloudformation.model.DeleteStackRequest;
 
 public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	
-	
 	@Getter
 	@Setter
 	private String stackName;
@@ -43,8 +42,9 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		
-		if (stackName == null)
+		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
+		}
 		
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
