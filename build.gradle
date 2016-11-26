@@ -11,7 +11,7 @@ buildscript {
 		classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
 		classpath "com.diffplug.gradle.spotless:spotless:1.3.3"
 		classpath "de.thetaphi:forbiddenapis:2.2"
-		classpath 'org.ajoberstar:grgit:1.1.0'
+		classpath 'org.ajoberstar:grgit:1.7.0'
 		classpath "de.aaschmid:gradle-cpd-plugin:1.0"
 	}
 }
@@ -28,7 +28,21 @@ defaultTasks "clean", "build"
 
 // ======== deployment options (dispatched on group name) ========
 group = "jp.classmethod.aws"
-version = "0.32-SNAPSHOT"
+
+ext {
+	git = org.ajoberstar.grgit.Grgit.open(file('.'))
+	describedCommit = git.describe().toString().trim()
+}
+
+version = describedCommit +
+	(describedCommit.matches(".*-[0-9]+-g[0-9a-f]{7}") ? "-SNAPSHOT" : "") +
+	(git.status().isClean() ? "" : "+dirty")
+
+task showVersion {
+	doLast {
+		println version
+	}
+}
 
 sourceCompatibility = targetCompatibility = 1.8
 
