@@ -299,6 +299,10 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
 	zipFile = zip.archivePath
 	handler = "DecodeBase64.handler"
+	environment = [
+	    p1: "Value",
+	    p2: "Value2"
+	]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
