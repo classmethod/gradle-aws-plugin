@@ -42,8 +42,6 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	private List<String> successStatuses = Arrays.asList(
 			"CREATE_COMPLETE",
 			"UPDATE_COMPLETE",
-			"ROLLBACK_COMPLETE",
-			"UPDATE_ROLLBACK_COMPLETE",
 			"DELETE_COMPLETE");
 	
 	@Getter
