@@ -65,6 +65,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private Capability useCapabilityIam;
+	
+	@Getter
+	@Setter
 	private String cfnStackPolicyUrl;
 	
 	@Getter
@@ -136,7 +140,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			.withParameters(cfnStackParams)
 			.withTags(cfnStackTags);
 		if (isCapabilityIam()) {
-			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+			Capability selectedCapability =
+					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
+			getLogger().error("Using policy: " + selectedCapability);
+			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
@@ -171,7 +178,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			.withParameters(cfnStackParams)
 			.withTags(cfnStackTags);
 		if (isCapabilityIam()) {
-			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+			Capability selectedCapability =
+					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
+			getLogger().error("Using policy: " + selectedCapability);
+			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
