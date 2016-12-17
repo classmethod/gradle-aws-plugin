@@ -76,7 +76,7 @@ jacocoTestReport {
 // checkstyle
 checkstyle {
 	toolVersion = "7.1.2"
-	configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+	configFile = project.file('config/checkstyle/checkstyle.xml')
 }
 checkstyleTest {
 	configFile = file("config/checkstyle/checkstyle-test.xml")
@@ -164,20 +164,20 @@ spotless {
 		licenseHeaderFile 'config/spotless/spotless.license.java'
 		importOrderFile   'config/spotless/spotless.importorder'
 		eclipseFormatFile 'config/spotless/spotless.eclipseformat.xml'
-		
+
 		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
 		//    @Max(value = 9_999_999 L) // what Eclipse does
 		//    @Max(value = 9_999_999L)  // what I wish Eclipse did
 		custom 'Long literal fix', { it.replaceAll('([0-9_]+) [Ll]', '$1L') }
-		
+
 		// Eclipse formatter puts excess whitespace after lambda blocks
 		//    funcThatTakesLambdas(x -> {} , y -> {} )	// what Eclipse does
 		//    funcThatTakesLambdas(x -> {}, y -> {})	// what I wish Eclipse did
 		custom 'Lambda fix', { it.replace('} )', '})').replace('} ,', '},') }
-		
+
 		indentWithTabs()
 		endWithNewline()
-		
+
 		customReplaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
 //		customReplaceRegex 'Remove indent before line comment', '^\\t*//', '//'
 	}
@@ -230,7 +230,7 @@ dependencies {
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-io:commons-io:1.4"
 	compile "org.projectlombok:lombok:$lombokVersion"
-	
+
 	compile "com.amazonaws:aws-java-sdk-sts:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-ec2:$awsJavaSdkVersion"
@@ -243,9 +243,9 @@ dependencies {
 	compile "com.amazonaws:aws-java-sdk-iam:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-sqs:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"
-	
+
 	compile "jp.xet.spar-wings:spar-wings-awscli-config:$sparWingsVersion"
-	
+
 	// tests
 	testCompile "junit:junit:$junitVersion"
 	testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"

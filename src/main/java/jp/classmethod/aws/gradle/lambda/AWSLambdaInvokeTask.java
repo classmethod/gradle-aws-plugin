@@ -73,7 +73,7 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 	}
 	
 	@TaskAction
-	public void deleteFunction() throws FileNotFoundException, IOException {
+	public void invokeFunction() throws FileNotFoundException, IOException {
 		// to enable conventionMappings feature
 		String functionName = getFunctionName();
 		
@@ -105,12 +105,14 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 		if (payload instanceof File) {
 			File file = (File) payload;
 			str = Files.toString(file, Charsets.UTF_8);
+			request.setPayload(str);
 		} else if (payload instanceof Closure) {
 			Closure<?> closure = (Closure<?>) payload;
 			str = closure.call().toString();
-		} else {
+			request.setPayload(str);
+		} else if (payload instanceof String) {
 			str = payload.toString();
+			request.setPayload(str);
 		}
-		request.setPayload(str);
 	}
 }
