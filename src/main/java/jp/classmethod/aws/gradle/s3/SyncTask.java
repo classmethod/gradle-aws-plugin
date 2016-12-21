@@ -126,7 +126,7 @@ public class SyncTask extends ConventionTask {
 		
 		ExecutorService es = Executors.newFixedThreadPool(threads);
 		getLogger().info("Start uploading");
-		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
+		getLogger().info("Uploading... {} to s3://{}/{}", source, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
 			
 			public void visitFile(FileVisitDetails element) {

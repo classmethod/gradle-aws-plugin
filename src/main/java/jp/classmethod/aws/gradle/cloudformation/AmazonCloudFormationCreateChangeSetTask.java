@@ -15,6 +15,8 @@
  */
 package jp.classmethod.aws.gradle.cloudformation;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +27,7 @@ import java.util.Locale;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.apache.commons.io.FileUtils;
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
@@ -38,6 +41,7 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.Tag;
+import com.google.common.base.Strings;
 
 public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	
@@ -48,6 +52,10 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private String cfnTemplateUrl;
+	
+	@Getter
+	@Setter
+	private File cfnTemplateFile;
 	
 	@Getter
 	@Setter
@@ -73,17 +81,13 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	}
 	
 	@TaskAction
-	public void creatChangeSet() throws InterruptedException {
+	public void createChangeSet() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
-		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<String> stableStatuses = getStableStatuses();
 		
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
-		}
-		if (cfnTemplateUrl == null) {
-			throw new GradleException("cfnTemplateUrl is not specified");
 		}
 		
 		AmazonCloudFormationPluginExtension ext =
@@ -100,21 +104,30 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		}
 	}
 	
-	private void createChangeSet(AmazonCloudFormation cfn) {
+	private void createChangeSet(AmazonCloudFormation cfn) throws IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		List<Tag> cfnStackTags = getCfnStackTags();
+		File cfnTemplateFile = getCfnTemplateFile();
 		
 		String changeSetName = changeSetName(stackName);
 		getLogger().info("Create change set '{}' for stack '{}'", changeSetName, stackName);
 		CreateChangeSetRequest req = new CreateChangeSetRequest()
 			.withChangeSetName(changeSetName)
 			.withStackName(stackName)
-			.withTemplateURL(cfnTemplateUrl)
 			.withParameters(cfnStackParams)
 			.withTags(cfnStackTags);
+		
+		// If template URL is specified, then use it
+		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
+			req.setTemplateURL(cfnTemplateUrl);
+			// Else, use the template file body
+		} else {
+			req.setTemplateBody(FileUtils.readFileToString(cfnTemplateFile));
+		}
+		
 		if (isCapabilityIam()) {
 			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
 		}

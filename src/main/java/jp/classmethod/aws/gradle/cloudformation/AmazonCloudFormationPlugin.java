@@ -89,14 +89,25 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						.withParameterKey(it.getKey().toString())
 						.withParameterValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
-				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
-				task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
 				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
 					.map(it -> new Tag()
 						.withKey(it.getKey().toString())
 						.withValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
+				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
+				task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
+				task.conventionMapping("cfnStackPolicyFile", () -> cfnExt.getStackPolicyFile());
+				task.conventionMapping("cfnOnFailure", () -> cfnExt.getOnFailure());
 			});
+		
+		project.getTasks()
+			.create("awsCfnValidateTemplateUrl", AmazonCloudFormationValidateTemplateUrlTask.class,
+					task -> {
+						task.setDescription("Validate template URL.");
+						task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+						task.dependsOn(awsCfnUploadTemplate);
+					});
 		
 		project.getTasks()
 			.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
@@ -109,12 +120,13 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						.withParameterKey(it.getKey().toString())
 						.withParameterValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
-				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
 				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
 					.map(it -> new Tag()
 						.withKey(it.getKey().toString())
 						.withValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
+				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
 			});
 		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
