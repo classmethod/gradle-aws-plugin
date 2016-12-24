@@ -28,7 +28,7 @@
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName"/>
     <module name="MemberName"/>
-    <!--
+    <!-- acceptable on test
     <module name="MethodName"/>
     -->
     <module name="PackageName"/>
@@ -41,7 +41,7 @@
       <property name="max" value="128"/>
       <property name="tabWidth" value="4"/>
     </module>
-    <!-- テストではメソッド長を制限しない
+    <!-- acceptable on test
     <module name="MethodLength">
       <property name="max" value="100"/>
     </module>

@@ -77,7 +77,7 @@
     <module name="IllegalInstantiation">
       <property name="severity" value="ignore"/>
     </module>
-    <!--
+    <!-- テストでは許容
     <module name="MagicNumber">
       <property name="ignoreNumbers" value="-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20"/>
     </module>
