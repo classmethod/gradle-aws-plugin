@@ -116,7 +116,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 					getLogger().info("Status of stack {} is {}...", stackName, lastStatus);
 					Thread.sleep(loopWait * 1000);
 				} else {
-					// waitStatusesでもsuccessStatusesないステータスはfailとする
+					// fail if not contains in successStatus or waitStatus
 					throw new GradleException(
 							"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
 				}
