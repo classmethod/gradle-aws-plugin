@@ -37,9 +37,11 @@ import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
+import com.amazonaws.services.cloudformation.model.Output;
 import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackResource;
+import com.amazonaws.services.cloudformation.model.ValidateTemplateRequest;
 
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
@@ -64,6 +66,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	@Getter
 	@Setter
 	private String templateURL;
+	
+	@Getter
+	@Setter
+	private String onFailure;
 	
 	@Getter
 	@Setter
@@ -135,6 +141,19 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 		return Collections.emptyList();
 	}
 	
+	public List<Output> getStackOutputs() {
+		return getStackOutputs(stackName);
+	}
+	
+	public List<Output> getStackOutputs(String stackName) {
+		if (getProject().getGradle().getStartParameter().isOffline() == false) {
+			Optional<Stack> stack = getStack(stackName);
+			return stack.map(Stack::getOutputs).orElse(Collections.emptyList());
+		}
+		logger.info("offline mode: return empty outputs");
+		return Collections.emptyList();
+	}
+	
 	public List<StackResource> getStackResources() {
 		return getStackResources(stackName);
 	}
@@ -173,6 +192,25 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 		return param.get().getParameterValue();
 	}
 	
+	public String getStackOutputValue(String key) {
+		return findStackOutputValue(getStackOutputs(), key);
+	}
+	
+	public String getStackOutputValue(String stackName, String key) {
+		return findStackOutputValue(getStackOutputs(stackName), key);
+	}
+	
+	public String findStackOutputValue(List<Output> cfnStackOutputs, String key) {
+		Optional<Output> output = cfnStackOutputs.stream()
+			.filter(p -> p.getOutputKey().equals(key))
+			.findAny();
+		if (output.isPresent() == false) {
+			logger.warn("WARN: cfn stack output {} is not found", key);
+			return "***unknown***";
+		}
+		return output.get().getOutputValue();
+	}
+	
 	public String getPhysicalResourceId(String logicalResourceId) {
 		return findPhysicalResourceId(getStackResources(), logicalResourceId);
 	}
@@ -189,6 +227,30 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			return "***unknown***";
 		}
 		return cfnPhysicalResource.get().getPhysicalResourceId();
+	}
+	
+	public boolean isValidTemplateBody(String templateBody) {
+		try {
+			ValidateTemplateRequest validateTemplateRequest =
+					new ValidateTemplateRequest().withTemplateBody(templateBody);
+			getClient().validateTemplate(validateTemplateRequest);
+			return true;
+		} catch (AmazonClientException e) {
+			logger.error("validateTemplateBody failed: {}", e.getMessage());
+			return false;
+		}
+	}
+	
+	public boolean isValidTemplateUrl(String templateUrl) {
+		try {
+			ValidateTemplateRequest validateTemplateRequest =
+					new ValidateTemplateRequest().withTemplateURL(templateUrl);
+			getClient().validateTemplate(validateTemplateRequest);
+			return true;
+		} catch (AmazonClientException e) {
+			logger.error("validateTemplateUrl failed: {}", e.getMessage());
+			return false;
+		}
 	}
 	
 	public List<Parameter> toParameters(Map<String, String> map) {
