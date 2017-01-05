@@ -84,6 +84,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 				task.mustRunAfter(awsCfnUploadPolicy);
 				task.conventionMapping("stackName", () -> cfnExt.getStackName());
 				task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+				task.conventionMapping("useCapabilityIam", () -> cfnExt.getUseCapabilityIam());
 				task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
 					.map(it -> new Parameter()
 						.withParameterKey(it.getKey().toString())

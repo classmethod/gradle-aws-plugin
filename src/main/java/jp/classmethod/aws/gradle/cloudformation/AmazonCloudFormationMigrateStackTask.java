@@ -72,6 +72,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private Capability useCapabilityIam;
+	
+	@Getter
+	@Setter
 	private String cfnStackPolicyUrl;
 	
 	@Getter
@@ -158,7 +162,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			getLogger().info("Using template file: {}", "$cfnTemplateFile.canonicalPath");
 		}
 		if (isCapabilityIam()) {
-			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+			Capability selectedCapability =
+					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
+			getLogger().error("Using policy: " + selectedCapability);
+			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
 		// If stack policy is specified, then use it
@@ -210,7 +217,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setTemplateBody(FileUtils.readFileToString(cfnTemplateFile));
 		}
 		if (isCapabilityIam()) {
-			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+			Capability selectedCapability =
+					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
+			getLogger().error("Using policy: " + selectedCapability);
+			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
 		// If stack policy is specified, then use it

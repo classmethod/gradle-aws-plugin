@@ -33,6 +33,7 @@ import org.gradle.api.Project;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
+import com.amazonaws.services.cloudformation.model.Capability;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
@@ -102,6 +103,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	@Getter
 	@Setter
 	private boolean capabilityIam;
+	
+	@Getter
+	@Setter
+	private Capability useCapabilityIam;
 	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
