@@ -14,6 +14,7 @@ To do this cd to the project where you would like to use your own checkout of th
 
 ```bash
 mkdir buildSrc
+cd buildSrc
 ln -s /path/to/gradle-aws-plugin ./
 ```
 
@@ -24,6 +25,7 @@ _`buildSrc/build.gradle`_
 apply plugin: "java"
 
 repositories {
+  jcenter()
   mavenCentral()
 }
 

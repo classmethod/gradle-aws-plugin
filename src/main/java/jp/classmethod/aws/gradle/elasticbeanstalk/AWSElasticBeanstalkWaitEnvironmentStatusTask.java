@@ -114,7 +114,7 @@ public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends ConventionTask
 						throw new GradleException("interrupted", e);
 					}
 				} else {
-					// waitStatusesでもsuccessStatusesないステータスはfailとする
+					// fail if not contains in successStatus or waitStatus
 					throw new GradleException("Status of environment " + envName + " @ " + appName + " is "
 							+ ed.getStatus() + ".  It seems to be failed.");
 				}

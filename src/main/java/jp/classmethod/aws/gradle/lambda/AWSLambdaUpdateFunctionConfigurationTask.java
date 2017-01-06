@@ -17,6 +17,7 @@ package jp.classmethod.aws.gradle.lambda;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.model.Environment;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
 
@@ -56,6 +58,10 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 	private Integer memorySize;
 	
 	@Getter
+	@Setter
+	private Map<String, String> environment;
+	
+	@Getter
 	private UpdateFunctionConfigurationResult updateFunctionConfiguration;
 	
 	
@@ -82,7 +88,8 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 			.withHandler(getHandler())
 			.withDescription(getFunctionDescription())
 			.withTimeout(getTimeout())
-			.withMemorySize(getMemorySize());
+			.withMemorySize(getMemorySize())
+			.withEnvironment(new Environment().withVariables(getEnvironment()));
 		updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());

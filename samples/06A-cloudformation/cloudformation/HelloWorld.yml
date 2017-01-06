@@ -1,0 +1,43 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A groovy lambda
+Parameters:
+  pArtifactBucket:
+    Description: The name of the S3 bucket that contains the source code of your Lambda
+      function.
+    Type: String
+  pArtifactPrefix:
+    Description: Prefix of the objects for the  Lambdas
+    Type: String
+  pHelloWorldZipFile:
+    Description: The location and name of your source code .zip file.
+    Type: String
+Resources:
+  HelloWorld:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Ref: pArtifactBucket
+        S3Key:
+          Fn::Join:
+          - "/"
+          - - Ref: pArtifactPrefix
+            - Ref: pHelloWorldZipFile
+      Handler: example.Hello::myHandler
+      Runtime: java8
+      Description: A groovy lambda
+      MemorySize: 512
+      Timeout: 15
+      Role: arn:aws:iam::123456789012:role/lambda_basic_execution
+Outputs:
+  StackName:
+    Description: StackName
+    Value:
+      Ref: AWS::StackName
+  LambdaArn:
+    Description: Lambda ARN
+    Value:
+      Fn::GetAtt:
+      - HelloWorld
+      - Arn

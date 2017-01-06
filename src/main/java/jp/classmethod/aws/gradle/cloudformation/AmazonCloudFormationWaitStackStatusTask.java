@@ -42,8 +42,6 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	private List<String> successStatuses = Arrays.asList(
 			"CREATE_COMPLETE",
 			"UPDATE_COMPLETE",
-			"ROLLBACK_COMPLETE",
-			"UPDATE_ROLLBACK_COMPLETE",
 			"DELETE_COMPLETE");
 	
 	@Getter
@@ -118,7 +116,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 					getLogger().info("Status of stack {} is {}...", stackName, lastStatus);
 					Thread.sleep(loopWait * 1000);
 				} else {
-					// waitStatusesでもsuccessStatusesないステータスはfailとする
+					// fail if not contains in successStatus or waitStatus
 					throw new GradleException(
 							"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
 				}
