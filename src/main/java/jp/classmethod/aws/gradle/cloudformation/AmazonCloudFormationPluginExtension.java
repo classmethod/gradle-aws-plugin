@@ -119,15 +119,11 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	public Optional<Stack> getStack(String stackName) {
 		if (getProject().getGradle().getStartParameter().isOffline() == false) {
-			try {
-				DescribeStacksResult describeStacksResult = getClient().describeStacks(new DescribeStacksRequest()
-					.withStackName(stackName));
-				List<Stack> stacks = describeStacksResult.getStacks();
-				if (stacks.isEmpty() == false) {
-					return stacks.stream().findAny();
-				}
-			} catch (AmazonClientException e) {
-				logger.debug("describeStacks failed", e);
+			DescribeStacksResult describeStacksResult = getClient().describeStacks(new DescribeStacksRequest()
+				.withStackName(stackName));
+			List<Stack> stacks = describeStacksResult.getStacks();
+			if (stacks.isEmpty() == false) {
+				return stacks.stream().findAny();
 			}
 		}
 		return Optional.empty();
@@ -165,14 +161,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	public List<StackResource> getStackResources(String stackName) {
 		if (getProject().getGradle().getStartParameter().isOffline() == false) {
-			try {
-				DescribeStackResourcesResult describeStackResourcesResult =
-						getClient().describeStackResources(new DescribeStackResourcesRequest()
-							.withStackName(stackName));
-				return describeStackResourcesResult.getStackResources();
-			} catch (AmazonClientException e) {
-				logger.error("describeStackResources failed: {}", e.getMessage());
-			}
+			DescribeStackResourcesResult describeStackResourcesResult =
+					getClient().describeStackResources(new DescribeStackResourcesRequest()
+						.withStackName(stackName));
+			return describeStackResourcesResult.getStackResources();
 		}
 		logger.info("offline mode: return empty resources");
 		return Collections.emptyList();
