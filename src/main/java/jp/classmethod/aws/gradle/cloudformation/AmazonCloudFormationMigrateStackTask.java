@@ -101,10 +101,16 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	public void createOrUpdateStack() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
+		String cfnTemplateUrl = getCfnTemplateUrl();
+		File cfnTemplateFile = getCfnTemplateFile();
 		List<String> stableStatuses = getStableStatuses();
 		
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
+		}
+		if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+			throw new GradleException(
+					"cfnTemplateUrl or cfnTemplateFile must be provided");
 		}
 		
 		AmazonCloudFormationPluginExtension ext =
