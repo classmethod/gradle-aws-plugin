@@ -170,7 +170,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
 					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
-			getLogger().error("Using policy: " + selectedCapability);
+			getLogger().info("Using policy: " + selectedCapability);
 			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
@@ -226,7 +226,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
 					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
-			getLogger().error("Using policy: " + selectedCapability);
+			getLogger().info("Using policy: " + selectedCapability);
 			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
