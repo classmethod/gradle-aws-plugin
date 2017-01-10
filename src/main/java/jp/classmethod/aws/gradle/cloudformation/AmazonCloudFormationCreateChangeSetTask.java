@@ -71,6 +71,10 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private Capability useCapabilityIam;
+	
+	@Getter
+	@Setter
 	private List<String> stableStatuses = Arrays.asList(
 			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
 	
@@ -129,7 +133,10 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		}
 		
 		if (isCapabilityIam()) {
-			req.setCapabilities(Arrays.asList(Capability.CAPABILITY_IAM.toString()));
+			Capability selectedCapability =
+					(getUseCapabilityIam() == null) ? Capability.CAPABILITY_IAM : getUseCapabilityIam();
+			getLogger().info("Using IAM capability: " + selectedCapability);
+			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		CreateChangeSetResult createChangeSetResult = cfn.createChangeSet(req);
 		getLogger().info("Create change set requested: {}", createChangeSetResult.getId());
