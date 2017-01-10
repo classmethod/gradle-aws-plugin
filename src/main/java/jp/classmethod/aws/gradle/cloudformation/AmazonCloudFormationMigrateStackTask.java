@@ -175,7 +175,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		}
 		
 		// If stack policy is specified, then use it
-		if (!Strings.isNullOrEmpty(cfnStackPolicyUrl)) {
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 			// Else, use the stack policy file body if present
 		} else if (cfnStackPolicyFile != null) {
@@ -231,7 +231,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		}
 		
 		// If stack policy is specified, then use it
-		if (!Strings.isNullOrEmpty(cfnStackPolicyUrl)) {
+		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 			// Else, use the stack policy file body
 		} else if (cfnStackPolicyFile != null) {
