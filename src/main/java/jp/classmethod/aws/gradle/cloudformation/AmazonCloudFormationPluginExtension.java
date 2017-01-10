@@ -29,10 +29,12 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
+import com.amazonaws.services.cloudformation.model.AmazonCloudFormationException;
 import com.amazonaws.services.cloudformation.model.Capability;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
@@ -119,11 +121,19 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	public Optional<Stack> getStack(String stackName) {
 		if (getProject().getGradle().getStartParameter().isOffline() == false) {
-			DescribeStacksResult describeStacksResult = getClient().describeStacks(new DescribeStacksRequest()
-				.withStackName(stackName));
-			List<Stack> stacks = describeStacksResult.getStacks();
-			if (stacks.isEmpty() == false) {
-				return stacks.stream().findAny();
+			try {
+				DescribeStacksResult describeStacksResult = getClient().describeStacks(new DescribeStacksRequest()
+					.withStackName(stackName));
+				List<Stack> stacks = describeStacksResult.getStacks();
+				if (stacks.isEmpty() == false) {
+					return stacks.stream().findAny();
+				}
+			} catch (AmazonCloudFormationException e) {
+				if ("ValidationError".equals(e.getErrorCode())) {
+					return Optional.empty();
+				} else {
+					throw new GradleException(e.getMessage(), e);
+				}
 			}
 		}
 		return Optional.empty();
@@ -161,10 +171,18 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	public List<StackResource> getStackResources(String stackName) {
 		if (getProject().getGradle().getStartParameter().isOffline() == false) {
-			DescribeStackResourcesResult describeStackResourcesResult =
-					getClient().describeStackResources(new DescribeStackResourcesRequest()
-						.withStackName(stackName));
-			return describeStackResourcesResult.getStackResources();
+			try {
+				DescribeStackResourcesResult describeStackResourcesResult =
+						getClient().describeStackResources(new DescribeStackResourcesRequest()
+							.withStackName(stackName));
+				return describeStackResourcesResult.getStackResources();
+			} catch (AmazonCloudFormationException e) {
+				if ("ValidationError".equals(e.getErrorCode())) {
+					return Collections.emptyList();
+				} else {
+					throw new GradleException(e.getMessage(), e);
+				}
+			}
 		}
 		logger.info("offline mode: return empty resources");
 		return Collections.emptyList();
