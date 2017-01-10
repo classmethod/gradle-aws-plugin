@@ -101,10 +101,16 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	public void createOrUpdateStack() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
+		String cfnTemplateUrl = getCfnTemplateUrl();
+		File cfnTemplateFile = getCfnTemplateFile();
 		List<String> stableStatuses = getStableStatuses();
 		
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
+		}
+		if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+			throw new GradleException(
+					"cfnTemplateUrl or cfnTemplateFile must be provided");
 		}
 		
 		AmazonCloudFormationPluginExtension ext =
@@ -140,10 +146,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
+		File cfnTemplateFile = getCfnTemplateFile();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		List<Tag> cfnStackTags = getCfnStackTags();
 		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
-		File cfnTemplateFile = getCfnTemplateFile();
 		File cfnStackPolicyFile = getCfnStackPolicyFile();
 		
 		getLogger().info("Update stack: {}", stackName);
@@ -164,16 +170,17 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
 					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
-			getLogger().error("Using policy: " + selectedCapability);
+			getLogger().info("Using policy: " + selectedCapability);
 			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
 		// If stack policy is specified, then use it
 		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
-			// Else, use the stack policy file body
-		} else {
-			req.setStackPolicyBody(FileUtils.readFileToString(cfnStackPolicyFile));
+			// Else, use the stack policy file body if present
+		} else if (cfnStackPolicyFile != null) {
+			req.setStackPolicyBody(
+					FileUtils.readFileToString(cfnStackPolicyFile));
 		}
 		
 		UpdateStackResult updateStackResult = cfn.updateStack(req);
@@ -194,10 +201,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
+		File cfnTemplateFile = getCfnTemplateFile();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		List<Tag> cfnStackTags = getCfnStackTags();
 		String cfnStackPolicyUrl = getCfnStackPolicyUrl();
-		File cfnTemplateFile = getCfnTemplateFile();
 		File cfnStackPolicyFile = getCfnStackPolicyFile();
 		String cfnOnFailure = getCfnOnFailure();
 		
@@ -219,17 +226,17 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
 					(useCapabilityIam == null) ? Capability.CAPABILITY_IAM : useCapabilityIam;
-			getLogger().error("Using policy: " + selectedCapability);
+			getLogger().info("Using policy: " + selectedCapability);
 			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
 		}
 		
 		// If stack policy is specified, then use it
 		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
-			
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 			// Else, use the stack policy file body
-		} else {
-			req.setStackPolicyBody(FileUtils.readFileToString(cfnStackPolicyFile));
+		} else if (cfnStackPolicyFile != null) {
+			req.setStackPolicyBody(
+					FileUtils.readFileToString(cfnStackPolicyFile));
 		}
 		
 		CreateStackResult createStackResult = cfn.createStack(req);
