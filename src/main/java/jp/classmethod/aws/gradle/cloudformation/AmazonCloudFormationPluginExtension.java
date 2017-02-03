@@ -189,59 +189,57 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	}
 	
 	public String getStackParameterValue(String key) {
-		return findStackParameterValue(getStackParameters(), key);
+		return getStackParameterValue(stackName, key);
 	}
 	
 	public String getStackParameterValue(String stackName, String key) {
-		return findStackParameterValue(getStackParameters(stackName), key);
+		return findStackParameterValue(stackName, key);
 	}
 	
-	public String findStackParameterValue(List<Parameter> cfnStackParameters, String key) {
-		Optional<Parameter> param = cfnStackParameters.stream()
+	public String findStackParameterValue(String stackName, String key) {
+		Optional<Parameter> param = getStackParameters(stackName).stream()
 			.filter(p -> p.getParameterKey().equals(key))
 			.findAny();
 		if (param.isPresent() == false) {
-			logger.warn("WARN: cfn stack parameter {} is not found", key);
-			return "***unknown***";
+			logger.warn("WARN: param {} for stack {} is not found", key, stackName);
 		}
-		return param.get().getParameterValue();
+		return param.map(Parameter::getParameterValue).orElse(null);
 	}
 	
 	public String getStackOutputValue(String key) {
-		return findStackOutputValue(getStackOutputs(), key);
+		return getStackOutputValue(stackName, key);
 	}
 	
 	public String getStackOutputValue(String stackName, String key) {
-		return findStackOutputValue(getStackOutputs(stackName), key);
+		return findStackOutputValue(stackName, key);
 	}
 	
-	public String findStackOutputValue(List<Output> cfnStackOutputs, String key) {
-		Optional<Output> output = cfnStackOutputs.stream()
+	public String findStackOutputValue(String stackName, String key) {
+		Optional<Output> output = getStackOutputs(stackName).stream()
 			.filter(p -> p.getOutputKey().equals(key))
 			.findAny();
 		if (output.isPresent() == false) {
-			logger.warn("WARN: cfn stack output {} is not found", key);
-			return "***unknown***";
+			logger.warn("WARN: output {} for stack {} is not found", key, stackName);
 		}
-		return output.get().getOutputValue();
+		return output.map(Output::getOutputValue).orElse(null);
 	}
 	
 	public String getPhysicalResourceId(String logicalResourceId) {
-		return findPhysicalResourceId(getStackResources(), logicalResourceId);
+		return getPhysicalResourceId(stackName, logicalResourceId);
 	}
 	
 	public String getPhysicalResourceId(String stackName, String logicalResourceId) {
-		return findPhysicalResourceId(getStackResources(stackName), logicalResourceId);
+		return findPhysicalResourceId(stackName, logicalResourceId);
 	}
 	
-	public String findPhysicalResourceId(List<StackResource> cfnPhysicalResources, String logicalResourceId) {
-		Optional<StackResource> cfnPhysicalResource = cfnPhysicalResources.stream()
-			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId)).findAny();
-		if (cfnPhysicalResource.isPresent() == false) {
-			logger.warn("WARN: cfn physical resource {} is not found", logicalResourceId);
-			return "***unknown***";
+	public String findPhysicalResourceId(String stackName, String logicalResourceId) {
+		Optional<StackResource> physicalResource = getStackResources(stackName).stream()
+			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId))
+			.findAny();
+		if (physicalResource.isPresent() == false) {
+			logger.warn("WARN: physical resource {} for stack {} is not found", logicalResourceId, stackName);
 		}
-		return cfnPhysicalResource.get().getPhysicalResourceId();
+		return physicalResource.map(StackResource::getPhysicalResourceId).orElse(null);
 	}
 	
 	public boolean isValidTemplateBody(String templateBody) {
