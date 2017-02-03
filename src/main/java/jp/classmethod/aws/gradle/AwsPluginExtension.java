@@ -41,7 +41,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
 @RequiredArgsConstructor
@@ -71,10 +70,11 @@ public class AwsPluginExtension {
 	
 	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
-		String profileNameToUse = MoreObjects.firstNonNull(profileName, this.profileName);
 		if (credentialsProvider != null) {
 			return credentialsProvider;
-		} else if (Strings.isNullOrEmpty(profileNameToUse) == false) {
+		}
+		String profileNameToUse = profileName != null ? profileName : this.profileName;
+		if (Strings.isNullOrEmpty(profileNameToUse) == false) {
 			List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
 			providers.add(new EnvironmentVariableCredentialsProvider());
 			providers.add(new SystemPropertiesCredentialsProvider());
