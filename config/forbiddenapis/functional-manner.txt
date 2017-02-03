@@ -1,0 +1,5 @@
+java.util.Optional#get() @ Avoid using Optional#get().  You should use Optional#orElse and so on.
+
+# @defaultMessage Avoid using Stream#forEach or Stream#forEachOrdered.  You should use Stream#collect or #reduce and so on.
+# java.util.stream.Stream#forEach(java.util.function.Consumer)
+# java.util.stream.Stream#forEachOrdered(java.util.function.Consumer)
