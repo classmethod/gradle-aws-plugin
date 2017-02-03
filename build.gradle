@@ -62,7 +62,7 @@ apply plugin: "com.diffplug.gradle.spotless"
 
 // compiler
 compileJava {
-	options.compilerArgs << "-Xlint"
+	options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Xlint:-deprecation"
 }
 
 // jacoco
@@ -259,7 +259,7 @@ apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = "2.12"
+	gradleVersion = "2.14"
 }
 
 
