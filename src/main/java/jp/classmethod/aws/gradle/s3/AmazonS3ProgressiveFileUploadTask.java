@@ -23,9 +23,9 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.event.ProgressEvent;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 
 public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
@@ -58,7 +58,7 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
-		TransferManager s3mgr = new TransferManager(s3);
+		TransferManager s3mgr = TransferManagerBuilder.standard().withS3Client(s3).build();
 		getLogger().info("Uploading... s3://{}/{}", bucketName, key);
 		
 		Upload upload = s3mgr.upload(new PutObjectRequest(getBucketName(), getKey(), getFile())
@@ -70,7 +70,7 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 			}
 		});
 		upload.waitForCompletion();
-		setResourceUrl(((AmazonS3Client) s3).getResourceUrl(bucketName, key));
+		setResourceUrl(s3.getUrl(bucketName, key).toString());
 		getLogger().info("Upload completed: {}", getResourceUrl());
 	}
 }

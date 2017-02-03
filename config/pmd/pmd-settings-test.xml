@@ -35,7 +35,8 @@
     <!-- 必要なこともある。少なければいいというものではない。 -->
     <exclude name="ExcessiveParameterList"/>
     
-    <!-- テストでは長くても問題ない。 -->
+    <!-- テストに限り、問題ない -->
+    <exclude name="ExcessivePublicCount"/>
     <exclude name="ExcessiveMethodLength"/>
     <exclude name="ExcessiveClassLength"/>
   </rule>

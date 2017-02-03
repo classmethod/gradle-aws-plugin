@@ -28,13 +28,15 @@
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName"/>
     <module name="MemberName"/>
-    <!--
-    <module name="MethodName"/>
-    -->
+    <module name="MethodName">
+      <property name="format" value="^[a-z][a-zA-Z0-9_].*$"/>
+    </module>
     <module name="PackageName"/>
     <module name="ParameterName"/>
     <module name="StaticVariableName"/>
-    <module name="TypeName"/>
+    <module name="TypeName">
+      <property name="format" value="^[A-Z][a-zA-Z0-9_].*$"/>
+    </module>
     <module name="AvoidStarImport"/>
     <module name="RedundantImport"/>
     <module name="LineLength">
@@ -152,7 +154,7 @@
       <property name="severity" value="info"/>
     </module>
     <module name="NestedIfDepth">
-      <property name="max" value="3"/>
+      <property name="max" value="4"/>
     </module>
     <module name="NestedTryDepth">
       <property name="max" value="2"/>
@@ -178,7 +180,9 @@
     <property name="checkFormat" value=".*"/>
     <property name="influenceFormat" value="0"/>
   </module>
+  <!--
   <module name="FileLength"/>
+  -->
   <module name="NewlineAtEndOfFile"/>
   <module name="Translation"/>
 </module>

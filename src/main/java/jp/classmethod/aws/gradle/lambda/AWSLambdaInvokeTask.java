@@ -102,16 +102,18 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 			request.setPayload((ByteBuffer) payload);
 			return;
 		}
-		if (payload instanceof File) {
-			File file = (File) payload;
-			str = Files.toString(file, Charsets.UTF_8);
-			request.setPayload(str);
-		} else if (payload instanceof Closure) {
-			Closure<?> closure = (Closure<?>) payload;
-			str = closure.call().toString();
-			request.setPayload(str);
-		} else if (payload instanceof String) {
-			str = payload.toString();
+		if (payload != null) {
+			if (payload instanceof File) {
+				File file = (File) payload;
+				str = Files.toString(file, Charsets.UTF_8);
+			} else if (payload instanceof Closure) {
+				Closure<?> closure = (Closure<?>) payload;
+				str = closure.call().toString();
+			} else if (payload instanceof String) {
+				str = (String) payload;
+			} else {
+				str = payload.toString();
+			}
 			request.setPayload(str);
 		}
 	}
