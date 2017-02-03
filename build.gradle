@@ -62,6 +62,7 @@ apply plugin: "com.diffplug.gradle.spotless"
 
 // compiler
 compileJava {
+options.compilerArgs << "-Werror"
 	options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Xlint:-deprecation"
 }
 
