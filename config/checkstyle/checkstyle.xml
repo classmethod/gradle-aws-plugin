@@ -144,7 +144,7 @@
       <property name="severity" value="info"/>
     </module>
     <module name="NestedIfDepth">
-      <property name="max" value="3"/>
+      <property name="max" value="4"/>
     </module>
     <module name="NestedTryDepth">
       <property name="max" value="2"/>
@@ -152,6 +152,7 @@
     <module name="PackageDeclaration"/>
     <module name="ReturnCount">
       <property name="max" value="8"/>
+      <property name="maxForVoid" value="4"/>
     </module>
     <module name="StringLiteralEquality"/>
     <module name="SuperClone"/>

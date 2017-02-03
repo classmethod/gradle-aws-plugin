@@ -20,37 +20,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.amazonaws.services.identitymanagement.model.GetUserResult;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
+import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
-import jp.xet.sparwings.aws.auth.AwsCliConfigProfileCredentialsProvider;
-
+@RequiredArgsConstructor
 public class AwsPluginExtension {
 	
 	public static final String NAME = "aws";
 	
 	@Getter
-	@Setter
-	private Project project;
+	private final Project project;
 	
 	@Getter
 	@Setter
@@ -70,26 +70,19 @@ public class AwsPluginExtension {
 	private AWSCredentialsProvider credentialsProvider;
 	
 	
-	public AwsPluginExtension(Project project) {
-		this.project = project;
-	}
-	
 	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
-		List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
+		String profileNameToUse = MoreObjects.firstNonNull(profileName, this.profileName);
 		if (credentialsProvider != null) {
-			providers.add(credentialsProvider);
+			return credentialsProvider;
+		} else if (Strings.isNullOrEmpty(profileNameToUse) == false) {
+			List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
+			providers.add(new EnvironmentVariableCredentialsProvider());
+			providers.add(new SystemPropertiesCredentialsProvider());
+			providers.add(new ProfileCredentialsProvider(profileNameToUse));
+			providers.add(new EC2ContainerCredentialsProviderWrapper());
+			return new AWSCredentialsProviderChain(providers);
 		}
-		providers.add(new EnvironmentVariableCredentialsProvider());
-		providers.add(new SystemPropertiesCredentialsProvider());
-		if (Strings.isNullOrEmpty(profileName) == false) {
-			providers.add(new AwsCliConfigProfileCredentialsProvider(profileName));
-			providers.add(new ProfileCredentialsProvider(profileName));
-		}
-		providers.add(new AwsCliConfigProfileCredentialsProvider(this.profileName));
-		providers.add(new ProfileCredentialsProvider(this.profileName));
-		providers.add(new InstanceProfileCredentialsProvider());
-		
-		return new AWSCredentialsProviderChain(providers.toArray(new AWSCredentialsProvider[providers.size()]));
+		return DefaultAWSCredentialsProviderChain.getInstance();
 	}
 	
 	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName) {
@@ -98,9 +91,7 @@ public class AwsPluginExtension {
 	
 	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName,
 			ClientConfiguration config) {
-		String profileNameToUse = profileName == null ? this.profileName : profileName;
-		
-		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileNameToUse);
+		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
 		ClientConfiguration configToUse = config == null ? new ClientConfiguration() : config;
 		if (this.proxyHost != null && this.proxyPort > 0) {
 			configToUse.setProxyHost(this.proxyHost);
@@ -155,26 +146,12 @@ public class AwsPluginExtension {
 	}
 	
 	public String getAccountId() {
-		String arn = getUserArn(); // ex. arn:aws:iam::123456789012:user/division_abc/subdivision_xyz/Bob
-		return arn.split(":")[4];
+		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
 	}
 	
 	public String getUserArn() {
-		AmazonIdentityManagement iam = createClient(AmazonIdentityManagementClient.class, profileName);
-		try {
-			GetUserResult getUserResult = iam.getUser();
-			return getUserResult.getUser().getArn();
-		} catch (AmazonServiceException e) {
-			if (e.getErrorCode().equals("AccessDenied") == false) {
-				throw e;
-			}
-			String msg = e.getMessage();
-			int arnIdx = msg.indexOf("arn:aws");
-			if (arnIdx == -1) {
-				throw e;
-			}
-			int arnSpace = msg.indexOf(' ', arnIdx);
-			return msg.substring(arnIdx, arnSpace);
-		}
+		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
 	}
 }

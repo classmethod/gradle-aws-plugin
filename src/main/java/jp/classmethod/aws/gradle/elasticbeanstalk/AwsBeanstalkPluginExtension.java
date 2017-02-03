@@ -115,6 +115,6 @@ public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<
 		return lassr.getSolutionStacks().stream()
 			.filter(n -> n.startsWith(os) && n.contains(" running " + platform))
 			.findFirst()
-			.get();
+			.orElse(null);
 	}
 }

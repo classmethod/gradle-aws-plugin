@@ -1,0 +1,26 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath 'org.ajoberstar:grgit:1.7.0'
+	}
+}
+
+ext {
+	git = org.ajoberstar.grgit.Grgit.open(file('.'))
+	describedCommit = git.describe().toString().trim()
+}
+
+version = describedCommit +
+	(describedCommit.matches(".*-[0-9]+-g[0-9a-f]{7}") ? "-SNAPSHOT" : "") +
+	(git.status().isClean() ? "" : "+dirty")
+
+task showVersion {
+	doLast {
+		println version
+	}
+}

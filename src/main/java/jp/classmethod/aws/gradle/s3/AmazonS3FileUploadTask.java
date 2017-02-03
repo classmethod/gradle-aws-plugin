@@ -69,7 +69,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		} else {
 			getLogger().info("s3://{}/{} already exists with matching md5 sum -- skipped", bucketName, key);
 		}
-		setResourceUrl(((AmazonS3Client) s3).getResourceUrl(bucketName, key));
+		setResourceUrl(s3.getUrl(bucketName, key).toString());
 	}
 	
 	private String md5() throws IOException {
