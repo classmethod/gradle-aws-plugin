@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,11 @@
 package jp.classmethod.aws.gradle.cloudformation;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -25,18 +29,26 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
-import com.amazonaws.services.cloudformation.model.*;
+import com.amazonaws.services.cloudformation.model.AmazonCloudFormationException;
+import com.amazonaws.services.cloudformation.model.Capability;
+import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
+import com.amazonaws.services.cloudformation.model.DescribeStackResourcesResult;
+import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
+import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
+import com.amazonaws.services.cloudformation.model.Output;
+import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Stack;
+import com.amazonaws.services.cloudformation.model.StackResource;
+import com.amazonaws.services.cloudformation.model.ValidateTemplateRequest;
 
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
 public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginExtension<AmazonCloudFormationClient> {
-	
 	
 	private static Logger logger = LoggerFactory.getLogger(AmazonCloudFormationPluginExtension.class);
 	
@@ -52,7 +64,15 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	@Getter
 	@Setter
+	private Map<?, ?> stackTags = new HashMap<>();
+	
+	@Getter
+	@Setter
 	private String templateURL;
+	
+	@Getter
+	@Setter
+	private String onFailure;
 	
 	@Getter
 	@Setter
@@ -86,6 +106,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	@Setter
 	private boolean capabilityIam;
 	
+	@Getter
+	@Setter
+	private Capability useCapabilityIam;
+	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
 		super(project, AmazonCloudFormationClient.class);
@@ -104,8 +128,12 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 				if (stacks.isEmpty() == false) {
 					return stacks.stream().findAny();
 				}
-			} catch (AmazonClientException e) {
-				logger.debug("describeStacks failed", e);
+			} catch (AmazonCloudFormationException e) {
+				if ("ValidationError".equals(e.getErrorCode())) {
+					return Optional.empty();
+				} else {
+					throw new GradleException(e.getMessage(), e);
+				}
 			}
 		}
 		return Optional.empty();
@@ -124,6 +152,19 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 		return Collections.emptyList();
 	}
 	
+	public List<Output> getStackOutputs() {
+		return getStackOutputs(stackName);
+	}
+	
+	public List<Output> getStackOutputs(String stackName) {
+		if (getProject().getGradle().getStartParameter().isOffline() == false) {
+			Optional<Stack> stack = getStack(stackName);
+			return stack.map(Stack::getOutputs).orElse(Collections.emptyList());
+		}
+		logger.info("offline mode: return empty outputs");
+		return Collections.emptyList();
+	}
+	
 	public List<StackResource> getStackResources() {
 		return getStackResources(stackName);
 	}
@@ -135,8 +176,12 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 						getClient().describeStackResources(new DescribeStackResourcesRequest()
 							.withStackName(stackName));
 				return describeStackResourcesResult.getStackResources();
-			} catch (AmazonClientException e) {
-				logger.error("describeStackResources failed: {}", e.getMessage());
+			} catch (AmazonCloudFormationException e) {
+				if ("ValidationError".equals(e.getErrorCode())) {
+					return Collections.emptyList();
+				} else {
+					throw new GradleException(e.getMessage(), e);
+				}
 			}
 		}
 		logger.info("offline mode: return empty resources");
@@ -144,40 +189,81 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	}
 	
 	public String getStackParameterValue(String key) {
-		return findStackParameterValue(getStackParameters(), key);
+		return getStackParameterValue(stackName, key);
 	}
 	
 	public String getStackParameterValue(String stackName, String key) {
-		return findStackParameterValue(getStackParameters(stackName), key);
+		return findStackParameterValue(stackName, key);
 	}
 	
-	public String findStackParameterValue(List<Parameter> cfnStackParameters, String key) {
-		Optional<Parameter> param = cfnStackParameters.stream()
+	public String findStackParameterValue(String stackName, String key) {
+		Optional<Parameter> param = getStackParameters(stackName).stream()
 			.filter(p -> p.getParameterKey().equals(key))
 			.findAny();
 		if (param.isPresent() == false) {
-			logger.warn("WARN: cfn stack parameter {} is not found", key);
-			return "***unknown***";
+			logger.warn("WARN: param {} for stack {} is not found", key, stackName);
 		}
-		return param.get().getParameterValue();
+		return param.map(Parameter::getParameterValue).orElse(null);
+	}
+	
+	public String getStackOutputValue(String key) {
+		return getStackOutputValue(stackName, key);
+	}
+	
+	public String getStackOutputValue(String stackName, String key) {
+		return findStackOutputValue(stackName, key);
+	}
+	
+	public String findStackOutputValue(String stackName, String key) {
+		Optional<Output> output = getStackOutputs(stackName).stream()
+			.filter(p -> p.getOutputKey().equals(key))
+			.findAny();
+		if (output.isPresent() == false) {
+			logger.warn("WARN: output {} for stack {} is not found", key, stackName);
+		}
+		return output.map(Output::getOutputValue).orElse(null);
 	}
 	
 	public String getPhysicalResourceId(String logicalResourceId) {
-		return findPhysicalResourceId(getStackResources(), logicalResourceId);
+		return getPhysicalResourceId(stackName, logicalResourceId);
 	}
 	
 	public String getPhysicalResourceId(String stackName, String logicalResourceId) {
-		return findPhysicalResourceId(getStackResources(stackName), logicalResourceId);
+		return findPhysicalResourceId(stackName, logicalResourceId);
 	}
 	
-	public String findPhysicalResourceId(List<StackResource> cfnPhysicalResources, String logicalResourceId) {
-		Optional<StackResource> cfnPhysicalResource = cfnPhysicalResources.stream()
-			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId)).findAny();
-		if (cfnPhysicalResource.isPresent() == false) {
-			logger.warn("WARN: cfn physical resource {} is not found", logicalResourceId);
-			return "***unknown***";
+	public String findPhysicalResourceId(String stackName, String logicalResourceId) {
+		Optional<StackResource> physicalResource = getStackResources(stackName).stream()
+			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId))
+			.findAny();
+		if (physicalResource.isPresent() == false) {
+			logger.warn("WARN: physical resource {} for stack {} is not found", logicalResourceId, stackName);
 		}
-		return cfnPhysicalResource.get().getPhysicalResourceId();
+		return physicalResource.map(StackResource::getPhysicalResourceId).orElse(null);
+	}
+	
+	public boolean isValidTemplateBody(String templateBody) {
+		try {
+			ValidateTemplateRequest validateTemplateRequest =
+					new ValidateTemplateRequest().withTemplateBody(templateBody);
+			getClient().validateTemplate(validateTemplateRequest);
+			return true;
+		} catch (AmazonClientException e) {
+			logger.error("validateTemplateBody failed: {}", e.getMessage());
+			return false;
+		}
+	}
+	
+	public boolean isValidTemplateUrl(String templateUrl) {
+		try {
+			ValidateTemplateRequest validateTemplateRequest =
+					new ValidateTemplateRequest().withTemplateURL(templateUrl);
+			getClient().validateTemplate(validateTemplateRequest);
+			return true;
+		} catch (AmazonClientException e) {
+			logger.error("validateTemplateUrl failed: {}", e.getMessage());
+			return false;
+		}
 	}
 	
 	public List<Parameter> toParameters(Map<String, String> map) {

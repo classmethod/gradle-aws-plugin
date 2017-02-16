@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package jp.classmethod.aws.gradle.cloudformation;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
@@ -26,13 +27,13 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
+import com.amazonaws.services.cloudformation.model.Tag;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
 import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
 import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
 
 public class AmazonCloudFormationPlugin implements Plugin<Project> {
-	
 	
 	@Override
 	public void apply(Project project) {
@@ -44,7 +45,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		applyTasks(project);
 	}
 	
-	private void applyTasks(Project project) {
+	private void applyTasks(Project project) { // NOPMD
 		AmazonCloudFormationPluginExtension cfnExt =
 				project.getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
 		
@@ -83,28 +84,57 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 				task.mustRunAfter(awsCfnUploadPolicy);
 				task.conventionMapping("stackName", () -> cfnExt.getStackName());
 				task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+				task.conventionMapping("useCapabilityIam", () -> cfnExt.getUseCapabilityIam());
 				task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
 					.map(it -> new Parameter()
 						.withParameterKey(it.getKey().toString())
 						.withParameterValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
+				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
+					.map(it -> new Tag()
+						.withKey(it.getKey().toString())
+						.withValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
 				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
 				task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
+				task.conventionMapping("cfnStackPolicyFile", () -> cfnExt.getStackPolicyFile());
+				task.conventionMapping("cfnOnFailure", () -> cfnExt.getOnFailure());
 			});
 		
-		@SuppressWarnings("unused")
-		AmazonCloudFormationCreateChangeSetTask awsCfnCreateChangeSet = project.getTasks()
+		project.getTasks()
+			.create("awsCfnValidateTemplateUrl", AmazonCloudFormationValidateTemplateUrlTask.class,
+					task -> {
+						task.setDescription("Validate template URL.");
+						task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+						task.dependsOn(awsCfnUploadTemplate);
+					});
+		
+		project.getTasks()
 			.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
 				task.setDescription("Create cfn change set.");
 				task.mustRunAfter(awsCfnUploadTemplate);
 				task.conventionMapping("stackName", () -> cfnExt.getStackName());
 				task.conventionMapping("capabilityIam", () -> cfnExt.isCapabilityIam());
+				task.conventionMapping("useCapabilityIam", () -> cfnExt.getUseCapabilityIam());
 				task.conventionMapping("cfnStackParams", () -> cfnExt.getStackParams().entrySet().stream()
 					.map(it -> new Parameter()
 						.withParameterKey(it.getKey().toString())
 						.withParameterValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
+				task.conventionMapping("cfnStackTags", () -> cfnExt.getStackTags().entrySet().stream()
+					.map(it -> new Tag()
+						.withKey(it.getKey().toString())
+						.withValue(it.getValue().toString()))
+					.collect(Collectors.toList()));
 				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
+				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
+			});
+		
+		project.getTasks()
+			.create("awsCfnExecuteChangeSet", AmazonCloudFormationExecuteChangeSetTask.class, task -> {
+				task.setDescription("execute latest cfn change set.");
+				task.conventionMapping("stackName", () -> cfnExt.getStackName());
 			});
 		
 		project.getTasks().create("awsCfnWaitStackReady", AmazonCloudFormationWaitStackStatusTask.class, task -> {
@@ -150,7 +180,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		String path = name.substring(FilenameUtils.getPrefix(name).length());
 		String baseName = FilenameUtils.getBaseName(name);
 		String extension = FilenameUtils.getExtension(name);
-		return String.format("%s/%s/%s-%s-%s%s", new Object[] {
+		return String.format(Locale.ENGLISH, "%s/%s/%s-%s-%s%s", new Object[] {
 			prefix,
 			path,
 			baseName,
@@ -161,9 +191,8 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 	}
 	
 	private String createTimestamp() {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmmss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.ENGLISH);
 		sdf.setTimeZone(TimeZone.getDefault());
-		String timestamp = sdf.format(new Date());
-		return timestamp;
+		return sdf.format(new Date());
 	}
 }

@@ -39,6 +39,11 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
 	zipFile = zip.archivePath
 	handler = "DecodeBase64.handler"
+	runtime = "Nodejs43"
+
+	environment = [
+		TARGET: "ascii"
+	]
 
 	// optional publish value
 	publish = true
@@ -49,6 +54,7 @@ task migrateFunctionWithVpc(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) 
 	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
 	zipFile = zip.archivePath
 	handler = "DecodeBase64.handler"
+	runtime = "Nodejs43"
 
 	// optional VPC config
 	vpc = new VpcConfigWrapper()

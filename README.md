@@ -110,7 +110,7 @@ buildscript {
     maven { url "https://plugins.gradle.org/m2/" }
   }
   dependencies {
-    classpath "jp.classmethod.aws:gradle-aws-plugin:0.21"
+    classpath "jp.classmethod.aws:gradle-aws-plugin:0.30"
   }
 }
 
@@ -348,6 +348,10 @@ cloudFormation {
     Foo: 'bar',
     Baz: 'qux'
   ])
+  stackTags([
+    Bar: 'foo',
+    Baz: 'fox'
+  })
   capabilityIam true
   templateFile project.file("foobar.template")
   templateBucket 'example-bucket'
@@ -384,6 +388,10 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
 	zipFile = zip.archivePath
 	handler = "DecodeBase64.handler"
+	environment = [
+	    p1: "Value",
+	    p2: "Value2"
+	]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {

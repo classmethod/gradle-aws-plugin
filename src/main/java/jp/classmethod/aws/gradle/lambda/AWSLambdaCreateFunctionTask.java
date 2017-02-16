@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,12 +33,12 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.CreateFunctionRequest;
 import com.amazonaws.services.lambda.model.CreateFunctionResult;
+import com.amazonaws.services.lambda.model.Environment;
 import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.lambda.model.Runtime;
 import com.amazonaws.services.lambda.model.VpcConfig;
 
 public class AWSLambdaCreateFunctionTask extends ConventionTask {
-	
 	
 	@Getter
 	@Setter
@@ -81,6 +82,10 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private Map<String, String> environment;
+	
+	@Getter
+	@Setter
 	private Boolean publish;
 	
 	@Getter
@@ -97,8 +102,9 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String functionName = getFunctionName();
 		
-		if (functionName == null)
+		if (functionName == null) {
 			throw new GradleException("functionName is required");
+		}
 		
 		File zipFile = getZipFile();
 		S3File s3File = getS3File();
@@ -136,6 +142,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 			.withMemorySize(getMemorySize())
 			.withPublish(getPublish())
 			.withVpcConfig(getVpcConfig())
+			.withEnvironment(new Environment().withVariables(getEnvironment()))
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());

@@ -1,25 +1,19 @@
-general:
-  artifacts:
-    - "build/reports/tests"
-
-checkout:
-  post:
-    - chmod +x ./gradlew
-
 dependencies:
   override:
     - ./gradlew -v
-    - ./gradlew testClasses
-
+    - ./gradlew resolveDependencies
+general:
+  artifacts:
+    - "build/reports"
 machine:
   environment:
-    GRADLE_OPTS: -Xmx4G -Dorg.gradle.daemon=true
+    _JAVA_OPTIONS: -Xmx3G
+    TERM: dumb
   java:
     version: oraclejdk8
   post:
     - sudo service mysql stop
     - sudo service postgresql stop
-
 test:
   override:
-    - ./gradlew --full-stacktrace check
+    - ./gradlew check jacocoTestReport

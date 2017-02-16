@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.StorageClass;
@@ -42,7 +43,6 @@ import com.google.common.io.Files;
 import groovy.lang.Closure;
 
 public class SyncTask extends ConventionTask {
-	
 	
 	private static String md5(File file) {
 		try {
@@ -81,6 +81,13 @@ public class SyncTask extends ConventionTask {
 	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
+	@Getter
+	private CannedAccessControlList acl;
+	
+	
+	public void setAcl(String aclName) {
+		acl = CannedAccessControlList.valueOf(aclName);
+	}
 	
 	@TaskAction
 	public void uploadAction() throws InterruptedException {
@@ -89,12 +96,15 @@ public class SyncTask extends ConventionTask {
 		String prefix = getPrefix();
 		File source = getSource();
 		
-		if (bucketName == null)
+		if (bucketName == null) {
 			throw new GradleException("bucketName is not specified");
-		if (source == null)
+		}
+		if (source == null) {
 			throw new GradleException("source is not specified");
-		if (source.isDirectory() == false)
+		}
+		if (source.isDirectory() == false) {
 			throw new GradleException("source must be directory");
+		}
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 		
@@ -112,16 +122,17 @@ public class SyncTask extends ConventionTask {
 		String bucketName = getBucketName();
 		File source = getSource();
 		Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
+		CannedAccessControlList acl = getAcl();
 		
 		ExecutorService es = Executors.newFixedThreadPool(threads);
 		getLogger().info("Start uploading");
-		getLogger().info("uploading... {} to s3://{}/{}", bucketName, bucketName, prefix);
+		getLogger().info("Uploading... {} to s3://{}/{}", source, bucketName, prefix);
 		getProject().fileTree(source).visit(new EmptyFileVisitor() {
-			
 			
 			public void visitFile(FileVisitDetails element) {
 				es.execute(
-						new UploadTask(s3, element, bucketName, prefix, storageClass, metadataProvider, getLogger()));
+						new UploadTask(s3, element, bucketName, prefix, storageClass, acl, metadataProvider,
+								getLogger()));
 			}
 		});
 		
@@ -153,7 +164,6 @@ public class SyncTask extends ConventionTask {
 	
 	private static class UploadTask implements Runnable {
 		
-		
 		private AmazonS3 s3;
 		
 		private FileVisitDetails element;
@@ -166,16 +176,20 @@ public class SyncTask extends ConventionTask {
 		
 		private StorageClass storageClass;
 		
+		private CannedAccessControlList acl;
+		
 		private Logger logger;
 		
 		
-		public UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
-				StorageClass storageClass, Closure<ObjectMetadata> metadataProvider, Logger logger) {
+		UploadTask(AmazonS3 s3, FileVisitDetails element, String bucketName, String prefix,
+				StorageClass storageClass, CannedAccessControlList acl, Closure<ObjectMetadata> metadataProvider,
+				Logger logger) {
 			this.s3 = s3;
 			this.element = element;
 			this.bucketName = bucketName;
 			this.prefix = prefix;
 			this.storageClass = storageClass;
+			this.acl = acl;
 			this.metadataProvider = metadataProvider;
 			this.logger = logger;
 		}
@@ -201,6 +215,7 @@ public class SyncTask extends ConventionTask {
 				logger.info(" => s3://{}/{}", bucketName, key);
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
 					.withStorageClass(storageClass)
+					.withCannedAcl(acl)
 					.withMetadata(metadataProvider == null ? null
 							: metadataProvider.call(bucketName, key, element.getFile())));
 			} else {

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <property name="severity" value="warning"/>
+  <module name="TreeWalker">
+    <module name="FileContentsHolder"/>
+    <module name="JavadocMethod">
+      <property name="severity" value="ignore"/>
+      <property name="allowUndeclaredRTE" value="true"/>
+      <property name="allowMissingParamTags" value="true"/>
+      <property name="allowMissingThrowsTags" value="true"/>
+      <property name="allowMissingReturnTag" value="true"/>
+      <property name="logLoadErrors" value="true"/>
+      <property name="suppressLoadErrors" value="true"/>
+    </module>
+    <module name="JavadocType">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="JavadocVariable">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="JavadocStyle">
+      <property name="severity" value="ignore"/>
+      <property name="checkEmptyJavadoc" value="true"/>
+      <property name="checkFirstSentence" value="false"/>
+    </module>
+    <module name="ConstantName"/>
+    <module name="LocalFinalVariableName"/>
+    <module name="LocalVariableName"/>
+    <module name="MemberName"/>
+    <module name="MethodName"/>
+    <module name="PackageName"/>
+    <module name="ParameterName"/>
+    <module name="StaticVariableName"/>
+    <module name="TypeName"/>
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <!-- Javadocのためのimportを除外できない
+    <module name="UnusedImports">
+      <property name="processJavadoc" value="true"/>
+    </module>
+    -->
+    <module name="LineLength">
+      <property name="max" value="128"/>
+      <property name="tabWidth" value="4"/>
+    </module>
+    <module name="MethodLength">
+      <property name="max" value="150"/>
+    </module>
+    <module name="ParameterNumber">
+       <property name="max" value="20"/>
+    </module>
+    <module name="EmptyForIteratorPad"/>
+    <module name="MethodParamPad"/>
+    <module name="NoWhitespaceAfter"/>
+    <module name="NoWhitespaceBefore"/>
+    <module name="OperatorWrap">
+      <property name="tokens" value="BAND,BOR,BSR,BXOR,COLON,DIV,EQUAL,GE,GT,LAND,LE,LITERAL_INSTANCEOF,LOR,LT,MINUS,MOD,NOT_EQUAL,PLUS,SL,SR,STAR"/>
+    </module>
+    <module name="TabCharacter">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="WhitespaceAfter"/>
+    <module name="WhitespaceAround">
+      <property name="tokens" value="ASSIGN,BAND,BAND_ASSIGN,BOR,BOR_ASSIGN,BSR,BSR_ASSIGN,BXOR,BXOR_ASSIGN,COLON,DIV,DIV_ASSIGN,EQUAL,GE,GT,LAND,LCURLY,LE,LITERAL_ASSERT,LITERAL_CATCH,LITERAL_DO,LITERAL_ELSE,LITERAL_FINALLY,LITERAL_FOR,LITERAL_IF,LITERAL_RETURN,LITERAL_SYNCHRONIZED,LITERAL_TRY,LITERAL_WHILE,LOR,LT,MINUS,MINUS_ASSIGN,MOD,MOD_ASSIGN,NOT_EQUAL,PLUS,PLUS_ASSIGN,QUESTION,SL,SLIST,SL_ASSIGN,SR,SR_ASSIGN,STAR,STAR_ASSIGN,LITERAL_ASSERT"/>
+    </module>
+    <module name="ModifierOrder"/>
+    <module name="RedundantModifier"/>
+    <module name="EmptyBlock">
+      <property name="option" value="text"/>
+    </module>
+    <module name="LeftCurly"/>
+    <module name="NeedBraces"/>
+    <module name="RightCurly"/>
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="IllegalInstantiation">
+      <property name="severity" value="ignore"/>
+    </module>
+    <!--
+    <module name="MagicNumber">
+      <property name="ignoreNumbers" value="-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20"/>
+    </module>
+    -->
+    <module name="MissingSwitchDefault"/>
+    <module name="SimplifyBooleanExpression">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="DesignForExtension">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="FinalClass">
+      <property name="severity" value="ignore"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.lastEnabledSeverity" value="info"/>
+    </module>
+    <module name="InterfaceIsType">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="VisibilityModifier">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ArrayTypeStyle"/>
+    <module name="FinalParameters">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="GenericIllegalRegexp">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="TodoComment">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="UpperEll"/>
+    <module name="ParenPad">
+      <property name="tokens" value="CTOR_CALL,SUPER_CTOR_CALL"/>
+    </module>
+    <module name="TypecastParenPad">
+      <property name="tokens" value="RPAREN,TYPECAST"/>
+    </module>
+    <module name="CovariantEquals"/>
+    <module name="DeclarationOrder">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ExplicitInitialization">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="FallThrough">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="FinalLocalVariable">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="MissingCtor">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ModifiedControlVariable">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="MultipleStringLiterals">
+      <property name="allowedDuplicates" value="10"/>
+      <property name="ignoreStringsRegexp" value='^(("")|(", ")|("deprecation")|("javadoc")|("rawtypes")|("serial")|("unckecked")|("unused")|("ja_JP"))$'/>
+    </module>
+    <module name="MultipleVariableDeclarations">
+      <property name="severity" value="info"/>
+    </module>
+    <module name="NestedIfDepth">
+      <property name="max" value="4"/>
+    </module>
+    <module name="NestedTryDepth">
+      <property name="max" value="2"/>
+    </module>
+    <module name="PackageDeclaration"/>
+    <module name="ReturnCount">
+      <property name="max" value="8"/>
+      <property name="maxForVoid" value="4"/>
+    </module>
+    <module name="StringLiteralEquality"/>
+    <module name="SuperClone"/>
+    <module name="SuperFinalize"/>
+    <module name="UnnecessaryParentheses"/>
+    <module name="AvoidInlineConditionals">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="DefaultComesLast"/>
+    <module name="TrailingComment">
+      <property name="severity" value="ignore"/>
+    </module>
+  </module>
+  <module name="SuppressionCommentFilter"/>
+  <module name="SuppressWithNearbyCommentFilter">
+    <property name="checkFormat" value=".*"/>
+    <property name="influenceFormat" value="0"/>
+  </module>
+  <module name="FileLength">
+    <property name="max" value="2500"/>
+  </module>
+  <module name="NewlineAtEndOfFile"/>
+  <module name="Translation"/>
+</module>

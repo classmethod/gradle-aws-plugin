@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2015-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,6 @@ import com.google.common.io.Files;
 import groovy.lang.Closure;
 
 public class AWSLambdaInvokeTask extends ConventionTask {
-	
 	
 	@Getter
 	@Setter
@@ -74,12 +73,13 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 	}
 	
 	@TaskAction
-	public void deleteFunction() throws FileNotFoundException, IOException {
+	public void invokeFunction() throws FileNotFoundException, IOException {
 		// to enable conventionMappings feature
 		String functionName = getFunctionName();
 		
-		if (functionName == null)
+		if (functionName == null) {
 			throw new GradleException("functionName is required");
+		}
 		
 		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
@@ -102,15 +102,19 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 			request.setPayload((ByteBuffer) payload);
 			return;
 		}
-		if (payload instanceof File) {
-			File file = (File) payload;
-			str = Files.toString(file, Charsets.UTF_8);
-		} else if (payload instanceof Closure) {
-			Closure<?> closure = (Closure<?>) payload;
-			str = closure.call().toString();
-		} else {
-			str = payload.toString();
+		if (payload != null) {
+			if (payload instanceof File) {
+				File file = (File) payload;
+				str = Files.toString(file, Charsets.UTF_8);
+			} else if (payload instanceof Closure) {
+				Closure<?> closure = (Closure<?>) payload;
+				str = closure.call().toString();
+			} else if (payload instanceof String) {
+				str = (String) payload;
+			} else {
+				str = payload.toString();
+			}
+			request.setPayload(str);
 		}
-		request.setPayload(str);
 	}
 }

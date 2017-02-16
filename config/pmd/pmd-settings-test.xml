@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<ruleset name="Custom PMD ruleset"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+  <description>Custom PMD ruleset</description>
+
+  <!-- Android related best practices -->
+  <rule ref="rulesets/java/android.xml"/>
+
+  <!-- good practices which should be followed -->
+  <rule ref="rulesets/java/basic.xml">
+    <!-- むやみにcombineすればいいもではない。 -->
+    <exclude name="CollapsibleIfStatements"/>
+    
+    <!-- テストに限り、問題ない。 -->
+    <exclude name="AvoidUsingHardCodedIP"/>
+  </rule>
+
+  <!-- regarding the use and placement of braces -->
+  <rule ref="rulesets/java/braces.xml"/>
+
+  <!-- questionable usages of the clone() method -->
+  <rule ref="rulesets/java/clone.xml"/>
+
+  <!-- problems related to code size or complexity -->
+  <rule ref="rulesets/java/codesize.xml">
+    <exclude name="TooManyFields"/>
+    <exclude name="TooManyMethods"/>
+    
+    <!-- テストクラスであれば、大きくなることもある -->
+    <exclude name="ExcessiveClassLength"/>
+    
+    <!-- 必要なこともある。少なければいいというものではない。 -->
+    <exclude name="ExcessiveParameterList"/>
+    
+    <!-- テストに限り、問題ない -->
+    <exclude name="ExcessivePublicCount"/>
+    <exclude name="ExcessiveMethodLength"/>
+    <exclude name="ExcessiveClassLength"/>
+  </rule>
+
+  <!-- flag suboptimal code implementations -->
+  <rule ref="rulesets/java/design.xml">
+    <!--
+      Since preceding null check of an object is commonly used,
+      such as "if (obj != null)", we turn off this rule.
+    -->
+    <exclude name="ConfusingTernary"/>
+    
+    <!-- for lombok -->
+    <exclude name="SingularField"/>
+    
+    <!-- for lombok -->
+    <exclude name="ImmutableField"/>
+    
+    <!-- avoid not operator rule -->
+    <exclude name="SimplifyBooleanExpressions"/>
+    
+    <!-- acutual expected rule -->
+    <exclude name="PositionLiteralsFirstInComparisons"/>
+    
+    <!-- abstractクラスはabstractメソッドを持たなければならない理由はない。 -->
+    <exclude name="AbstractClassWithoutAbstractMethod"/>
+    
+    <!-- coding guideline first - field order -->
+    <exclude name="FieldDeclarationsShouldBeAtStartOfClass"/>
+
+    <exclude name="UseUtilityClass"/><!-- TODO exclude only main class -->
+  </rule>
+
+  <!-- empty statements of any kind -->
+  <rule ref="rulesets/java/empty.xml"/>
+
+  <!-- problems that can occur with finalizers -->
+  <rule ref="rulesets/java/finalizers.xml"/>
+
+  <!-- problems that can occur with import statements -->
+  <rule ref="rulesets/java/imports.xml">
+    <exclude name="TooManyStaticImports"/>
+  </rule>
+
+  <!-- strict guidelines about throwing and catching exceptions -->
+  <rule ref="rulesets/java/strictexception.xml">
+    <exclude name="SignatureDeclareThrowsException"/>
+  </rule>
+
+  <!-- manipulation of the String, StringBuffer, or StringBuilder instances -->
+  <rule ref="rulesets/java/strings.xml">
+    <!-- local rule -->
+    <exclude name="AvoidDuplicateLiterals"/>
+    
+    <!-- accord only in test -->
+    <exclude name="AppendCharacterWithChar"/>
+  </rule>
+
+  <!-- check the security guidelines from Sun -->
+  <rule ref="rulesets/java/sunsecure.xml"/>
+
+  <!-- rules which resolve java Class files for comparison -->
+  <rule ref="rulesets/java/typeresolution.xml">
+    <exclude name="SignatureDeclareThrowsException" />
+  </rule>
+
+  <!-- find useless or unnecessary code -->
+  <rule ref="rulesets/java/unnecessary.xml">
+    <!--
+      Permit the following parentheses:
+      "if ((x == 0) && (y == 0))"
+    -->
+    <exclude name="UselessParentheses" />
+  </rule>
+
+  <!-- find unused or ineffective code -->
+  <rule ref="rulesets/java/unusedcode.xml">
+    <!-- lombok -->
+    <exclude name="UnusedPrivateField"/>
+  </rule>
+
+</ruleset>
+
