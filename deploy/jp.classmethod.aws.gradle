@@ -93,6 +93,10 @@ pluginBundle {
 			id = 'jp.classmethod.aws.cloudformation'
 			displayName = 'Gradle AWS CloudFormation plugin'
 		}
+		awsECRPlugin {
+			id = 'jp.classmethod.aws.ecr'
+			displayName = 'Gradle Amazon ECR plugin'
+		}
 		awsEC2Plugin {
 			id = 'jp.classmethod.aws.ec2'
 			displayName = 'Gradle Amazon EC2 plugin'
