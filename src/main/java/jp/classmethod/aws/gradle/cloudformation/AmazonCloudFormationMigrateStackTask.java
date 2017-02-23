@@ -162,7 +162,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setTemplateURL(cfnTemplateUrl);
 			getLogger().info("Using template url: {}", cfnTemplateUrl);
 			// Else, use the template file body
-		} else if (Strings.isNullOrEmpty(cfnTemplateFile) == false) {
+		} else if (cfnStackPolicyFile != null) {
 			req.setTemplateBody(FileUtils.readFileToString(cfnTemplateFile));
 			getLogger().info("Using template file: {}", "$cfnTemplateFile.canonicalPath");
 		} else {
