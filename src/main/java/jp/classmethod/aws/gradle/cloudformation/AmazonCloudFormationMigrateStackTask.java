@@ -130,7 +130,8 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			if (e.getMessage().contains("does not exist")) {
 				getLogger().warn("stack {} not found", stackName);
 				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
-					throw new GradleException("cfnTemplateUrl or cfnTemplateFile must be provided");
+					getLogger().error("cfnTemplateUrl or cfnTemplateFile must be provided");
+					throw e;
 				}
 				createStack(cfn);
 			} else if (e.getMessage().contains("No updates are to be performed.")) {
