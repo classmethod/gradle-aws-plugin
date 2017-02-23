@@ -108,10 +108,6 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
 		}
-		if (cfnTemplateUrl == null && cfnTemplateFile == null) {
-			throw new GradleException(
-					"cfnTemplateUrl or cfnTemplateFile must be provided");
-		}
 		
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
@@ -133,6 +129,9 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
 				getLogger().warn("stack {} not found", stackName);
+				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+					throw new GradleException("cfnTemplateUrl or cfnTemplateFile must be provided");
+				}
 				createStack(cfn);
 			} else if (e.getMessage().contains("No updates are to be performed.")) {
 				getLogger().trace(e.getMessage());
@@ -163,9 +162,11 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setTemplateURL(cfnTemplateUrl);
 			getLogger().info("Using template url: {}", cfnTemplateUrl);
 			// Else, use the template file body
-		} else {
+		} else if (Strings.isNullOrEmpty(cfnTemplateFile) == false) {
 			req.setTemplateBody(FileUtils.readFileToString(cfnTemplateFile));
 			getLogger().info("Using template file: {}", "$cfnTemplateFile.canonicalPath");
+		} else {
+			getLogger().info("No template specified, updating existing template");
 		}
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
