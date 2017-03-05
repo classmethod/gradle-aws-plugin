@@ -44,9 +44,7 @@ public class AmazonECSListClustersTask extends ConventionTask {
 		AmazonECS ecs = ext.getClient();
 		
 		ListClustersRequest request = new ListClustersRequest();
-		
 		listClustersResult = ecs.listClusters(request);
-		
 		String clusterArns = listClustersResult.getClusterArns().stream()
 			.collect(Collectors.joining(", "));
 		getLogger().info("List ECS Clusters task requested: {}", clusterArns);
