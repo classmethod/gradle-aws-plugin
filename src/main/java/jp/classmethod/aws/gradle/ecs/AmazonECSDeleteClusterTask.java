@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import lombok.Getter;
@@ -27,37 +34,37 @@ import com.amazonaws.services.ecs.model.DeleteClusterRequest;
 import com.amazonaws.services.ecs.model.DeleteClusterResult;
 
 public class AmazonECSDeleteClusterTask extends ConventionTask {
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	private DeleteClusterResult deleteClusterResult;
-	
-	
+
+
 	public AmazonECSDeleteClusterTask() {
 		setDescription("Delete Cluster Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void deleteCluster() {
 		// to enable conventionMappings feature
 		String cluster = getCluster();
-		
+
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		DeleteClusterRequest request = new DeleteClusterRequest()
 			.withCluster(cluster);
-		
+
 		deleteClusterResult = ecs.deleteCluster(request);
-		
+
 		String clusterArn = deleteClusterResult.getCluster().getClusterArn();
 		getLogger().info("Delete ECS Cluster requested: {}", clusterArn);
 	}

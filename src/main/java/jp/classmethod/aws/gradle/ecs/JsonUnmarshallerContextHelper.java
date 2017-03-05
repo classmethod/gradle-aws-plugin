@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import static com.fasterxml.jackson.core.JsonToken.END_ARRAY;
@@ -72,14 +79,14 @@ public class JsonUnmarshallerContextHelper {
 				.put(ByteBuffer.class, ByteBufferJsonUnmarshaller.getInstance())
 				.put(Character.class, CharacterJsonUnmarshaller.getInstance())
 				.put(Short.class, ShortJsonUnmarshaller.getInstance()).build();
-	
-	
+
+
 	public static JsonUnmarshallerContext create(String json) throws JsonParseException, IOException {
 		JsonFactory jsonFactory = new JsonFactory();
 		JsonParser jsonParser = jsonFactory.createParser(json);
 		return new JsonUnmarshallerContextImpl(jsonParser, JSON_SCALAR_UNMARSHALLERS);
 	}
-	
+
 	public static <T> List<T> parse(Unmarshaller<T, JsonUnmarshallerContext> unmarshaller, String field, String json) {
 		List<T> result = null;
 		try {
@@ -95,10 +102,10 @@ public class JsonUnmarshallerContextHelper {
 		} catch (Exception e) {
 			throw new GradleException("Somethings wrong ... :(", e);
 		}
-		
+
 		return result;
 	}
-	
+
 	public static <T> T parseObject(Unmarshaller<T, JsonUnmarshallerContext> unmarshaller, String field, String json) {
 		T result = null;
 		try {
@@ -114,37 +121,37 @@ public class JsonUnmarshallerContextHelper {
 		} catch (Exception e) {
 			throw new GradleException("Somethings wrong ... :(", e);
 		}
-		
+
 		return result;
 	}
 }
 
 @SuppressWarnings("PMD")
 class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
-	
+
 	private JsonToken currentToken;
-	
+
 	private JsonToken nextToken;
-	
+
 	private final JsonParser jsonParser;
-	
+
 	private final Stack<JsonFieldTokenPair> stack = new Stack<JsonFieldTokenPair>();
-	
+
 	private String currentField;
-	
+
 	private String lastParsedParentElement;
-	
+
 	private Map<String, String> metadata = new HashMap<String, String>();
-	
+
 	private final Map<Class<?>, Unmarshaller<?, JsonUnmarshallerContext>> unmarshallerMap;
-	
-	
+
+
 	JsonUnmarshallerContextImpl(JsonParser jsonParser,
 			Map<Class<?>, Unmarshaller<?, JsonUnmarshallerContext>> mapper) {
 		this.jsonParser = jsonParser;
 		this.unmarshallerMap = mapper;
 	}
-	
+
 	@Override
 	public int getCurrentDepth() {
 		int depth = stack.size();
@@ -153,7 +160,7 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 		}
 		return depth;
 	}
-	
+
 	@Override
 	public String readText() throws IOException, RuntimeException {
 		switch (currentToken) {
@@ -176,17 +183,17 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 						"We expected a VALUE token but got: " + currentToken);
 		}
 	}
-	
+
 	@Override
 	public boolean isInsideResponseHeader() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isStartOfDocument() {
 		return jsonParser == null || jsonParser.getCurrentToken() == null;
 	}
-	
+
 	@Override
 	public boolean testExpression(String expression) {
 		if (expression.equals(".")) {
@@ -200,7 +207,7 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 			}
 		}
 	}
-	
+
 	@Override
 	public String getCurrentParentElement() {
 		String parentElement;
@@ -213,7 +220,7 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 		}
 		return parentElement;
 	}
-	
+
 	@Override
 	public boolean testExpression(String expression, int stackDepth) {
 		if (expression.equals(".")) {
@@ -223,54 +230,54 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 					&& stackDepth == getCurrentDepth();
 		}
 	}
-	
+
 	@Override
 	public JsonToken nextToken() throws IOException {
 		JsonToken token = (nextToken != null) ? nextToken : jsonParser.nextToken();
-		
+
 		this.currentToken = token;
 		nextToken = null;
-		
+
 		updateContext();
 		return token;
 	}
-	
+
 	@Override
 	public JsonToken peek() throws IOException {
 		if (nextToken != null) {
 			return nextToken;
 		}
-		
+
 		nextToken = jsonParser.nextToken();
 		return nextToken;
 	}
-	
+
 	@Override
 	public JsonParser getJsonParser() {
 		return jsonParser;
 	}
-	
+
 	@Override
 	public Map<String, String> getMetadata() {
 		return metadata;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T> Unmarshaller<T, JsonUnmarshallerContext> getUnmarshaller(Class<T> type) {
 		return (Unmarshaller<T, JsonUnmarshallerContext>) unmarshallerMap.get(type);
 	}
-	
+
 	@Override
 	public JsonToken getCurrentToken() {
 		return currentToken;
 	}
-	
+
 	private void updateContext() throws IOException {
 		lastParsedParentElement = null;
 		if (currentToken == null) {
 			return;
 		}
-		
+
 		if (currentToken == START_OBJECT || currentToken == START_ARRAY) {
 			if (currentField != null) {
 				stack.push(new JsonFieldTokenPair(currentField, currentToken));
@@ -290,50 +297,50 @@ class JsonUnmarshallerContextImpl extends JsonUnmarshallerContext {
 			currentField = t;
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder stackString = new StringBuilder();
-		
+
 		for (JsonFieldTokenPair jsonFieldTokenPair : stack) {
 			stackString.append('/')
 				.append(jsonFieldTokenPair.getField());
 		}
-		
+
 		if (currentField != null) {
 			stackString.append('/')
 				.append(currentField);
 		}
-		
+
 		return stackString.length() == 0 ? "/" : stackString.toString();
 	}
-	
+
 	@Override
 	public String getLastParsedParentElement() {
 		return lastParsedParentElement;
 	}
-	
-	
+
+
 	private static class JsonFieldTokenPair {
-		
+
 		private final String field;
-		
+
 		private final JsonToken jsonToken;
-		
-		
+
+
 		JsonFieldTokenPair(String fieldString, JsonToken token) {
 			field = fieldString;
 			jsonToken = token;
 		}
-		
+
 		public String getField() {
 			return field;
 		}
-		
+
 		public JsonToken getToken() {
 			return jsonToken;
 		}
-		
+
 		public String toString() {
 			return field + ": " + jsonToken.asString();
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import lombok.Getter;
@@ -27,37 +34,37 @@ import com.amazonaws.services.ecs.model.DescribeTaskDefinitionRequest;
 import com.amazonaws.services.ecs.model.DescribeTaskDefinitionResult;
 
 public class AmazonECSDescribeTaskDefinitionTask extends ConventionTask {
-	
+
 	@Setter
 	@Getter
 	private String taskDefinition;
-	
+
 	@Getter
 	private DescribeTaskDefinitionResult describeTaskDefinitionResult;
-	
-	
+
+
 	public AmazonECSDescribeTaskDefinitionTask() {
 		setDescription("Describe Task Definition Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void describeTaskDefinition() {
 		// to enable conventionMappings feature
 		String clusters = getTaskDefinition();
-		
+
 		if (clusters == null) {
 			throw new GradleException("Clusters is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		DescribeTaskDefinitionRequest request = new DescribeTaskDefinitionRequest()
 			.withTaskDefinition(taskDefinition);
-		
+
 		describeTaskDefinitionResult = ecs.describeTaskDefinition(request);
-		
+
 		String taskDefinitionArn = describeTaskDefinitionResult.getTaskDefinition()
 			.getTaskDefinitionArn();
 		getLogger().info("Describe ECS Task Definition task requested: {}", taskDefinitionArn);

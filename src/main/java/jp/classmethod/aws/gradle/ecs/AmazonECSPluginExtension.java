@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import org.gradle.api.Project;
@@ -22,12 +29,12 @@ import com.amazonaws.services.ecs.AmazonECSClient;
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
 public class AmazonECSPluginExtension extends BaseRegionAwarePluginExtension<AmazonECSClient> {
-	
+
 	public static final String NAME = "ecs";
-	
-	
+
+
 	public AmazonECSPluginExtension(Project project) {
 		super(project, AmazonECSClient.class);
 	}
-	
+
 }
