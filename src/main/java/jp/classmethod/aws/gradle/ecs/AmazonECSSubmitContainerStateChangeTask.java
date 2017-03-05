@@ -1,18 +1,25 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2013-2017 Classmethod, Inc.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.List;
@@ -29,64 +36,58 @@ import com.amazonaws.services.ecs.model.NetworkBinding;
 import com.amazonaws.services.ecs.model.SubmitContainerStateChangeRequest;
 import com.amazonaws.services.ecs.model.SubmitContainerStateChangeResult;
 import com.amazonaws.services.ecs.model.transform.NetworkBindingJsonUnmarshaller;
-import com.amazonaws.transform.JsonUnmarshallerContext;
-import com.amazonaws.transform.ListUnmarshaller;
 
 public class AmazonECSSubmitContainerStateChangeTask extends ConventionTask {
-	
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String task;
-	
+
 	@Getter
 	@Setter
 	private String containerName;
-	
+
 	@Getter
 	@Setter
 	private String status;
-	
+
 	@Getter
 	@Setter
 	private Integer exitCode;
-	
+
 	@Getter
 	@Setter
 	private String reason;
-	
+
 	@Getter
 	@Setter
 	private String networkBindingsJson;
-	
+
 	@Getter
 	@Setter
 	private List<NetworkBinding> networkBindings;
-	
+
 	@Getter
 	private SubmitContainerStateChangeResult submitContainerStateChangeResult;
-	
-	
+
+
 	public AmazonECSSubmitContainerStateChangeTask() {
-		setDescription("Describe Container Instance Task.");
+		setDescription("Submit Container State Change Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void submitContainerStateChange() {
 		// to enable conventionMappings feature
-		try {
-			JsonUnmarshallerContext context = JsonUnmarshallerContextHelper.create(networkBindingsJson);
-			networkBindings = new ListUnmarshaller<NetworkBinding>(
-					NetworkBindingJsonUnmarshaller.getInstance()).unmarshall(context);
-		} catch (Exception e) {
-			throw new GradleException("Network Bindings JSON is required");
-		}
-		
+
+		networkBindings = JsonUnmarshallerContextHelper.parse(
+				NetworkBindingJsonUnmarshaller.getInstance(), "networkBindingsJson",
+				networkBindingsJson);
+
 		String cluster = getCluster();
 		String task = getTask();
 		String containerName = getContainerName();
@@ -94,13 +95,14 @@ public class AmazonECSSubmitContainerStateChangeTask extends ConventionTask {
 		Integer exitCode = getExitCode();
 		String reason = getReason();
 		List<NetworkBinding> networkBindings = getNetworkBindings();
-		
-		if (cluster == null)
+
+		if (cluster == null) {
 			throw new GradleException("Cluster is required");
-		
+		}
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		SubmitContainerStateChangeRequest request = new SubmitContainerStateChangeRequest()
 			.withCluster(cluster)
 			.withTask(task)
@@ -109,9 +111,9 @@ public class AmazonECSSubmitContainerStateChangeTask extends ConventionTask {
 			.withExitCode(exitCode)
 			.withReason(reason)
 			.withNetworkBindings(networkBindings);
-		
+
 		submitContainerStateChangeResult = ecs.submitContainerStateChange(request);
-		
+
 		String acknowledgement = submitContainerStateChangeResult.getAcknowledgment();
 		getLogger().info("Submit ECS Container State Change task requested: {}", acknowledgement);
 	}

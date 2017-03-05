@@ -1,18 +1,25 @@
 /*
- * Copyright 2013-2016 Classmethod, Inc.
- * 
+ * Copyright 2013-2017 Classmethod, Inc.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.List;
@@ -29,81 +36,66 @@ import com.amazonaws.services.ecs.model.CreateServiceRequest;
 import com.amazonaws.services.ecs.model.CreateServiceResult;
 import com.amazonaws.services.ecs.model.DeploymentConfiguration;
 import com.amazonaws.services.ecs.model.LoadBalancer;
-import com.amazonaws.services.ecs.model.transform.DeploymentConfigurationJsonUnmarshaller;
 import com.amazonaws.services.ecs.model.transform.LoadBalancerJsonUnmarshaller;
-import com.amazonaws.transform.JsonUnmarshallerContext;
-import com.amazonaws.transform.ListUnmarshaller;
 
 public class AmazonECSCreateServiceTask extends ConventionTask {
-	
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String serviceName;
-	
+
 	@Getter
 	@Setter
 	private String taskDefinition;
-	
+
 	@Getter
 	@Setter
 	private String loadBalancersJson;
-	
+
 	@Getter
 	@Setter
 	private List<LoadBalancer> loadBalancers;
-	
+
 	@Getter
 	@Setter
 	private Integer desiredCount;
-	
+
 	@Getter
 	@Setter
 	private String clientToken;
-	
+
 	@Getter
 	@Setter
 	private String role;
-	
+
 	@Getter
 	@Setter
 	private String deploymentConfigurationJson;
-	
+
 	@Getter
 	@Setter
 	private DeploymentConfiguration deploymentConfiguration;
-	
+
 	@Getter
 	private CreateServiceResult createServiceResult;
-	
-	
+
+
 	public AmazonECSCreateServiceTask() {
-		setDescription("Describe Container Instance Task.");
+		setDescription("Create Service Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void createService() {
 		// to enable conventionMappings feature
-		try {
-			JsonUnmarshallerContext context = JsonUnmarshallerContextHelper.create(loadBalancersJson);
-			loadBalancers = new ListUnmarshaller<LoadBalancer>(
-					LoadBalancerJsonUnmarshaller.getInstance()).unmarshall(context);
-		} catch (Exception e) {
-			throw new GradleException("Total Resources JSON is required");
-		}
-		
-		try {
-			JsonUnmarshallerContext context = JsonUnmarshallerContextHelper.create(deploymentConfigurationJson);
-			deploymentConfiguration = DeploymentConfigurationJsonUnmarshaller.getInstance().unmarshall(context);
-		} catch (Exception e) {
-			throw new GradleException("Attributes JSON is required");
-		}
-		
+		loadBalancers = JsonUnmarshallerContextHelper.parse(
+				LoadBalancerJsonUnmarshaller.getInstance(), "loadBalancersJson",
+				loadBalancersJson);
+
 		String cluster = getCluster();
 		String serviceName = getServiceName();
 		String taskDefinition = getTaskDefinition();
@@ -112,22 +104,27 @@ public class AmazonECSCreateServiceTask extends ConventionTask {
 		String clientToken = getClientToken();
 		String role = getRole();
 		DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
-		
-		if (cluster == null)
+
+		if (cluster == null) {
 			throw new GradleException("Cluster is required");
-		
-		if (serviceName == null)
+		}
+
+		if (serviceName == null) {
 			throw new GradleException("Service Name is required");
-		
-		if (taskDefinition == null)
+		}
+
+		if (taskDefinition == null) {
 			throw new GradleException("Task Definition is required");
-		
-		if (desiredCount == null)
+		}
+
+		if (desiredCount == null) {
 			throw new GradleException("Desired Count is required");
-		
-		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
+		}
+
+		AmazonECSPluginExtension ext = getProject().getExtensions()
+			.getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		CreateServiceRequest request = new CreateServiceRequest()
 			.withCluster(cluster)
 			.withServiceName(serviceName)
@@ -137,9 +134,9 @@ public class AmazonECSCreateServiceTask extends ConventionTask {
 			.withClientToken(clientToken)
 			.withRole(role)
 			.withDeploymentConfiguration(deploymentConfiguration);
-		
+
 		createServiceResult = ecs.createService(request);
-		
+
 		String serviceArn = createServiceResult.getService().getServiceArn();
 		getLogger().info("Create ECS Service task requested: {}", serviceArn);
 	}
