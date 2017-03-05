@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.Arrays;
@@ -31,42 +38,42 @@ import com.amazonaws.services.ecs.model.StartTaskRequest;
 import com.amazonaws.services.ecs.model.StartTaskResult;
 
 public class AmazonECSStartTaskTask extends ConventionTask {
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String taskDefinition;
-	
+
 	@Getter
 	@Setter
 	private List<String> containerInstances;
-	
-	
+
+
 	public void containerInstances(List<String> containerInstances) {
 		this.containerInstances = containerInstances;
 	}
-	
+
 	public void containerInstances(String... containerInstances) {
 		this.containerInstances = Arrays.asList(containerInstances);
 	}
-	
-	
+
+
 	@Getter
 	@Setter
 	private String startedBy;
-	
+
 	@Getter
 	private StartTaskResult startTaskResult;
-	
-	
+
+
 	public AmazonECSStartTaskTask() {
 		setDescription("Start Task Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void startTask() {
 		// to enable conventionMappings feature
@@ -74,26 +81,26 @@ public class AmazonECSStartTaskTask extends ConventionTask {
 		String taskDefinition = getTaskDefinition();
 		List<String> containerInstances = getContainerInstances();
 		String startedBy = getStartedBy();
-		
+
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-		
+
 		if (taskDefinition == null) {
 			throw new GradleException("Task Definition is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		StartTaskRequest request = new StartTaskRequest()
 			.withCluster(cluster)
 			.withTaskDefinition(taskDefinition)
 			.withContainerInstances(containerInstances)
 			.withStartedBy(startedBy);
-		
+
 		startTaskResult = ecs.startTask(request);
-		
+
 		String taskArns = startTaskResult.getTasks().stream()
 			.map(i -> i.getTaskArn())
 			.collect(Collectors.joining(", "));

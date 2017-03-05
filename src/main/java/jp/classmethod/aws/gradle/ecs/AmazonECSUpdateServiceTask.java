@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import lombok.Getter;
@@ -29,77 +36,77 @@ import com.amazonaws.services.ecs.model.UpdateServiceResult;
 import com.amazonaws.services.ecs.model.transform.DeploymentConfigurationJsonUnmarshaller;
 
 public class AmazonECSUpdateServiceTask extends ConventionTask {
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String service;
-	
+
 	@Getter
 	@Setter
 	private Integer desiredCount;
-	
+
 	@Getter
 	@Setter
 	private String taskDefinition;
-	
+
 	@Getter
 	@Setter
 	private String deploymentConfigurationJson;
-	
+
 	@Getter
 	@Setter
 	private DeploymentConfiguration deploymentConfiguration;
-	
+
 	@Getter
 	private UpdateServiceResult updateServiceResult;
-	
-	
+
+
 	public AmazonECSUpdateServiceTask() {
 		setDescription("Update Service Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void updateService() {
 		// to enable conventionMappings feature
 		deploymentConfiguration = JsonUnmarshallerContextHelper.parseObject(
 				DeploymentConfigurationJsonUnmarshaller.getInstance(),
 				"deploymentConfigurationJson", deploymentConfigurationJson);
-		
+
 		String cluster = getCluster();
 		String service = getService();
 		Integer desiredCount = getDesiredCount();
 		String taskDefinition = getTaskDefinition();
 		DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
-		
+
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-		
+
 		if (taskDefinition == null) {
 			throw new GradleException("Task Definition is required");
 		}
-		
+
 		if (desiredCount == null) {
 			throw new GradleException("Desired Count is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		UpdateServiceRequest request = new UpdateServiceRequest()
 			.withCluster(cluster)
 			.withService(service)
 			.withDesiredCount(desiredCount)
 			.withTaskDefinition(taskDefinition)
 			.withDeploymentConfiguration(deploymentConfiguration);
-		
+
 		updateServiceResult = ecs.updateService(request);
-		
+
 		String serviceArn = updateServiceResult.getService().getServiceArn();
 		getLogger().info("Create ECS Service task requested: {}", serviceArn);
 	}

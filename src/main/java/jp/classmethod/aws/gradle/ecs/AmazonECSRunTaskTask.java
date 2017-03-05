@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.stream.Collectors;
@@ -29,32 +36,32 @@ import com.amazonaws.services.ecs.model.RunTaskRequest;
 import com.amazonaws.services.ecs.model.RunTaskResult;
 
 public class AmazonECSRunTaskTask extends ConventionTask {
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String taskDefinition;
-	
+
 	@Getter
 	@Setter
 	private int count;
-	
+
 	@Getter
 	@Setter
 	private String startedBy;
-	
+
 	@Getter
 	private RunTaskResult runTaskResult;
-	
-	
+
+
 	public AmazonECSRunTaskTask() {
 		setDescription("Run Task Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void runTask() {
 		// to enable conventionMappings feature
@@ -62,22 +69,22 @@ public class AmazonECSRunTaskTask extends ConventionTask {
 		String taskDefinition = getTaskDefinition();
 		int count = getCount();
 		String startedBy = getStartedBy();
-		
+
 		if (taskDefinition == null) {
 			throw new GradleException("Task Definition ARN is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		RunTaskRequest request = new RunTaskRequest()
 			.withCluster(cluster)
 			.withTaskDefinition(taskDefinition)
 			.withCount(count)
 			.withStartedBy(startedBy);
-		
+
 		runTaskResult = ecs.runTask(request);
-		
+
 		String taskArns = runTaskResult.getTasks().stream()
 			.map(i -> i.getTaskArn())
 			.collect(Collectors.joining(", "));

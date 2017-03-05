@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2013-2017 Classmethod, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// -----------------------------------------------------------------------------
+// Tasks related to Amazon EC2 Container Service.
+//
+// @author Dongjun Lee (chaz.epps@gmail.com)
+// -----------------------------------------------------------------------------
+
 package jp.classmethod.aws.gradle.ecs;
 
 import lombok.Getter;
@@ -27,47 +34,47 @@ import com.amazonaws.services.ecs.model.UpdateContainerAgentRequest;
 import com.amazonaws.services.ecs.model.UpdateContainerAgentResult;
 
 public class AmazonECSUpdateContainerAgentTask extends ConventionTask {
-	
+
 	@Getter
 	@Setter
 	private String cluster;
-	
+
 	@Getter
 	@Setter
 	private String containerInstance;
-	
+
 	@Getter
 	private UpdateContainerAgentResult updateContainerAgentResultResult;
-	
-	
+
+
 	public AmazonECSUpdateContainerAgentTask() {
 		setDescription("Update Container Agent Task.");
 		setGroup("AWS");
 	}
-	
+
 	@TaskAction
 	public void updateContainerAgentResult() {
 		// to enable conventionMappings feature
 		String cluster = getCluster();
 		String containerInstance = getContainerInstance();
-		
+
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-		
+
 		if (containerInstance == null) {
 			throw new GradleException("Container Instance is required");
 		}
-		
+
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-		
+
 		UpdateContainerAgentRequest request = new UpdateContainerAgentRequest()
 			.withCluster(cluster)
 			.withContainerInstance(containerInstance);
-		
+
 		updateContainerAgentResultResult = ecs.updateContainerAgent(request);
-		
+
 		String cointainerInstanceArn =
 				updateContainerAgentResultResult.getContainerInstance().getContainerInstanceArn();
 		getLogger().info("Create ECS Service task requested: {}", cointainerInstanceArn);
