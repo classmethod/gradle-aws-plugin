@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Classmethod, Inc.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// -----------------------------------------------------------------------------
-// Tasks related to Amazon EC2 Container Service.
-//
-// @author Dongjun Lee (chaz.epps@gmail.com)
-// -----------------------------------------------------------------------------
-
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.Arrays;
@@ -37,44 +30,44 @@ import com.amazonaws.services.ecs.model.DescribeClustersRequest;
 import com.amazonaws.services.ecs.model.DescribeClustersResult;
 
 public class AmazonECSDescribeClustersTask extends ConventionTask {
-
+	
 	@Getter
 	private List<String> clusters;
-
+	
 	@Getter
 	private DescribeClustersResult describeClustersResult;
-
-
+	
+	
 	public void clusters(List<String> clusters) {
 		this.clusters = clusters;
 	}
-
+	
 	public void clusters(String... clusters) {
 		this.clusters = Arrays.asList(clusters);
 	}
-
+	
 	public AmazonECSDescribeClustersTask() {
 		setDescription("Describe Clusters Task.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void describeClusters() {
 		// to enable conventionMappings feature
 		List<String> clusters = getClusters();
-
+		
 		if (clusters == null) {
 			throw new GradleException("Clusters is required");
 		}
-
+		
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-
+		
 		DescribeClustersRequest request = new DescribeClustersRequest()
 			.withClusters(clusters);
-
+		
 		describeClustersResult = ecs.describeClusters(request);
-
+		
 		String clusterArns = describeClustersResult.getClusters().stream()
 			.map(i -> i.getClusterArn())
 			.collect(Collectors.joining(", "));

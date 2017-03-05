@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Classmethod, Inc.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// -----------------------------------------------------------------------------
-// Tasks related to Amazon EC2 Container Service.
-//
-// @author Dongjun Lee (chaz.epps@gmail.com)
-// -----------------------------------------------------------------------------
-
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.List;
@@ -42,56 +35,56 @@ import com.amazonaws.services.ecs.model.transform.ResourceJsonUnmarshaller;
 import com.amazonaws.services.ecs.model.transform.VersionInfoJsonUnmarshaller;
 
 public class AmazonECSRegisterContainerInstanceTask extends ConventionTask {
-
+	
 	@Getter
 	@Setter
 	private String cluster;
-
+	
 	@Getter
 	@Setter
 	private String instanceIdentityDocument;
-
+	
 	@Getter
 	@Setter
 	private String instanceIdentityDocumentSignature;
-
+	
 	@Getter
 	@Setter
 	private String totalResourcesJson;
-
+	
 	@Getter
 	@Setter
 	private List<Resource> totalResources;
-
+	
 	@Getter
 	@Setter
 	private String versionInfoJson;
-
+	
 	@Getter
 	@Setter
 	private VersionInfo versionInfo;
-
+	
 	@Getter
 	@Setter
 	private String containerInstanceArn;
-
+	
 	@Getter
 	@Setter
 	private String attributesJson;
-
+	
 	@Getter
 	@Setter
 	private List<Attribute> attributes;
-
+	
 	@Getter
 	private RegisterContainerInstanceResult registerContainerInstanceResult;
-
-
+	
+	
 	public AmazonECSRegisterContainerInstanceTask() {
 		setDescription("Register Container Instance Task.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void registerContainerInstance() {
 		// to enable conventionMappings feature
@@ -104,7 +97,7 @@ public class AmazonECSRegisterContainerInstanceTask extends ConventionTask {
 		attributes = JsonUnmarshallerContextHelper.parse(
 				AttributeJsonUnmarshaller.getInstance(), "attributesJson",
 				attributesJson);
-
+		
 		String cluster = getCluster();
 		String instanceIdentityDocument = getInstanceIdentityDocument();
 		String instanceIdentityDocumentSignature = getInstanceIdentityDocumentSignature();
@@ -112,14 +105,14 @@ public class AmazonECSRegisterContainerInstanceTask extends ConventionTask {
 		VersionInfo versionInfo = getVersionInfo();
 		String containerInstanceArn = getContainerInstanceArn();
 		List<Attribute> attributes = getAttributes();
-
+		
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-
+		
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-
+		
 		RegisterContainerInstanceRequest request = new RegisterContainerInstanceRequest()
 			.withCluster(cluster)
 			.withInstanceIdentityDocument(instanceIdentityDocument)
@@ -128,9 +121,9 @@ public class AmazonECSRegisterContainerInstanceTask extends ConventionTask {
 			.withVersionInfo(versionInfo)
 			.withContainerInstanceArn(containerInstanceArn)
 			.withAttributes(attributes);
-
+		
 		registerContainerInstanceResult = ecs.registerContainerInstance(request);
-
+		
 		String containerInstance = registerContainerInstanceResult.getContainerInstance().getContainerInstanceArn();
 		getLogger().info("Register ECS Container Instance task requested: {}", containerInstance);
 	}

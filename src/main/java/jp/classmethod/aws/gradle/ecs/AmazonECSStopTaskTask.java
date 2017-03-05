@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Classmethod, Inc.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// -----------------------------------------------------------------------------
-// Tasks related to Amazon EC2 Container Service.
-//
-// @author Dongjun Lee (chaz.epps@gmail.com)
-// -----------------------------------------------------------------------------
-
 package jp.classmethod.aws.gradle.ecs;
 
 import lombok.Getter;
@@ -34,53 +27,53 @@ import com.amazonaws.services.ecs.model.StopTaskRequest;
 import com.amazonaws.services.ecs.model.StopTaskResult;
 
 public class AmazonECSStopTaskTask extends ConventionTask {
-
+	
 	@Getter
 	@Setter
 	private String cluster;
-
+	
 	@Getter
 	@Setter
 	private String task;
-
+	
 	@Getter
 	@Setter
 	private String reason;
-
+	
 	@Getter
 	private StopTaskResult stopTaskResult;
-
-
+	
+	
 	public AmazonECSStopTaskTask() {
 		setDescription("Stop Task Task.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void stopTask() {
 		// to enable conventionMappings feature
 		String cluster = getCluster();
 		String task = getTask();
 		String reason = getReason();
-
+		
 		if (cluster == null) {
 			throw new GradleException("Cluster is required");
 		}
-
+		
 		if (task == null) {
 			throw new GradleException("Task is required");
 		}
-
+		
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-
+		
 		StopTaskRequest request = new StopTaskRequest()
 			.withCluster(cluster)
 			.withTask(task)
 			.withReason(reason);
-
+		
 		stopTaskResult = ecs.stopTask(request);
-
+		
 		String taskArn = stopTaskResult.getTask().getTaskArn();
 		getLogger().info("Stop ECS Task task requested: {}", taskArn);
 	}
