@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Classmethod, Inc.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// -----------------------------------------------------------------------------
-// Tasks related to Amazon EC2 Container Service.
-//
-// @author Dongjun Lee (chaz.epps@gmail.com)
-// -----------------------------------------------------------------------------
-
 package jp.classmethod.aws.gradle.ecs;
 
 import java.util.Arrays;
@@ -38,57 +31,57 @@ import com.amazonaws.services.ecs.model.DescribeTasksRequest;
 import com.amazonaws.services.ecs.model.DescribeTasksResult;
 
 public class AmazonECSDescribeTasksTask extends ConventionTask {
-
+	
 	@Setter
 	@Getter
 	private String cluster;
-
+	
 	@Getter
 	private List<String> tasks;
-
-
+	
+	
 	public void tasks(List<String> tasks) {
 		this.tasks = tasks;
 	}
-
+	
 	public void tasks(String... tasks) {
 		this.tasks = Arrays.asList(tasks);
 	}
-
-
+	
+	
 	@Getter
 	private DescribeTasksResult describeTaskDefinitionResult;
-
-
+	
+	
 	public AmazonECSDescribeTasksTask() {
 		setDescription("Describe Tasks Task.");
 		setGroup("AWS");
 	}
-
+	
 	@TaskAction
 	public void describeTasks() {
 		// to enable conventionMappings feature
 		String cluster = getCluster();
-
+		
 		List<String> tasks = getTasks();
-
+		
 		if (cluster == null) {
 			throw new GradleException("Clusters is required");
 		}
-
+		
 		if (tasks == null) {
 			throw new GradleException("Tasks is required");
 		}
-
+		
 		AmazonECSPluginExtension ext = getProject().getExtensions().getByType(AmazonECSPluginExtension.class);
 		AmazonECS ecs = ext.getClient();
-
+		
 		DescribeTasksRequest request = new DescribeTasksRequest()
 			.withCluster(cluster)
 			.withTasks(tasks);
-
+		
 		describeTaskDefinitionResult = ecs.describeTasks(request);
-
+		
 		String taskArns = describeTaskDefinitionResult.getTasks().stream()
 			.map(i -> i.getTaskArn())
 			.collect(Collectors.joining(", "));
