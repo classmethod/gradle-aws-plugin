@@ -147,11 +147,13 @@ public class AwsPluginExtension {
 	
 	public String getAccountId() {
 		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+		sts.setRegion(getActiveRegion(region));
 		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
 	}
 	
 	public String getUserArn() {
 		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+		sts.setRegion(getActiveRegion(region));
 		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
 	}
 }
