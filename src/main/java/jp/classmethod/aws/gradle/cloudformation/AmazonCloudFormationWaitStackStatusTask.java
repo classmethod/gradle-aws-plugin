@@ -16,6 +16,8 @@
 package jp.classmethod.aws.gradle.cloudformation;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import lombok.Getter;
@@ -27,9 +29,12 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+import com.amazonaws.services.cloudformation.model.DescribeStackEventsRequest;
+import com.amazonaws.services.cloudformation.model.DescribeStackEventsResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Stack;
+import com.amazonaws.services.cloudformation.model.StackEvent;
 
 public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
@@ -71,6 +76,10 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Setter
 	private String lastStatus;
 	
+	@Getter
+	@Setter
+	private List<String> printedEvents;
+	
 	
 	public AmazonCloudFormationWaitStackStatusTask() {
 		setDescription("Wait cfn stack for specific status.");
@@ -95,28 +104,44 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		long start = System.currentTimeMillis();
+		printedEvents = new LinkedList<String>();
+		
 		while (true) {
 			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException("Timeout");
 			}
 			try {
-				DescribeStacksResult describeStackResult = cfn.describeStacks(new DescribeStacksRequest()
-					.withStackName(stackName));
+				// Get stack info
+				DescribeStacksRequest describeStackRequest = new DescribeStacksRequest().withStackName(stackName);
+				DescribeStacksResult describeStackResult = cfn.describeStacks(describeStackRequest);
 				Stack stack = describeStackResult.getStacks().get(0);
 				if (stack == null) {
 					throw new GradleException("stack " + stackName + " is not exists");
 				}
 				found = true;
 				lastStatus = stack.getStackStatus();
+				
+				// Get stack events info
+				DescribeStackEventsRequest request = new DescribeStackEventsRequest().withStackName(stackName);
+				DescribeStackEventsResult result = cfn.describeStackEvents(request);
+				List<StackEvent> stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
+				Collections.reverse(stackEvents);
+				
+				// Always output new events; might be the last time you can
+				printEvents(stackEvents);
+				
+				// If completed successfully, output status and outputs of stack, then break out of while loop
 				if (successStatuses.contains(lastStatus)) {
 					getLogger().info("Status of stack {} is now {}.", stackName, lastStatus);
 					printOutputs(stack);
 					break;
+					
+					// Else if still going, sleep some then loop again
 				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack {} is {}...", stackName, lastStatus);
 					Thread.sleep(loopWait * 1000);
+					
+					// Else, it must have failed, so get out of while loop
 				} else {
-					// fail if not contains in successStatus or waitStatus
 					throw new GradleException(
 							"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
 				}
@@ -128,6 +153,26 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				}
 			}
 		}
+	}
+	
+	private void printEvents(List<StackEvent> stackEvents) {
+		if (printedEvents.isEmpty()) {
+			getLogger().info("==== Events ====");
+		}
+		stackEvents.stream()
+			.forEach(o -> {
+				String eventId = o.getEventId();
+				// If we haven't printed the event, then print it and add to list of printed events so we won't print again
+				if (!printedEvents.contains(eventId)) {
+					getLogger().info("{} {} {}: {} {}",
+							o.getTimestamp(),
+							o.getResourceStatus(),
+							o.getResourceType(),
+							o.getLogicalResourceId(),
+							(o.getResourceStatusReason() == null) ? "" : o.getResourceStatusReason());
+					printedEvents.add(eventId);
+				}
+			});
 	}
 	
 	private void printOutputs(Stack stack) {
