@@ -216,6 +216,8 @@ task runTask(type: jp.classmethod.aws.gradle.ecs.AmazonECSRunTaskTask) {
 }
 ```
 
+Look [ECS example](samples/11-ecs) for more information.
+
 ### EC2 instance tasks
 
 ```
