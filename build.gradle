@@ -64,7 +64,7 @@ jacocoTestReport {
 checkstyle {
 	toolVersion = "7.1.2"
 	showViolations = true
-	configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+	configFile = project.file('config/checkstyle/checkstyle.xml')
 }
 checkstyleTest {
 	configFile = file("config/checkstyle/checkstyle-test.xml")
