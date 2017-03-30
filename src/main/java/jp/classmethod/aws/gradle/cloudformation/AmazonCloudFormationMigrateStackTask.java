@@ -153,6 +153,15 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		File cfnStackPolicyFile = getCfnStackPolicyFile();
 		
 		getLogger().info("Update stack: {}", stackName);
+		
+		getLogger().info("==== Parameters ====");
+		cfnStackParams.stream()
+			.forEach(p -> {
+				getLogger().info("{} = {}",
+						p.getParameterKey(),
+						p.getParameterValue());
+			});
+		
 		UpdateStackRequest req = new UpdateStackRequest()
 			.withStackName(stackName)
 			.withParameters(cfnStackParams)
@@ -212,6 +221,14 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnOnFailure = getCfnOnFailure();
 		
 		getLogger().info("create stack: {}", stackName);
+		
+		getLogger().info("==== Parameters ====");
+		cfnStackParams.stream()
+			.forEach(p -> {
+				getLogger().info("{} = {}",
+						p.getParameterKey(),
+						p.getParameterValue());
+			});
 		
 		CreateStackRequest req = new CreateStackRequest()
 			.withStackName(stackName)
