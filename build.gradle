@@ -225,6 +225,7 @@ dependencies {
 	compile "com.amazonaws:aws-java-sdk-sts:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-ec2:$awsJavaSdkVersion"
+	compile "com.amazonaws:aws-java-sdk-ecs:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-rds:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-route53:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-elasticloadbalancing:$awsJavaSdkVersion"

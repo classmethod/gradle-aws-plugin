@@ -15,6 +15,34 @@ Current Features / Supported AWS Products
   * Delete object(s)
   * File sync
   * Set bucket policy
+* ECS
+  * Run task
+  * Create cluster
+  * Delete cluster
+  * Register task definition
+  * Describe clusters
+  * Describe task definition
+  * Describe container instances
+  * Describe services
+  * Describe tasks
+  * Deregister container instance
+  * Deregister task definition
+  * List clusters
+  * List container instances
+  * List services
+  * List task definition families
+  * List task definitions
+  * List tasks
+  * Start task
+  * Stop task
+  * Delete service
+  * Discover poll endpoint
+  * Submit container state change
+  * Submit task state change
+  * Register container instance
+  * Create service
+  * Update container agent
+  * Update service
 * EC2
   * Run instance
   * Start instance
@@ -128,6 +156,67 @@ task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
 
 Look [S3 example 1](samples/01-s3-upload-simple) and [S3 example 2](samples/02-s3-sync-contents) for more information.
 
+### ECS tasks
+```
+apply plugin: 'jp.classmethod.aws.ecs'
+
+task registerTaskDefinition(type: AmazonECSRegisterTaskDefinitionTask) {
+  family 'docuwiki'
+  taskRoleArn ''
+  networkMode 'bridge'
+  volumesJson ''
+  containerDefinitionsJson '''
+    {
+      "volumesFrom": [],
+      "memory": 900,
+      "extraHosts": null,
+      "dnsServers": null,
+      "disableNetworking": null,
+      "dnsSearchDomains": null,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "hostname": null,
+      "essential": true,
+      "entryPoint": null,
+      "mountPoints": [],
+      "name": "main",
+      "ulimits": null,
+      "dockerSecurityOptions": null,
+      "environment": [],
+      "links": null,
+      "workingDirectory": null,
+      "readonlyRootFilesystem": null,
+      "image": "bambucha/dokuwiki",
+      "command": null,
+      "user": null,
+      "dockerLabels": null,
+      "logConfiguration": null,
+      "cpu": 900,
+      "privileged": null,
+      "memoryReservation": null
+    }
+  '''
+}
+
+task runTask(type: jp.classmethod.aws.gradle.ecs.AmazonECSRunTaskTask) {
+  dependsOn registerTaskDefinition
+
+  doFirst {
+    registerTaskDefinition.registerTaskDefinitionResult.taskDefinition.with {
+      taskDefinition "$family:$revision"
+    }
+  }
+
+  cluster createCluster.clusterName
+  count 1
+  startedBy 'Gradle-ecs-script'
+}
+```
 
 ### EC2 instance tasks
 
