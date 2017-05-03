@@ -26,7 +26,7 @@ if (project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey')) 
 					userName: awsAccessKey,
 					passphrase: awsSecretKey
 				]
-	
+
 				configuration = configurations.deployerJars
 				repository(url: "s3://public-maven.classmethod.info/release") {
 					authentication(awsCredentials)
@@ -37,7 +37,7 @@ if (project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey')) 
 			}
 		}
 	}
-	
+
 	[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
 		pom.project {
 			inceptionYear '2013'
@@ -58,7 +58,7 @@ if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayApiKey')) 
 	bintray {
 		user = bintrayUser
 		key = bintrayApiKey
-	
+
 		publications = ['mavenStuff']
 		pkg {
 			repo = 'maven'
@@ -96,6 +96,10 @@ pluginBundle {
 		awsECRPlugin {
 			id = 'jp.classmethod.aws.ecr'
 			displayName = 'Gradle Amazon ECR plugin'
+		}
+		awsECSPlugin {
+			id = 'jp.classmethod.aws.ecs'
+			displayName = 'Gradle Amazon ECS plugin'
 		}
 		awsEC2Plugin {
 			id = 'jp.classmethod.aws.ec2'

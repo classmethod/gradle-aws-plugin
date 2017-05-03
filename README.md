@@ -15,6 +15,34 @@ Current Features / Supported AWS Products
   * Delete object(s)
   * File sync
   * Set bucket policy
+* ECS
+  * Run task
+  * Create cluster
+  * Delete cluster
+  * Register task definition
+  * Describe clusters
+  * Describe task definition
+  * Describe container instances
+  * Describe services
+  * Describe tasks
+  * Deregister container instance
+  * Deregister task definition
+  * List clusters
+  * List container instances
+  * List services
+  * List task definition families
+  * List task definitions
+  * List tasks
+  * Start task
+  * Stop task
+  * Delete service
+  * Discover poll endpoint
+  * Submit container state change
+  * Submit task state change
+  * Register container instance
+  * Create service
+  * Update container agent
+  * Update service
 * EC2
   * Run instance
   * Start instance
@@ -104,12 +132,12 @@ These credentials are used to make API accesses by default. The format of the cr
 apply plugin: 'jp.classmethod.aws.s3'
 
 task createBucket(type: CreateBucketTask) {
-	bucketName myBucketName
+  bucketName myBucketName
 
-	// one of http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region values, us-east-1 by default
-	region regionName
-	// create bucket only if it does not exist, otherwise skip
-	ifNotExists true
+  // one of http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region values, us-east-1 by default
+  region regionName
+  // create bucket only if it does not exist, otherwise skip
+  ifNotExists true
 }
 ```
 
@@ -128,6 +156,67 @@ task syncObjects(type: jp.classmethod.aws.gradle.s3.SyncTask) {
 
 Look [S3 example 1](samples/01-s3-upload-simple) and [S3 example 2](samples/02-s3-sync-contents) for more information.
 
+### ECS tasks
+```
+apply plugin: 'jp.classmethod.aws.ecs'
+
+task registerTaskDefinition(type: AmazonECSRegisterTaskDefinitionTask) {
+  family 'docuwiki'
+  taskRoleArn ''
+  networkMode 'bridge'
+  volumesJson ''
+  containerDefinitionsJson '''
+    {
+      "volumesFrom": [],
+      "memory": 900,
+      "extraHosts": null,
+      "dnsServers": null,
+      "disableNetworking": null,
+      "dnsSearchDomains": null,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "hostname": null,
+      "essential": true,
+      "entryPoint": null,
+      "mountPoints": [],
+      "name": "main",
+      "ulimits": null,
+      "dockerSecurityOptions": null,
+      "environment": [],
+      "links": null,
+      "workingDirectory": null,
+      "readonlyRootFilesystem": null,
+      "image": "bambucha/dokuwiki",
+      "command": null,
+      "user": null,
+      "dockerLabels": null,
+      "logConfiguration": null,
+      "cpu": 900,
+      "privileged": null,
+      "memoryReservation": null
+    }
+  '''
+}
+
+task runTask(type: jp.classmethod.aws.gradle.ecs.AmazonECSRunTaskTask) {
+  dependsOn registerTaskDefinition
+
+  doFirst {
+    registerTaskDefinition.registerTaskDefinitionResult.taskDefinition.with {
+      taskDefinition "$family:$revision"
+    }
+  }
+
+  cluster createCluster.clusterName
+  count 1
+  startedBy 'Gradle-ecs-script'
+}
+```
 
 ### EC2 instance tasks
 
@@ -164,25 +253,25 @@ apply plugin: "jp.classmethod.aws.rds"
 // }
 
 task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {
-	dbInstanceIdentifier = "foobar"
-	allocatedStorage = 5
-	dbInstanceClass = "db.t2.micro"
-	engine = "MySQL"
-	masterUsername = "root"
-	masterUserPassword = "passW0rd"
-	vpcSecurityGroupIds = [ "sg-d3958fbf" ]
-	dbSubnetGroupName = "default"
-	multiAZ = false
-	publiclyAccessible = true
+  dbInstanceIdentifier = "foobar"
+  allocatedStorage = 5
+  dbInstanceClass = "db.t2.micro"
+  engine = "MySQL"
+  masterUsername = "root"
+  masterUserPassword = "passW0rd"
+  vpcSecurityGroupIds = [ "sg-d3958fbf" ]
+  dbSubnetGroupName = "default"
+  multiAZ = false
+  publiclyAccessible = true
 }
 
 task rebootDBInstance(type: AmazonRDSRebootDBInstanceTask) {
-	dbInstanceIdentifier = "foobar"
+  dbInstanceIdentifier = "foobar"
 }
 
 task deleteDBInstance(type: AmazonRDSDeleteDBInstanceTask) {
-	dbInstanceIdentifier = "foobar"
-	skipFinalSnapshot = true
+  dbInstanceIdentifier = "foobar"
+  skipFinalSnapshot = true
 }
 ```
 
@@ -195,12 +284,12 @@ Look [RDS example](samples/07-rds) for more information.
 apply plugin: 'jp.classmethod.aws.route53'
 
 ask createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
-	hostedZoneName "foobar.example.com"
-	callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
+  hostedZoneName "foobar.example.com"
+  callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
 }
 
 task deleteHostedZone(type: jp.classmethod.aws.gradle.route53.DeleteHostedZoneTask) {
-	hostedZoneId "XXXX"
+  hostedZoneId "XXXX"
 }
 ```
 
@@ -217,14 +306,14 @@ beanstalk {
 
   appName 'foobar'
   appDesc 'foobar demo application'
-  
+
   version {
     label = "foobar-${project.war.version}-${timestamp}"
     description = "${artifactId} v${version}"
     bucket = 'sample-bucket'
     key = "eb-apps/foobar-${project.war.version}-${timestamp}.${extension}"
   }
-  
+
   configurationTemplates {
     production {
       optionSettings = file('src/main/config/production.json')
@@ -235,7 +324,7 @@ beanstalk {
       solutionStackName = '64bit Amazon Linux 2013.09 running Tomcat 7 Java 7'
     }
   }
-  
+
   environment {
     envName = 'foobar'
     envDesc = 'foobar demo application development environemnt'
@@ -283,41 +372,41 @@ Look [CloudFormation example](samples/06-cloudformation) for more information.
 apply plugin: "base"
 apply plugin: "jp.classmethod.aws.lambda"
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
+  profileName = "default"
+  region = "ap-northeast-1"
 }
 
 lambda {
-	region = "us-east-1"
+  region = "us-east-1"
 }
 
 task zip(type: Zip) {
-	from "function/"
-	destinationDir file("build")
+  from "function/"
+  destinationDir file("build")
 }
 
 task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-	functionName = "foobar"
-	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
-	zipFile = zip.archivePath
-	handler = "DecodeBase64.handler"
-	environment = [
-	    p1: "Value",
-	    p2: "Value2"
-	]
+  functionName = "foobar"
+  role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+  zipFile = zip.archivePath
+  handler = "DecodeBase64.handler"
+  environment = [
+      p1: "Value",
+      p2: "Value2"
+  ]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
-	functionName = "foobar"
-	invocationType = InvocationType.RequestResponse
-	payload = file("sample-input/input.txt")
-	doLast {
-		println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
-	}
+  functionName = "foobar"
+  invocationType = InvocationType.RequestResponse
+  payload = file("sample-input/input.txt")
+  doLast {
+    println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
+  }
 }
 
 task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
-	functionName = "foobar"
+  functionName = "foobar"
 }
 ```
 
@@ -329,19 +418,19 @@ Look [Lambda example](samples/08-lambda) for more information.
 apply plugin: "jp.classmethod.aws.sqs"
 
 task sendMessages(type: AmazonSQSSendMessagesTask) {
-	queueName 'gradle-aws-plugin-sample'
-	messages Stream.of("Test 1", "Test 2")
+  queueName 'gradle-aws-plugin-sample'
+  messages Stream.of("Test 1", "Test 2")
 }
 
 task deleteMessages(type: AmazonSQSMessageConsumerTask) {
-	queueName 'gradle-aws-plugin-sample'
-	showMessages false
+  queueName 'gradle-aws-plugin-sample'
+  showMessages false
 }
 
 task viewMessages(type: AmazonSQSMessageConsumerTask) {
-	queueName 'gradle-aws-plugin-sample'
-	deleteMessages false
-	maxNumberOfMessages 50
+  queueName 'gradle-aws-plugin-sample'
+  deleteMessages false
+  maxNumberOfMessages 50
 }
 ```
 
@@ -352,17 +441,17 @@ Look [SQS example](samples/09-sqs) for more information.
 apply plugin: "jp.classmethod.aws.sns"
 
 task publishMessage(type: AmazonSNSPublishMessageTask) {
-	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
-	message 'Test body'
-	subject 'Optional test subject'
+  topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+  message 'Test body'
+  subject 'Optional test subject'
 }
 
 task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
-	topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
-	message JsonOutput.toJson(['default': 'Default message body.',
-							   'email'  : 'Email message body.',
-							   'sms': 'SMS message body.'])
-	messageStructure 'json'
+  topicArn 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+  message JsonOutput.toJson(['default': 'Default message body.',
+                 'email'  : 'Email message body.',
+                 'sms': 'SMS message body.'])
+  messageStructure 'json'
 }
 ```
 Look [SNS example](samples/10-sns) for more information.
