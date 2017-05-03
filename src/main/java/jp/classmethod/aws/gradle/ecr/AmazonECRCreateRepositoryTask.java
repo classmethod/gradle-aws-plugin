@@ -52,12 +52,13 @@ public class AmazonECRCreateRepositoryTask extends ConventionTask {
 		
 		String repositoryName = MoreObjects.firstNonNull(getRepositoryName(), ext.getRepositoryName());
 
-		try
-		{
-			CreateRepositoryResult result = ecr.createRepository(new CreateRepositoryRequest().withRepositoryName(repositoryName));
+		try {
+			CreateRepositoryResult result = ecr.createRepository(new CreateRepositoryRequest().
+					withRepositoryName(repositoryName));
 			repository = result.getRepository();
 		} catch (RepositoryAlreadyExistsException ex) {
-			DescribeRepositoriesResult describeRepositoriesResult = ecr.describeRepositories(new DescribeRepositoriesRequest());
+			DescribeRepositoriesResult describeRepositoriesResult =
+					ecr.describeRepositories(new DescribeRepositoriesRequest());
 			for (Repository repositoryResult : describeRepositoriesResult.getRepositories()) {
 				if (repositoryResult.getRepositoryName().equals(repositoryName)) {
 					repository = repositoryResult;
