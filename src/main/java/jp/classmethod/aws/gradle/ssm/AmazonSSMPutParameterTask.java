@@ -35,7 +35,7 @@ public class AmazonSSMPutParameterTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Parameter> parameters = new ArrayList<>();
-
+	
 	/**
 	 * If overwrite is set true, the parameter which has the same
 	 * name will be overwritten with the task execution.
