@@ -1,6 +1,8 @@
 Gradle AWS Plugin
 =================
 
+[![Join the chat at https://gitter.im/gradle-aws-plugin/Lobby](https://badges.gitter.im/gradle-aws-plugin/Lobby.svg)](https://gitter.im/gradle-aws-plugin/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Gradle plugin to manage AWS resouces.
 
 Current Features / Supported AWS Products
@@ -91,6 +93,8 @@ Current Features / Supported AWS Products
   * Read messages
 * SNS
   * Publish message
+* SSM
+  * Put parameters
 
 Requirements
 ------------

@@ -24,7 +24,10 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.ecr.AmazonECR;
 import com.amazonaws.services.ecr.model.CreateRepositoryRequest;
 import com.amazonaws.services.ecr.model.CreateRepositoryResult;
+import com.amazonaws.services.ecr.model.DescribeRepositoriesRequest;
+import com.amazonaws.services.ecr.model.DescribeRepositoriesResult;
 import com.amazonaws.services.ecr.model.Repository;
+import com.amazonaws.services.ecr.model.RepositoryAlreadyExistsException;
 import com.google.common.base.MoreObjects;
 
 public class AmazonECRCreateRepositoryTask extends ConventionTask {
@@ -49,8 +52,19 @@ public class AmazonECRCreateRepositoryTask extends ConventionTask {
 		
 		String repositoryName = MoreObjects.firstNonNull(getRepositoryName(), ext.getRepositoryName());
 		
-		CreateRepositoryResult result = ecr.createRepository(new CreateRepositoryRequest()
-			.withRepositoryName(repositoryName));
-		repository = result.getRepository();
+		try {
+			CreateRepositoryResult result =
+					ecr.createRepository(new CreateRepositoryRequest().withRepositoryName(repositoryName));
+			repository = result.getRepository();
+		} catch (RepositoryAlreadyExistsException ex) {
+			DescribeRepositoriesResult describeRepositoriesResult =
+					ecr.describeRepositories(new DescribeRepositoriesRequest());
+			for (Repository repositoryResult : describeRepositoriesResult.getRepositories()) {
+				if (repositoryResult.getRepositoryName().equals(repositoryName)) {
+					repository = repositoryResult;
+					break;
+				}
+			}
+		}
 	}
 }
