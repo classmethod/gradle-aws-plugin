@@ -65,6 +65,8 @@ Current Features / Supported AWS Products
   * Read messages
 * SNS
   * Publish message
+* SSM
+  * Put parameters
 
 Requirements
 ------------
