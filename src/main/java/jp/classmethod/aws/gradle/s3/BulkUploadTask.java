@@ -25,9 +25,9 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 import groovy.lang.Closure;
 
@@ -53,6 +53,7 @@ public class BulkUploadTask extends ConventionTask {
 	@Setter
 	private CannedAccessControlList acl;
 	
+	
 	@TaskAction
 	public void upload() {
 		// to enable conventionMappings feature
@@ -72,7 +73,8 @@ public class BulkUploadTask extends ConventionTask {
 				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
 					.withMetadata(metadataProvider == null ? null
-							: metadataProvider.call(getBucketName(), key, element.getFile())).withCannedAcl(acl));
+							: metadataProvider.call(getBucketName(), key, element.getFile()))
+					.withCannedAcl(acl));
 			}
 		});
 	}
