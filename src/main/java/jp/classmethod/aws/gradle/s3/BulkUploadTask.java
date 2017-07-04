@@ -27,6 +27,7 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 import groovy.lang.Closure;
 
@@ -48,6 +49,9 @@ public class BulkUploadTask extends ConventionTask {
 	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
+	@Getter
+	@Setter
+	private CannedAccessControlList acl;
 	
 	@TaskAction
 	public void upload() {
@@ -68,7 +72,7 @@ public class BulkUploadTask extends ConventionTask {
 				Closure<ObjectMetadata> metadataProvider = getMetadataProvider();
 				s3.putObject(new PutObjectRequest(bucketName, key, element.getFile())
 					.withMetadata(metadataProvider == null ? null
-							: metadataProvider.call(getBucketName(), key, element.getFile())));
+							: metadataProvider.call(getBucketName(), key, element.getFile())).withCannedAcl(acl));
 			}
 		});
 	}
