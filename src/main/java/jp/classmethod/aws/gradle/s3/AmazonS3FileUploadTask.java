@@ -61,7 +61,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		// metadata will be null iff the object does not exist
 		ObjectMetadata metadata = existingObjectMetadata();
 		
-		if (metadata == null || (isOverwrite() && metadata.getETag().equals(md5()) == false)) {
+		if (metadata == null || (isOverwrite() || metadata.getETag().equals(md5()) == false)) {
 			getLogger().info("uploading... " + bucketName + "/" + key);
 			s3.putObject(new PutObjectRequest(bucketName, key, file)
 				.withMetadata(getObjectMetadata()));
