@@ -38,6 +38,10 @@ public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private String kmsKeyId;
+	
+	@Getter
+	@Setter
 	private File file;
 	
 	@Getter
