@@ -25,6 +25,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.SSEAwsKeyManagementParams;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
@@ -41,6 +42,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		String bucketName = getBucketName();
 		String key = getKey();
 		File file = getFile();
+		String kmsKeyId = getKmsKeyId();
 		
 		if (bucketName == null) {
 			throw new GradleException("bucketName is not specified");
@@ -61,10 +63,13 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 		// metadata will be null iff the object does not exist
 		ObjectMetadata metadata = existingObjectMetadata();
 		
-		if (metadata == null || (isOverwrite() && metadata.getETag().equals(md5()) == false)) {
+		if (metadata == null || (isOverwrite() || metadata.getETag().equals(md5()) == false)) {
 			getLogger().info("uploading... " + bucketName + "/" + key);
-			s3.putObject(new PutObjectRequest(bucketName, key, file)
-				.withMetadata(getObjectMetadata()));
+			if (kmsKeyId == null) {
+				putObject(bucketName, key, file, s3);
+			} else {
+				putObjectWithKmsSupport(bucketName, key, file, kmsKeyId, s3);
+			}
 			getLogger().info("upload completed: " + ((AmazonS3Client) s3).getResourceUrl(bucketName, key));
 		} else {
 			getLogger().info("s3://{}/{} already exists with matching md5 sum -- skipped", bucketName, key);
@@ -74,5 +79,16 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	private String md5() throws IOException {
 		return Files.hash(getFile(), Hashing.md5()).toString();
+	}
+	
+	private void putObject(String bucketName, String key, File file, AmazonS3 s3) {
+		s3.putObject(new PutObjectRequest(bucketName, key, file)
+			.withMetadata(getObjectMetadata()));
+	}
+	
+	private void putObjectWithKmsSupport(String bucketName, String key, File file, String kmsKeyId, AmazonS3 s3) {
+		s3.putObject(new PutObjectRequest(bucketName, key, file)
+			.withMetadata(getObjectMetadata())
+			.withSSEAwsKeyManagementParams(new SSEAwsKeyManagementParams(kmsKeyId)));
 	}
 }

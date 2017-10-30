@@ -125,6 +125,10 @@ pluginBundle {
 			id = 'jp.classmethod.aws.s3'
 			displayName = 'Gradle Amazon S3 plugin'
 		}
+		awsSSMPlugin {
+			id = 'jp.classmethod.aws.ssm'
+			displayName = 'Gradle Amazon SSM plugin'
+		}
 	}
 	mavenCoordinates {
 		groupId = project.group

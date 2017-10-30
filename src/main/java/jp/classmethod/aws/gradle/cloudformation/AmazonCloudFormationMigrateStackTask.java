@@ -108,10 +108,6 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
 		}
-		if (cfnTemplateUrl == null && cfnTemplateFile == null) {
-			throw new GradleException(
-					"cfnTemplateUrl or cfnTemplateFile must be provided");
-		}
 		
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
@@ -133,6 +129,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
 				getLogger().warn("stack {} not found", stackName);
+				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+					getLogger().error("cfnTemplateUrl or cfnTemplateFile must be provided");
+					throw e;
+				}
 				createStack(cfn);
 			} else if (e.getMessage().contains("No updates are to be performed.")) {
 				getLogger().trace(e.getMessage());
@@ -153,6 +153,15 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		File cfnStackPolicyFile = getCfnStackPolicyFile();
 		
 		getLogger().info("Update stack: {}", stackName);
+		
+		getLogger().info("==== Parameters ====");
+		cfnStackParams.stream()
+			.forEach(p -> {
+				getLogger().info("{} = {}",
+						p.getParameterKey(),
+						p.getParameterValue());
+			});
+		
 		UpdateStackRequest req = new UpdateStackRequest()
 			.withStackName(stackName)
 			.withParameters(cfnStackParams)
@@ -163,9 +172,12 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			req.setTemplateURL(cfnTemplateUrl);
 			getLogger().info("Using template url: {}", cfnTemplateUrl);
 			// Else, use the template file body
-		} else {
+		} else if (cfnStackPolicyFile != null) {
 			req.setTemplateBody(FileUtils.readFileToString(cfnTemplateFile));
 			getLogger().info("Using template file: {}", "$cfnTemplateFile.canonicalPath");
+		} else {
+			req.setUsePreviousTemplate(true);
+			getLogger().info("No template specified, updating existing template");
 		}
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
@@ -209,6 +221,14 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		String cfnOnFailure = getCfnOnFailure();
 		
 		getLogger().info("create stack: {}", stackName);
+		
+		getLogger().info("==== Parameters ====");
+		cfnStackParams.stream()
+			.forEach(p -> {
+				getLogger().info("{} = {}",
+						p.getParameterKey(),
+						p.getParameterValue());
+			});
 		
 		CreateStackRequest req = new CreateStackRequest()
 			.withStackName(stackName)

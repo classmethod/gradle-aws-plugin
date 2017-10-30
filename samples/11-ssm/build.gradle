@@ -1,0 +1,30 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+import com.amazonaws.services.simplesystemsmanagement.model.Parameter;
+
+import jp.classmethod.aws.gradle.ssm.AmazonSSMPutParameterTask;
+
+
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+
+	}
+	dependencies {
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+	}
+}
+
+apply plugin: "jp.classmethod.aws.ssm"
+
+task putParameter(type: AmazonSSMPutParameterTask) {
+	prefix = "some.prefix."
+	overwrite = true
+	parameters = [
+		new Parameter().withName("foo").withValue("bar").withType("String"),
+		new Parameter().withName("foo2").withValue("bar2").withType("SecureString"),
+		new Parameter().withName("foo3").withValue("bar3,bar4").withType("StringList")
+	]
+}
