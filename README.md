@@ -196,7 +196,7 @@ Look [RDS example](samples/07-rds) for more information.
 ```
 apply plugin: 'jp.classmethod.aws.route53'
 
-ask createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
+task createHostedZone(type: jp.classmethod.aws.gradle.route53.CreateHostedZoneTask) {
 	hostedZoneName "foobar.example.com"
 	callerReference '0BF44985-9D79-BF3B-A9B0-5AE24D6E86E1'
 }
