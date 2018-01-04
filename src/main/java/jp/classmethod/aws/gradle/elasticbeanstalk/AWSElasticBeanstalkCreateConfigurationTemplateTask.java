@@ -35,6 +35,8 @@ import com.amazonaws.services.elasticbeanstalk.model.DeleteConfigurationTemplate
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateConfigurationTemplateRequest;
 
+import groovy.json.JsonParserType;
+
 public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends ConventionTask {
 	
 	@Getter
@@ -112,7 +114,8 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 		List<ConfigurationOptionSetting> options = new ArrayList<>();
 		@SuppressWarnings("unchecked")
 		Collection<Map<String, Object>> c =
-				(Collection<Map<String, Object>>) new groovy.json.JsonSlurper().parseText(json);
+				(Collection<Map<String, Object>>) new groovy.json.JsonSlurper().setType(JsonParserType.LAX)
+					.parseText(json);
 		c.forEach(it -> options.add(new ConfigurationOptionSetting((String) it.get("Namespace"),
 				(String) it.get("OptionName"), (String) it.get("Value"))));
 		return options;
