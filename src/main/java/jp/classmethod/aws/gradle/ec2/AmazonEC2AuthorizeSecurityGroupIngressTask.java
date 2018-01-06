@@ -33,6 +33,10 @@ public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC
 	
 	@Getter
 	@Setter
+	private String groupName;
+	
+	@Getter
+	@Setter
 	private Object ipPermissions;
 	
 	
@@ -45,10 +49,11 @@ public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC
 	public void authorizeIngress() {
 		// to enable conventionMappings feature
 		String groupId = getGroupId();
+		String groupName = getGroupName();
 		Object ipPermissions = getIpPermissions();
 		
-		if (groupId == null) {
-			throw new GradleException("groupId is not specified");
+		if (groupId == null && groupName == null) {
+			throw new GradleException("groupId nor groupName is not specified");
 		}
 		if (ipPermissions == null) {
 			throw new GradleException("ipPermissions is not specified");
@@ -60,6 +65,7 @@ public class AmazonEC2AuthorizeSecurityGroupIngressTask extends AbstractAmazonEC
 		try {
 			ec2.authorizeSecurityGroupIngress(new AuthorizeSecurityGroupIngressRequest()
 				.withGroupId(groupId)
+				.withGroupName(groupName)
 				.withIpPermissions(parse(ipPermissions)));
 		} catch (AmazonServiceException e) {
 			if (e.getErrorCode().equals("InvalidPermission.Duplicate")) {
