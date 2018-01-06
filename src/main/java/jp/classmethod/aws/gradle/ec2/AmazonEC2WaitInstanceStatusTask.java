@@ -65,6 +65,9 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	@Getter
 	private String lastStatus;
 	
+	@Getter
+	private Instance awsInstance;
+	
 	
 	public AmazonEC2WaitInstanceStatusTask() {
 		setDescription("Wait EC2 instance for specific status.");
@@ -96,6 +99,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 				DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
 					.withInstanceIds(instanceId));
 				Instance instance = dir.getReservations().get(0).getInstances().get(0);
+				awsInstance = instance;
 				if (instance == null) {
 					throw new GradleException(instanceId + " is not exists");
 				}
