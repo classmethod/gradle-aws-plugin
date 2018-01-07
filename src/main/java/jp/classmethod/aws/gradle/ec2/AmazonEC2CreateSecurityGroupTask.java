@@ -26,7 +26,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
-import com.amazonaws.services.ec2.model.RunInstancesResult;
 
 public class AmazonEC2CreateSecurityGroupTask extends ConventionTask {
 	
