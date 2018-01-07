@@ -51,8 +51,8 @@ public class AmazonEC2DeleteSecurityGroupTask extends ConventionTask {
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
-		if (groupName == null || groupId == null) {
-			throw new GradleException("groupName or groupId is not specified");
+		if (groupName == null && groupId == null) {
+			throw new GradleException("groupName nor groupId is not specified");
 		}
 		
 		try {
