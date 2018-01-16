@@ -1,23 +1,21 @@
 package jp.classmethod.aws.gradle.lambda;
 
 import com.amazonaws.services.lambda.AWSLambda;
-import com.amazonaws.services.lambda.model.*;
+import com.amazonaws.services.lambda.model.AliasRoutingConfiguration;
+import com.amazonaws.services.lambda.model.CreateAliasRequest;
+import com.amazonaws.services.lambda.model.CreateAliasResult;
+import com.amazonaws.services.lambda.model.UpdateAliasResult;
 import lombok.Getter;
 import lombok.Setter;
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Created by frankfarrell on 16/01/2018.
- *
- * https://docs.aws.amazon.com/cli/latest/reference/lambda/update-alias.html
+ * https://docs.aws.amazon.com/cli/latest/reference/lambda/create-alias.html
  */
-public class AWSLambdaUpdateAliasTask extends ConventionTask {
+public class AWSLambdaCreateAliasTask  extends ConventionTask {
 
     /*
     The function name for which the alias is created.
@@ -54,19 +52,13 @@ public class AWSLambdaUpdateAliasTask extends ConventionTask {
     private RoutingConfig routingConfig;
 
     @Getter
-    private UpdateAliasResult updateAliasResult;
-
-
-    public AWSLambdaUpdateAliasTask() {
-        setDescription("Update Lambda Alias");
-        setGroup("AWS");
-    }
+    private CreateAliasResult createAliasResult;
 
     @TaskAction
-    public void updateFunctionAlias(){
-
+    public void createAlias() {
         final String functionName = getFunctionName();
         final String aliasName = getName();
+        final String functionVersion = getFunctionVersion();
 
         if (functionName == null) {
             throw new GradleException("functionName is required");
@@ -74,31 +66,29 @@ public class AWSLambdaUpdateAliasTask extends ConventionTask {
         if (aliasName == null) {
             throw new GradleException("name for alias is required");
         }
+        if (functionVersion == null) {
+            throw new GradleException("functionVersion for alias is required");
+        }
+
+        final CreateAliasRequest request = new CreateAliasRequest().withFunctionName(functionName)
+                .withFunctionVersion(functionVersion)
+                .withName(aliasName);
 
         final AWSLambda lambda = getAwsLambdaClient();
 
-        final UpdateAliasRequest updateAliasRequest = new UpdateAliasRequest()
-                .withFunctionName(functionName)
-                .withName(aliasName);
-
-        if(getFunctionVersion() != null){
-            updateAliasRequest.withFunctionVersion(getFunctionVersion());
-        }
         if(getDescription() != null){
-            updateAliasRequest.withDescription(getDescription());
+            request.withDescription(getDescription());
         }
         if(getRoutingConfig() != null){
             final RoutingConfig routingConfig = getRoutingConfig();
 
             final AliasRoutingConfiguration aliasRoutingConfiguration = routingConfig.getAliasRoutingConfiguration(lambda, functionName, functionVersion);
 
-            updateAliasRequest.withRoutingConfig(aliasRoutingConfiguration);
+            request.withRoutingConfig(aliasRoutingConfiguration);
         }
 
-        updateAliasResult = lambda.updateAlias(updateAliasRequest);
-        getLogger().info("Update Lambda alias requested: {}, name: {}", functionName, aliasName);
+        createAliasResult = lambda.createAlias(request);
     }
-
 
     private AWSLambda getAwsLambdaClient() {
         final AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
