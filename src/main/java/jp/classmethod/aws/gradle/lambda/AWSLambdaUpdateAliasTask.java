@@ -63,7 +63,7 @@ public class AWSLambdaUpdateAliasTask extends ConventionTask {
     }
 
     @TaskAction
-    public void aupdateFunctionAlias(){
+    public void updateFunctionAlias(){
         // to enable conventionMappings feature
         final String functionName = getFunctionName();
         final String aliasName = getName();
