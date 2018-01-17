@@ -84,7 +84,7 @@ task publishVersionFunction(type: AWSLambdaPublishVersionTask, dependsOn: migrat
 	functionName = "foobar"
 }
 
-task createAlias(type: AWSLambdaCreateAliasTask, dependsOn: AWSLambdaPublishVersionTask) {
+task createAlias(type: AWSLambdaCreateAliasTask, dependsOn: publishVersionFunction) {
 	functionName = "foobar"
 	aliasName = "alias"
 	functionVersion = "1"

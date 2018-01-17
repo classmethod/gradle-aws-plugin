@@ -50,6 +50,12 @@ public class RoutingConfig {
 	@Setter
 	private Boolean useNextVersion;
 	
+	/*
+	The constraint on this is the following:
+	Member must have length less than or equal to 1024, (i.e. that many digits in
+	Member must have length greater than or equal to 1,
+	Member must satisfy regular expression pattern: [0-9]+
+	 */
 	@Input
 	@Optional
 	@Getter
