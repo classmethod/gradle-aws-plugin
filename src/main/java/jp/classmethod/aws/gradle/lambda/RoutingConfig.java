@@ -16,8 +16,6 @@
 package jp.classmethod.aws.gradle.lambda;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,11 +24,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 
-import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.AliasRoutingConfiguration;
-import com.amazonaws.services.lambda.model.FunctionConfiguration;
-import com.amazonaws.services.lambda.model.ListVersionsByFunctionRequest;
-import com.amazonaws.services.lambda.model.ListVersionsByFunctionResult;
 
 /**
  * Created by frankfarrell on 16/01/2018.
@@ -66,8 +60,7 @@ public class RoutingConfig {
 	public RoutingConfig() {
 	}
 	
-	public AliasRoutingConfiguration getAliasRoutingConfiguration(final AWSLambda lambda,
-			final String functionName,
+	public AliasRoutingConfiguration getAliasRoutingConfiguration(final String functionName,
 			final String functionVersion) {
 		if (getAdditionalVersionWeight() == null) {
 			throw new GradleException("Additional Version Weight for routing config is required");
@@ -87,55 +80,40 @@ public class RoutingConfig {
 			aliasRoutingConfiguration.withAdditionalVersionWeights(
 					Collections.singletonMap(getAdditionalVersion(), additionalVersionWeight));
 		} else if (getUsePreviousVersion() != null && getUsePreviousVersion()) {
-			final String prevVersion = getPreviousVersion(lambda, functionName, functionVersion);
-			aliasRoutingConfiguration.withAdditionalVersionWeights(
-					Collections.singletonMap(prevVersion, additionalVersionWeight));
-		} else if (getUseNextVersion() != null && getUseNextVersion()){
-			final String nextVersion = getNextVersion(lambda, functionName, functionVersion);
-			aliasRoutingConfiguration.withAdditionalVersionWeights(
-					Collections.singletonMap(nextVersion, additionalVersionWeight));
+			
+			try {
+				final Long functionVersionAsLong = Long.valueOf(functionVersion);
+				final Long prevVersion = getPreviousVersion(functionName, functionVersionAsLong);
+				aliasRoutingConfiguration.withAdditionalVersionWeights(
+						Collections.singletonMap(prevVersion.toString(), additionalVersionWeight));
+			} catch (final NumberFormatException e) {
+				throw new GradleException("functionVersion must be a number if usePreviousVersion is true");
+			}
+			
+		} else if (getUseNextVersion() != null && getUseNextVersion()) {
+			try {
+				final Long functionVersionAsLong = Long.valueOf(functionVersion);
+				final Long nextVersion = getNextVersion(functionVersionAsLong);
+				aliasRoutingConfiguration.withAdditionalVersionWeights(
+						Collections.singletonMap(nextVersion.toString(), additionalVersionWeight));
+			} catch (final NumberFormatException e) {
+				throw new GradleException("functionVersion must be a number if useNextVersion is true");
+			}
 		}
 		return aliasRoutingConfiguration;
 	}
 	
-	private String getNextVersion(final AWSLambda lambda,
-			final String functionName,
-			final String functionVersion) {
-		final List<String> versions = getFunctionVersions(lambda, functionName);
-		
-		for (int i = 1; i < versions.size(); i++) {
-			if (versions.get(i).equals(functionVersion)) {
-				return versions.get(i - 1);
-			}
-		}
-		throw new GradleException("There is no newer version than "
-				+ functionName);
+	private Long getNextVersion(final Long functionVersion) {
+		return functionVersion + 1;
 	}
 	
-	private String getPreviousVersion(final AWSLambda lambda,
-			final String functionName,
-			final String functionVersion) {
-		
-		final List<String> versions = getFunctionVersions(lambda, functionName);
-		
-		for (int i = 0; i < versions.size() - 1; i++) {
-			if (versions.get(i).equals(functionVersion)) {
-				return versions.get(i + 1);
-			}
+	private Long getPreviousVersion(final String functionName,
+			final Long functionVersion) {
+		if (functionVersion <= 1L) {
+			throw new GradleException("There is no older version for "
+					+ functionName);
+		} else {
+			return functionVersion - 1;
 		}
-		throw new GradleException("There is no older version than "
-				+ functionName);
-	}
-	
-	/*
-	NB: Assumption here is that this returns an ordered list of versions from newest to oldest.
-	It will only be a partial list since there could be pagination. We only return first page
-	 */
-	private List<String> getFunctionVersions(final AWSLambda lambda,
-			final String functionName) {
-		final ListVersionsByFunctionRequest request =
-				new ListVersionsByFunctionRequest().withFunctionName(functionName);
-		final ListVersionsByFunctionResult result = lambda.listVersionsByFunction(request);
-		return result.getVersions().stream().map(FunctionConfiguration::getVersion).collect(Collectors.toList());
 	}
 }

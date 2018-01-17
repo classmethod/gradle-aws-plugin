@@ -113,9 +113,8 @@ public class AWSLambdaUpdateAliasTask extends ConventionTask {
 			final RoutingConfig routingConfig = getRoutingConfig();
 			
 			final AliasRoutingConfiguration aliasRoutingConfiguration =
-					routingConfig.getAliasRoutingConfiguration(lambda,
-							functionName,
-							functionVersion);
+					routingConfig.getAliasRoutingConfiguration(functionName,
+							getFunctionVersion());
 			
 			updateAliasRequest.withRoutingConfig(aliasRoutingConfiguration);
 		}
