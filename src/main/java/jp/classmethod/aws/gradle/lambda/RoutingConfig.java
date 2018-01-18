@@ -63,11 +63,54 @@ public class RoutingConfig {
 	private String additionalVersion;
 	
 	
-	public RoutingConfig() {
+	protected RoutingConfig() {
+		/*
+		An empty constructor is needed so that gradle can resolve variable to an instance,
+		eg to make this work as a nested task property
+		 */
 	}
 	
 	public AliasRoutingConfiguration getAliasRoutingConfiguration(final String functionName,
 			final String functionVersion) {
+		
+		validateRequiredProperties();
+		
+		final Double additionalVersionWeight = getAdditionalVersionWeight();
+		
+		final AliasRoutingConfiguration aliasRoutingConfiguration = new AliasRoutingConfiguration();
+		
+		if (getAdditionalVersion() != null) {
+			validateFunctionVersion(getAdditionalVersion());
+			
+			aliasRoutingConfiguration.withAdditionalVersionWeights(
+					Collections.singletonMap(getAdditionalVersion(), additionalVersionWeight));
+		} else if (getUsePreviousVersion() != null && getUsePreviousVersion()) {
+			
+			validateFunctionVersion(functionVersion);
+			
+			final Long functionVersionAsLong = Long.valueOf(functionVersion);
+			final Long prevVersion = getPreviousVersion(functionName, functionVersionAsLong);
+			aliasRoutingConfiguration.withAdditionalVersionWeights(
+					Collections.singletonMap(prevVersion.toString(), additionalVersionWeight));
+			
+		} else if (getUseNextVersion() != null && getUseNextVersion()) {
+			validateFunctionVersion(functionVersion);
+			final Long functionVersionAsLong = Long.valueOf(functionVersion);
+			final Long nextVersion = getNextVersion(functionVersionAsLong);
+			aliasRoutingConfiguration.withAdditionalVersionWeights(
+					Collections.singletonMap(nextVersion.toString(), additionalVersionWeight));
+			
+		}
+		return aliasRoutingConfiguration;
+	}
+	
+	private void validateFunctionVersion(final String functionVersion) {
+		if (!functionVersion.matches("[0-9]+")) {
+			throw new GradleException("functionVersion must be a number if usePreviousVersion is true");
+		}
+	}
+	
+	private void validateRequiredProperties() throws GradleException {
 		if (getAdditionalVersionWeight() == null) {
 			throw new GradleException("Additional Version Weight for routing config is required");
 		}
@@ -77,36 +120,6 @@ public class RoutingConfig {
 			throw new GradleException("Exactly one of AdditionalVersion, UsePreviousVersion, "
 					+ "UseNextVersion for routing config is required");
 		}
-		
-		final Double additionalVersionWeight = getAdditionalVersionWeight();
-		
-		final AliasRoutingConfiguration aliasRoutingConfiguration = new AliasRoutingConfiguration();
-		
-		if (getAdditionalVersion() != null) {
-			aliasRoutingConfiguration.withAdditionalVersionWeights(
-					Collections.singletonMap(getAdditionalVersion(), additionalVersionWeight));
-		} else if (getUsePreviousVersion() != null && getUsePreviousVersion()) {
-			
-			try {
-				final Long functionVersionAsLong = Long.valueOf(functionVersion);
-				final Long prevVersion = getPreviousVersion(functionName, functionVersionAsLong);
-				aliasRoutingConfiguration.withAdditionalVersionWeights(
-						Collections.singletonMap(prevVersion.toString(), additionalVersionWeight));
-			} catch (final NumberFormatException e) {
-				throw new GradleException("functionVersion must be a number if usePreviousVersion is true");
-			}
-			
-		} else if (getUseNextVersion() != null && getUseNextVersion()) {
-			try {
-				final Long functionVersionAsLong = Long.valueOf(functionVersion);
-				final Long nextVersion = getNextVersion(functionVersionAsLong);
-				aliasRoutingConfiguration.withAdditionalVersionWeights(
-						Collections.singletonMap(nextVersion.toString(), additionalVersionWeight));
-			} catch (final NumberFormatException e) {
-				throw new GradleException("functionVersion must be a number if useNextVersion is true");
-			}
-		}
-		return aliasRoutingConfiguration;
 	}
 	
 	private Long getNextVersion(final Long functionVersion) {
