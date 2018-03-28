@@ -7,12 +7,12 @@ buildscript {
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "com.diffplug.gradle.spotless:spotless:1.3.3"
+		classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
 		classpath "de.thetaphi:forbiddenapis:2.2"
 		classpath "de.aaschmid:gradle-cpd-plugin:1.0"
 		classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.8"
 		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
-		classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
+		classpath "com.gradle.publish:plugin-publish-plugin:0.9.9"
 	}
 }
 
@@ -154,7 +154,7 @@ spotless {
 	java {
 		licenseHeaderFile 'config/spotless/spotless.license.java'
 		importOrderFile   'config/spotless/spotless.importorder'
-		eclipseFormatFile 'config/spotless/spotless.eclipseformat.xml'
+		eclipse().configFile 'config/spotless/spotless.eclipseformat.xml'
 
 		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
 		//    @Max(value = 9_999_999 L) // what Eclipse does
@@ -169,7 +169,7 @@ spotless {
 		indentWithTabs()
 		endWithNewline()
 
-		customReplaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
+		replaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
 //		customReplaceRegex 'Remove indent before line comment', '^\\t*//', '//'
 	}
 }
@@ -202,7 +202,7 @@ configurations {
 // ======== library versions ========
 ext {
 	lombokVersion = "1.16.2"
-	awsJavaSdkVersion = "1.11.86"
+	awsJavaSdkVersion = "1.11.267"
 	groovyVersion = "2.3.7"
 	junitVersion = "4.12"
 	hamcrestVersion = "1.3"
@@ -220,7 +220,7 @@ dependencies {
 	compile gradleApi()
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-io:commons-io:1.4"
-	compile "org.projectlombok:lombok:$lombokVersion"
+	compileOnly "org.projectlombok:lombok:$lombokVersion"
 
 	compile "com.amazonaws:aws-java-sdk-sts:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"

@@ -16,6 +16,8 @@
 package jp.classmethod.aws.gradle.rds;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +29,7 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
 import com.amazonaws.services.rds.model.DBInstance;
+import com.amazonaws.services.rds.model.Tag;
 
 public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 	
@@ -139,7 +142,31 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 	private String kmsKeyId;
 	
 	@Getter
+	@Setter
+	private Boolean copyTagsToSnapshot;
+	
+	@Getter
+	@Setter
+	private Integer promotionTier;
+	
+	@Getter
+	@Setter
+	private String dbClusterIdentifier;
+	
+	@Getter
+	@Setter
+	private String availabilityZone;
+	
+	@Getter
+	@Setter
+	private List<String> securityGroups;
+	
+	@Getter
 	private DBInstance dbInstance;
+	
+	@Getter
+	@Setter
+	private Map<String, String> tags;
 	
 	
 	public AmazonRDSCreateDBInstanceTask() {
@@ -176,6 +203,7 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 			.withMasterUsername(getMasterUsername())
 			.withMasterUserPassword(getMasterUserPassword())
 			.withVpcSecurityGroupIds(getVpcSecurityGroupIds())
+			.withDBSecurityGroups(getSecurityGroups())
 			.withDBSubnetGroupName(getDbSubnetGroupName())
 			.withPreferredMaintenanceWindow(getPreferredMaintenanceWindow())
 			.withDBParameterGroupName(getDbParameterGroupName())
@@ -194,7 +222,17 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 			.withTdeCredentialArn(getTdeCredentialArn())
 			.withTdeCredentialPassword(getTdeCredentialPassword())
 			.withStorageEncrypted(getStorageEncrypted())
-			.withKmsKeyId(getKmsKeyId());
+			.withKmsKeyId(getKmsKeyId())
+			.withCopyTagsToSnapshot(getCopyTagsToSnapshot())
+			.withPromotionTier(getPromotionTier())
+			.withDBClusterIdentifier(getDbClusterIdentifier())
+			.withAvailabilityZone(getAvailabilityZone())
+			.withTags(getTags().entrySet().stream()
+				.map(it -> new Tag()
+					.withKey(it.getKey().toString())
+					.withValue(it.getValue().toString()))
+				.collect(Collectors.toList()));
+		
 		dbInstance = rds.createDBInstance(request);
 		getLogger().info("Create RDS instance requested: {}", dbInstance.getDBInstanceIdentifier());
 	}

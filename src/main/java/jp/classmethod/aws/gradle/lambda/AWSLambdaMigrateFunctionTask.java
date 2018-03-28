@@ -31,6 +31,8 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.model.CreateAliasRequest;
+import com.amazonaws.services.lambda.model.CreateAliasResult;
 import com.amazonaws.services.lambda.model.CreateFunctionRequest;
 import com.amazonaws.services.lambda.model.CreateFunctionResult;
 import com.amazonaws.services.lambda.model.Environment;
@@ -40,6 +42,8 @@ import com.amazonaws.services.lambda.model.GetFunctionRequest;
 import com.amazonaws.services.lambda.model.GetFunctionResult;
 import com.amazonaws.services.lambda.model.ResourceNotFoundException;
 import com.amazonaws.services.lambda.model.Runtime;
+import com.amazonaws.services.lambda.model.UpdateAliasRequest;
+import com.amazonaws.services.lambda.model.UpdateAliasResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
@@ -99,6 +103,10 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	@Getter
 	private CreateFunctionResult createFunctionResult;
 	
+	@Getter
+	@Setter
+	private String alias;
+	
 	
 	public AWSLambdaMigrateFunctionTask() {
 		setDescription("Create / Update Lambda function.");
@@ -134,8 +142,9 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 				config = new FunctionConfiguration().withRuntime(Runtime.Nodejs);
 			}
 			
-			updateFunctionCode(lambda);
+			// for proper versioning, configuration needs to be updated first
 			updateFunctionConfiguration(lambda, config);
+			updateFunctionCode(lambda);
 		} catch (ResourceNotFoundException e) {
 			getLogger().warn(e.getMessage());
 			getLogger().warn("Creating function... {}", functionName);
@@ -177,6 +186,10 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
+		
+		if (getAlias() != null) {
+			createOrUpdateAlias(lambda, createFunctionResult.getVersion());
+		}
 	}
 	
 	private void updateFunctionCode(AWSLambda lambda) throws IOException {
@@ -200,8 +213,17 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 				.withS3Key(s3File.getKey())
 				.withS3ObjectVersion(s3File.getObjectVersion());
 		}
+		
+		if (getPublish() != null) {
+			request.withPublish(getPublish());
+		}
+		
 		UpdateFunctionCodeResult updateFunctionCode = lambda.updateFunctionCode(request);
 		getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
+		
+		if (getAlias() != null) {
+			createOrUpdateAlias(lambda, updateFunctionCode.getVersion());
+		}
 	}
 	
 	private void updateFunctionConfiguration(AWSLambda lambda, FunctionConfiguration config) {
@@ -254,6 +276,39 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());
+	}
+	
+	private void createOrUpdateAlias(AWSLambda lambda, String functionVersion) {
+		getLogger().info("Create or Update alias {} for {}", getAlias(), functionVersion);
+		try {
+			updateAlias(lambda, functionVersion);
+		} catch (ResourceNotFoundException e) {
+			createAlias(lambda, functionVersion);
+		}
+	}
+	
+	private void updateAlias(AWSLambda lambda, String functionVersion) {
+		UpdateAliasRequest updateAliasRequest = new UpdateAliasRequest()
+			.withFunctionName(getFunctionName())
+			.withFunctionVersion(functionVersion)
+			.withName(getAlias());
+		
+		UpdateAliasResult updateAliasResult = lambda.updateAlias(updateAliasRequest);
+		
+		getLogger().info("Update Lambda alias requested: {}",
+				updateAliasResult.getAliasArn());
+	}
+	
+	private void createAlias(AWSLambda lambda, String functionVersion) {
+		CreateAliasRequest createAliasRequest = new CreateAliasRequest()
+			.withFunctionName(getFunctionName())
+			.withFunctionVersion(functionVersion)
+			.withName(getAlias());
+		
+		CreateAliasResult createAliasResult = lambda.createAlias(createAliasRequest);
+		
+		getLogger().info("Create Lambda alias requested: {}",
+				createAliasResult.getAliasArn());
 	}
 	
 	private VpcConfig getVpcConfig() {

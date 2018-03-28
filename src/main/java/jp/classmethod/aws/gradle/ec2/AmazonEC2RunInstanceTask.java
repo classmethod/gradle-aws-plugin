@@ -48,6 +48,10 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private List<String> securityGroups;
+	
+	@Getter
+	@Setter
 	private String userData;
 	
 	@Getter
@@ -63,7 +67,7 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 	
 	
 	public AmazonEC2RunInstanceTask() {
-		setDescription("Start EC2 instance.");
+		setDescription("Run EC2 instance.");
 		setGroup("AWS");
 	}
 	
@@ -76,6 +80,7 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 		String userData = getUserData();
 		String instanceType = getInstanceType();
 		String subnetId = getSubnetId();
+		List<String> securityGroups = getSecurityGroups();
 		
 		if (ami == null) {
 			throw new GradleException("AMI ID is required");
@@ -90,6 +95,7 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 			.withMinCount(1)
 			.withMaxCount(1)
 			.withSecurityGroupIds(securityGroupIds)
+			.withSecurityGroups(securityGroups)
 			.withInstanceType(instanceType)
 			.withSubnetId(subnetId);
 		if (Strings.isNullOrEmpty(this.userData) == false) {

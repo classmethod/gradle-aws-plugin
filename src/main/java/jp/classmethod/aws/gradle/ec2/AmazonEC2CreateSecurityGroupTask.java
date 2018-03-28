@@ -19,17 +19,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 
-public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2SecurityGroupPermissionTask {
-	
-	@Getter
-	@Setter
-	private String groupId;
+public class AmazonEC2CreateSecurityGroupTask extends ConventionTask {
 	
 	@Getter
 	@Setter
@@ -37,38 +35,36 @@ public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2Se
 	
 	@Getter
 	@Setter
-	private Object ipPermissions;
+	private String groupDescription;
+	
+	@Getter
+	private CreateSecurityGroupResult createSecurityGroupResult;
 	
 	
-	public AmazonEC2RevokeSecurityGroupIngressTask() {
-		setDescription("Revoke security group ingress.");
+	public AmazonEC2CreateSecurityGroupTask() {
+		setDescription("Create security group.");
 		setGroup("AWS");
 	}
 	
 	@TaskAction
-	public void revokeIngress() {
+	public void authorizeIngress() {
 		// to enable conventionMappings feature
-		String groupId = getGroupId();
 		String groupName = getGroupName();
-		Object ipPermissions = getIpPermissions();
+		String groupDescription = getGroupDescription();
 		
-		if (groupId == null && groupName == null) {
-			throw new GradleException("groupId nor groupName is not specified");
-		}
-		if (ipPermissions == null) {
-			throw new GradleException("ipPermissions is not specified");
+		if (groupName == null) {
+			throw new GradleException("groupName is not specified");
 		}
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		try {
-			ec2.revokeSecurityGroupIngress(new RevokeSecurityGroupIngressRequest()
-				.withGroupId(groupId)
+			createSecurityGroupResult = ec2.createSecurityGroup(new CreateSecurityGroupRequest()
 				.withGroupName(groupName)
-				.withIpPermissions(parse(ipPermissions)));
+				.withDescription(groupDescription));
 		} catch (AmazonServiceException e) {
-			if (e.getErrorCode().equals("InvalidPermission.NotFound")) {
+			if (e.getErrorCode().equals("InvalidPermission.Duplicate")) {
 				getLogger().warn(e.getMessage());
 			} else {
 				throw e;
