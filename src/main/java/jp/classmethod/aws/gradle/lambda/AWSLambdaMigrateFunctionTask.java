@@ -23,8 +23,24 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Map;
 
-import com.amazonaws.services.lambda.model.*;
+import com.amazonaws.services.lambda.model.CreateAliasRequest;
+import com.amazonaws.services.lambda.model.CreateAliasResult;
+import com.amazonaws.services.lambda.model.CreateFunctionRequest;
+import com.amazonaws.services.lambda.model.CreateFunctionResult;
+import com.amazonaws.services.lambda.model.Environment;
+import com.amazonaws.services.lambda.model.FunctionCode;
+import com.amazonaws.services.lambda.model.FunctionConfiguration;
+import com.amazonaws.services.lambda.model.GetFunctionRequest;
+import com.amazonaws.services.lambda.model.GetFunctionResult;
+import com.amazonaws.services.lambda.model.ResourceNotFoundException;
 import com.amazonaws.services.lambda.model.Runtime;
+import com.amazonaws.services.lambda.model.UpdateAliasRequest;
+import com.amazonaws.services.lambda.model.UpdateAliasResult;
+import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
+import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
+import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
+import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
+import com.amazonaws.services.lambda.model.VpcConfig;
 import lombok.Getter;
 import lombok.Setter;
 
