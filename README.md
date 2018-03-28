@@ -374,7 +374,7 @@ Look at [SNS example](samples/10-sns) for more information.
 
 License
 -------
-Copyright (C) 2013-2015 [Classmethod, Inc.](http://classmethod.jp/)
+Copyright (C) 2013-2018 [Classmethod, Inc.](http://classmethod.jp/)
 
 Distributed under the Apache License v2.0.  See the file [copyright/LICENSE.txt](copyright/LICENSE.txt).
 
