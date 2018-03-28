@@ -220,7 +220,7 @@ dependencies {
 	compile gradleApi()
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-io:commons-io:1.4"
-	compile "org.projectlombok:lombok:$lombokVersion"
+	compileOnly "org.projectlombok:lombok:$lombokVersion"
 
 	compile "com.amazonaws:aws-java-sdk-sts:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion"
