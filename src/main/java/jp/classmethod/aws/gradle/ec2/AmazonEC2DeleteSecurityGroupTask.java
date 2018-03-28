@@ -19,17 +19,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
+import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
 
-public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2SecurityGroupPermissionTask {
-	
-	@Getter
-	@Setter
-	private String groupId;
+public class AmazonEC2DeleteSecurityGroupTask extends ConventionTask {
 	
 	@Getter
 	@Setter
@@ -37,38 +34,33 @@ public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2Se
 	
 	@Getter
 	@Setter
-	private Object ipPermissions;
+	private String groupId;
 	
 	
-	public AmazonEC2RevokeSecurityGroupIngressTask() {
-		setDescription("Revoke security group ingress.");
+	public AmazonEC2DeleteSecurityGroupTask() {
+		setDescription("Delete security group.");
 		setGroup("AWS");
 	}
 	
 	@TaskAction
-	public void revokeIngress() {
+	public void authorizeIngress() {
 		// to enable conventionMappings feature
-		String groupId = getGroupId();
 		String groupName = getGroupName();
-		Object ipPermissions = getIpPermissions();
-		
-		if (groupId == null && groupName == null) {
-			throw new GradleException("groupId nor groupName is not specified");
-		}
-		if (ipPermissions == null) {
-			throw new GradleException("ipPermissions is not specified");
-		}
+		String groupId = getGroupId();
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
+		if (groupName == null && groupId == null) {
+			throw new GradleException("groupName nor groupId is not specified");
+		}
+		
 		try {
-			ec2.revokeSecurityGroupIngress(new RevokeSecurityGroupIngressRequest()
+			ec2.deleteSecurityGroup(new DeleteSecurityGroupRequest()
 				.withGroupId(groupId)
-				.withGroupName(groupName)
-				.withIpPermissions(parse(ipPermissions)));
+				.withGroupName(groupName));
 		} catch (AmazonServiceException e) {
-			if (e.getErrorCode().equals("InvalidPermission.NotFound")) {
+			if (e.getErrorCode().equals("InvalidPermission.Duplicate")) {
 				getLogger().warn(e.getMessage());
 			} else {
 				throw e;

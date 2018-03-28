@@ -21,6 +21,8 @@ Current Features / Supported AWS Products
   * Stop instance
   * Terminate instance
   * Import key
+  * Create security group
+  * Delete security group
   * Authorize security group ingress permissions
   * Authorize security group egress permissions
   * Revoke security group ingress permissions
