@@ -23,6 +23,14 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import org.gradle.api.GradleException;
+import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.TaskAction;
+
+import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.CreateAliasRequest;
 import com.amazonaws.services.lambda.model.CreateAliasResult;
 import com.amazonaws.services.lambda.model.CreateFunctionRequest;
@@ -41,14 +49,6 @@ import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
 import com.amazonaws.services.lambda.model.VpcConfig;
-import lombok.Getter;
-import lombok.Setter;
-
-import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
-import org.gradle.api.tasks.TaskAction;
-
-import com.amazonaws.services.lambda.AWSLambda;
 
 public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
