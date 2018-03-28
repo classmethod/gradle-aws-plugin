@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.gradle.ec2;
+package jp.classmethod.aws.gradle.rds;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,30 +26,34 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.rds.AmazonRDS;
+import com.amazonaws.services.rds.model.DBInstance;
+import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
+import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
+import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 
-public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
+public class AmazonRDSDescribeInstanceTask extends ConventionTask { // NOPMD
 	
 	@Getter
 	@Setter
-	private String instanceId;
+	private String dbInstanceIdentifier;
 	
 	@Getter
 	@Setter
 	private List<String> successStatuses = Arrays.asList(
-			"running",
-			"stopped",
+			"available",
+			"backing-up",
 			"terminated");
 	
 	@Getter
 	@Setter
 	private List<String> waitStatuses = Arrays.asList(
-			"pending",
-			"shutting-down",
-			"stopping");
+			"creating",
+			"deleting",
+			"modifying",
+			"rebooting",
+			"renaming",
+			"resetting-master-credentials");
 	
 	@Getter
 	@Setter
@@ -66,29 +70,29 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	private String lastStatus;
 	
 	@Getter
-	private Instance awsInstance;
+	private DBInstance dbInstance;
 	
 	
-	public AmazonEC2WaitInstanceStatusTask() {
-		setDescription("Wait EC2 instance for specific status.");
+	public AmazonRDSDescribeInstanceTask() {
+		setDescription("Wait RDS instance for specific status.");
 		setGroup("AWS");
 	}
 	
 	@TaskAction
 	public void waitInstanceForStatus() { // NOPMD
 		// to enable conventionMappings feature
-		String instanceId = getInstanceId();
+		String dbInstanceIdentifier = getDbInstanceIdentifier();
 		List<String> successStatuses = getSuccessStatuses();
 		List<String> waitStatuses = getWaitStatuses();
 		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
 		
-		if (instanceId == null) {
-			throw new GradleException("instanceId is not specified");
+		if (dbInstanceIdentifier == null) {
+			throw new GradleException("dbInstanceIdentifier is not specified");
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getClient();
+		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDS rds = ext.getClient();
 		
 		long start = System.currentTimeMillis();
 		while (true) {
@@ -96,21 +100,16 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 				throw new GradleException("Timeout");
 			}
 			try {
-				DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
-					.withInstanceIds(instanceId));
-				Instance instance = dir.getReservations().get(0).getInstances().get(0);
-				awsInstance = instance;
-				if (instance == null) {
-					throw new GradleException(instanceId + " is not exists");
-				}
-				
+				DescribeDBInstancesResult dir = rds.describeDBInstances(new DescribeDBInstancesRequest()
+					.withDBInstanceIdentifier(dbInstanceIdentifier));
+				dbInstance = dir.getDBInstances().get(0);
 				found = true;
-				lastStatus = instance.getState().getName();
+				lastStatus = dbInstance.getDBInstanceStatus();
 				if (successStatuses.contains(lastStatus)) {
-					getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
+					getLogger().info("Description of DB instance {} is now {}.", dbInstanceIdentifier, lastStatus);
 					break;
 				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
+					getLogger().info("Description of DB instance {} is {}...", dbInstanceIdentifier, lastStatus);
 					try {
 						Thread.sleep(loopWait * 1000);
 					} catch (InterruptedException e) {
@@ -119,13 +118,15 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 				} else {
 					// fail when current status is not waitStatuses or successStatuses
 					throw new GradleException(
-							"Status of " + instanceId + " is " + lastStatus + ".  It seems to be failed.");
+							"Status of " + dbInstanceIdentifier + " is " + lastStatus + ".  It seems to be failed.");
 				}
+			} catch (DBInstanceNotFoundException e) {
+				throw new GradleException(dbInstanceIdentifier + " is not exists", e);
 			} catch (AmazonServiceException e) {
 				if (found) {
 					break;
 				} else {
-					throw new GradleException("Fail to describe instance: " + instanceId, e);
+					throw new GradleException("Fail to describe instance: " + dbInstanceIdentifier, e);
 				}
 			}
 		}

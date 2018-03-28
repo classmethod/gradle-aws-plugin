@@ -55,4 +55,8 @@ task waitInstanceStatusStable(type: AmazonEC2WaitInstanceStatusTask) {
 	shouldRunAfter runInstance, stopInstance, startInstance, terminateInstance
 	instanceId = project.instanceId
 	loopWait = 2
+
+	doLast {
+		println "Ip of the instance: " + awsInstance.getPublicIpAddress()
+	}
 }
