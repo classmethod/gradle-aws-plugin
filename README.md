@@ -56,6 +56,9 @@ Current Features / Supported AWS Products
   * Migrate (create or update) function
   * Invoke function
   * Delete function
+  * Publish function version
+  * Create alias
+  * Update alias
 * IAM
   * Create role
   * Attach role policy
@@ -322,6 +325,26 @@ task invokeFunction(type: AWSLambdaInvokeTask) {
 
 task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
 	functionName = "foobar"
+}
+
+task publishVersionFunction(type: AWSLambdaPublishVersionTask, dependsOn: migrateFunction) {
+	functionName = "foobar"
+}
+
+task createAlias(type: AWSLambdaCreateAliasTask, dependsOn: publishVersionFunction) {
+	functionName = "foobar"
+	aliasName = "alias"
+	functionVersion = "1"
+}
+
+task updateAlias(type: AWSLambdaUpdateAliasTask, dependsOn: createAlias) {
+	functionName = "foobar"
+    aliasName = "alias"
+	functionVersion = "1"
+    routingConfig {
+        additionalVersionWeight = 0.7
+		useNextVersion = true
+    }
 }
 ```
 
