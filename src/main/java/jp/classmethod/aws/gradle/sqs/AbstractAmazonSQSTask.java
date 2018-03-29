@@ -18,9 +18,10 @@ package jp.classmethod.aws.gradle.sqs;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 
-public class AbstractAmazonSQSTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AbstractAmazonSQSTask extends BaseAwsTask {
 	
 	/**
 	 * Amazon SQS queue URL
@@ -35,9 +36,13 @@ public class AbstractAmazonSQSTask extends ConventionTask {
 	private String queueName;
 	
 	
+	public AbstractAmazonSQSTask(String group, String description) {
+		super(group, description);
+	}
+	
 	public String getQueueUrl() {
 		if (queueUrl == null) {
-			AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
+			AmazonSQSPluginExtension ext = getPluginExtension(AmazonSQSPluginExtension.class);
 			queueUrl = ext.getClient().getQueueUrl(queueName).getQueueUrl();
 			if (queueUrl == null) {
 				throw new GradleException("Unable to get queue url for queueName " + queueName);

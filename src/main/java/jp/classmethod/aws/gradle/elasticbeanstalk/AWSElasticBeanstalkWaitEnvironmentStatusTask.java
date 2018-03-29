@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -31,7 +30,9 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 
-public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -64,8 +65,7 @@ public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends ConventionTask
 	
 	
 	public AWSElasticBeanstalkWaitEnvironmentStatusTask() {
-		setDescription("Wait ElasticBeanstalk environment for specific status.");
-		setGroup("AWS");
+		super("AWS", "Wait ElasticBeanstalk environment for specific status.");
 	}
 	
 	@TaskAction
@@ -80,7 +80,7 @@ public class AWSElasticBeanstalkWaitEnvironmentStatusTask extends ConventionTask
 			throw new GradleException("applicationName is not specified");
 		}
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		long start = System.currentTimeMillis();

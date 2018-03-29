@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -27,7 +26,9 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 
-public class AmazonEC2CreateSecurityGroupTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonEC2CreateSecurityGroupTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -42,8 +43,7 @@ public class AmazonEC2CreateSecurityGroupTask extends ConventionTask {
 	
 	
 	public AmazonEC2CreateSecurityGroupTask() {
-		setDescription("Create security group.");
-		setGroup("AWS");
+		super("AWS", "Create security group.");
 	}
 	
 	@TaskAction
@@ -56,7 +56,7 @@ public class AmazonEC2CreateSecurityGroupTask extends ConventionTask {
 			throw new GradleException("groupName is not specified");
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		try {

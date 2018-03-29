@@ -21,14 +21,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.ModifyDBInstanceRequest;
 
-public class AmazonRDSModifyDBInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSModifyDBInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -103,8 +104,7 @@ public class AmazonRDSModifyDBInstanceTask extends ConventionTask {
 	
 	
 	public AmazonRDSModifyDBInstanceTask() {
-		setDescription("Modify RDS instance.");
-		setGroup("AWS");
+		super("AWS", "Modify RDS instance.");
 	}
 	
 	@TaskAction
@@ -116,7 +116,7 @@ public class AmazonRDSModifyDBInstanceTask extends ConventionTask {
 			throw new GradleException("dbInstanceIdentifier is required");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		ModifyDBInstanceRequest request = new ModifyDBInstanceRequest()

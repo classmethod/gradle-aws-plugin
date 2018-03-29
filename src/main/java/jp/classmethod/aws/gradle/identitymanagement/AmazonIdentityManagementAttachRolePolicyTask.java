@@ -22,13 +22,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.model.AttachRolePolicyRequest;
 
-public class AmazonIdentityManagementAttachRolePolicyTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonIdentityManagementAttachRolePolicyTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -44,8 +45,7 @@ public class AmazonIdentityManagementAttachRolePolicyTask extends ConventionTask
 	
 	
 	public AmazonIdentityManagementAttachRolePolicyTask() {
-		setDescription("Attach managed policies to role.");
-		setGroup("AWS");
+		super("AWS", "Attach managed policies to role.");
 	}
 	
 	@TaskAction
@@ -57,11 +57,10 @@ public class AmazonIdentityManagementAttachRolePolicyTask extends ConventionTask
 			throw new GradleException("roleName is required");
 		}
 		
-		AmazonIdentityManagementPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonIdentityManagementPluginExtension.class);
+		AmazonIdentityManagementPluginExtension ext = getPluginExtension(AmazonIdentityManagementPluginExtension.class);
 		AmazonIdentityManagement iam = ext.getClient();
 		
-		policyArns.stream().forEach(policyArn -> {
+		policyArns.forEach(policyArn -> {
 			iam.attachRolePolicy(new AttachRolePolicyRequest()
 				.withRoleName(roleName)
 				.withPolicyArn(policyArn));

@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
@@ -30,7 +29,9 @@ import com.amazonaws.services.identitymanagement.model.AttachRolePolicyRequest;
 import com.amazonaws.services.identitymanagement.model.CreateRoleRequest;
 import com.amazonaws.services.identitymanagement.model.CreateRoleResult;
 
-public class AmazonIdentityManagementCreateRoleTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonIdentityManagementCreateRoleTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -53,8 +54,7 @@ public class AmazonIdentityManagementCreateRoleTask extends ConventionTask {
 	
 	
 	public AmazonIdentityManagementCreateRoleTask() {
-		setDescription("Create Role.");
-		setGroup("AWS");
+		super("AWS", "Create Role.");
 	}
 	
 	@TaskAction
@@ -70,8 +70,7 @@ public class AmazonIdentityManagementCreateRoleTask extends ConventionTask {
 			throw new GradleException("assumeRolePolicyDocument is required");
 		}
 		
-		AmazonIdentityManagementPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonIdentityManagementPluginExtension.class);
+		AmazonIdentityManagementPluginExtension ext = getPluginExtension(AmazonIdentityManagementPluginExtension.class);
 		AmazonIdentityManagement iam = ext.getClient();
 		
 		CreateRoleRequest request = new CreateRoleRequest()
@@ -80,7 +79,7 @@ public class AmazonIdentityManagementCreateRoleTask extends ConventionTask {
 			.withAssumeRolePolicyDocument(assumeRolePolicyDocument);
 		createRole = iam.createRole(request);
 		getLogger().info("Create Role requested: {}", createRole.getRole().getArn());
-		policyArns.stream().forEach(policyArn -> {
+		policyArns.forEach(policyArn -> {
 			iam.attachRolePolicy(new AttachRolePolicyRequest()
 				.withRoleName(roleName)
 				.withPolicyArn(policyArn));

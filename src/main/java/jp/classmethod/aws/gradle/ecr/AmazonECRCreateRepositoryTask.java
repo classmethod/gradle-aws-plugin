@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.ecr;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ecr.AmazonECR;
@@ -30,7 +29,9 @@ import com.amazonaws.services.ecr.model.Repository;
 import com.amazonaws.services.ecr.model.RepositoryAlreadyExistsException;
 import com.google.common.base.MoreObjects;
 
-public class AmazonECRCreateRepositoryTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonECRCreateRepositoryTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -41,20 +42,19 @@ public class AmazonECRCreateRepositoryTask extends ConventionTask {
 	
 	
 	public AmazonECRCreateRepositoryTask() {
-		setDescription("Create ECR repository");
-		setGroup("AWS");
+		super("AWS", "Create ECR repository");
 	}
 	
 	@TaskAction
 	public void createRepository() {
-		AmazonECRPluginExtension ext = getProject().getExtensions().getByType(AmazonECRPluginExtension.class);
+		AmazonECRPluginExtension ext = getPluginExtension(AmazonECRPluginExtension.class);
 		AmazonECR ecr = ext.getClient();
 		
 		String repositoryName = MoreObjects.firstNonNull(getRepositoryName(), ext.getRepositoryName());
 		
 		try {
-			CreateRepositoryResult result =
-					ecr.createRepository(new CreateRepositoryRequest().withRepositoryName(repositoryName));
+			CreateRepositoryResult result = ecr.createRepository(new CreateRepositoryRequest()
+				.withRepositoryName(repositoryName));
 			repository = result.getRepository();
 		} catch (RepositoryAlreadyExistsException ex) {
 			DescribeRepositoriesResult describeRepositoriesResult =

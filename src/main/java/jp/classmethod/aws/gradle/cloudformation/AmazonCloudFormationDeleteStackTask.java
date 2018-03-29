@@ -19,13 +19,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.DeleteStackRequest;
 
-public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationDeleteStackTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -33,8 +34,7 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	
 	
 	public AmazonCloudFormationDeleteStackTask() {
-		setDescription("Delete cfn stack.");
-		setGroup("AWS");
+		super("AWS", "Delete cfn stack.");
 	}
 	
 	@TaskAction
@@ -46,8 +46,7 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName));

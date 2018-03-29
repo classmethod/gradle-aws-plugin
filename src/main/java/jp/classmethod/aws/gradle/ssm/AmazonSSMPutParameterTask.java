@@ -21,7 +21,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
@@ -30,7 +29,9 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterAlreadyExis
 import com.amazonaws.services.simplesystemsmanagement.model.PutParameterRequest;
 import com.amazonaws.services.simplesystemsmanagement.model.PutParameterResult;
 
-public class AmazonSSMPutParameterTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonSSMPutParameterTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -59,8 +60,7 @@ public class AmazonSSMPutParameterTask extends ConventionTask {
 	
 	
 	public AmazonSSMPutParameterTask() {
-		setDescription("Put SSM Parameters.");
-		setGroup("AWS");
+		super("AWS", "Put SSM Parameters.");
 	}
 	
 	@TaskAction
@@ -76,7 +76,7 @@ public class AmazonSSMPutParameterTask extends ConventionTask {
 			setPrefix("");
 		}
 		
-		AmazonSSMPluginExtention ext = getProject().getExtensions().getByType(AmazonSSMPluginExtention.class);
+		AmazonSSMPluginExtention ext = getPluginExtension(AmazonSSMPluginExtention.class);
 		AWSSimpleSystemsManagementClient ssm = ext.getClient();
 		
 		parameters.stream()

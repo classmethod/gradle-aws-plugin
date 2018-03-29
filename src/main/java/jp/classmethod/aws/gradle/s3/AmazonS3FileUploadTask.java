@@ -32,8 +32,7 @@ import com.google.common.io.Files;
 public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	public AmazonS3FileUploadTask() {
-		setDescription("Upload file to the Amazon S3 bucket.");
-		setGroup("AWS");
+		super("AWS", "Upload file to the Amazon S3 bucket.");
 	}
 	
 	@TaskAction
@@ -57,7 +56,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 			throw new GradleException("file must be regular file");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		// metadata will be null iff the object does not exist

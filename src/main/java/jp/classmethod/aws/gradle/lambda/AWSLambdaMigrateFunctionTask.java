@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
@@ -56,7 +55,9 @@ import com.amazonaws.services.lambda.model.VpcConfig;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
-public class AWSLambdaMigrateFunctionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSLambdaMigrateFunctionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -119,8 +120,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
 	
 	public AWSLambdaMigrateFunctionTask() {
-		setDescription("Create / Update Lambda function.");
-		setGroup("AWS");
+		super("AWS", "Create / Update Lambda function.");
 	}
 	
 	@TaskAction
@@ -141,7 +141,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			s3File.validate();
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		try {

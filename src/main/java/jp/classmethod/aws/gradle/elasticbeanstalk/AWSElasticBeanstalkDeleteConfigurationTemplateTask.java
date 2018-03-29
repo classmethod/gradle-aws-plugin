@@ -18,13 +18,14 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteConfigurationTemplateRequest;
 
-public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -36,8 +37,7 @@ public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends Conventi
 	
 	
 	public AWSElasticBeanstalkDeleteConfigurationTemplateTask() {
-		setDescription("Delete ElasticBeanstalk Configuration Templates.");
-		setGroup("AWS");
+		super("AWS", "Delete ElasticBeanstalk Configuration Templates.");
 	}
 	
 	@TaskAction
@@ -46,7 +46,7 @@ public class AWSElasticBeanstalkDeleteConfigurationTemplateTask extends Conventi
 		String applicationName = getApplicationName();
 		String templateName = getTemplateName();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteConfigurationTemplate(new DeleteConfigurationTemplateRequest()

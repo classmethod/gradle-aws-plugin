@@ -21,14 +21,15 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
 
-public class AmazonEC2StopInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonEC2StopInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -39,8 +40,7 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 	
 	
 	public AmazonEC2StopInstanceTask() {
-		setDescription("Stop EC2 instance.");
-		setGroup("AWS");
+		super("AWS", "Stop EC2 instance.");
 	}
 	
 	@TaskAction
@@ -52,7 +52,7 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 			return;
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		stopInstancesResult = ec2.stopInstances(new StopInstancesRequest(instanceIds));

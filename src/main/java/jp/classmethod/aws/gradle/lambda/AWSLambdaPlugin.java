@@ -19,11 +19,13 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.AwsPluginExtension;
 
 public class AWSLambdaPlugin implements Plugin<Project> {
 	
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
-		project.getExtensions().create(AWSLambdaPluginExtension.NAME, AWSLambdaPluginExtension.class, project);
+		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
+			.create(AWSLambdaPluginExtension.NAME, AWSLambdaPluginExtension.class, project);
 	}
 }

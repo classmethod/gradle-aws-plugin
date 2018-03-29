@@ -19,11 +19,13 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.AwsPluginExtension;
 
 public class AmazonEC2Plugin implements Plugin<Project> {
 	
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
-		project.getExtensions().create(AmazonEC2PluginExtension.NAME, AmazonEC2PluginExtension.class, project);
+		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
+			.create(AmazonEC2PluginExtension.NAME, AmazonEC2PluginExtension.class, project);
 	}
 }

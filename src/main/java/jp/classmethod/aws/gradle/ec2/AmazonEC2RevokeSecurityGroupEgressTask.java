@@ -37,8 +37,7 @@ public class AmazonEC2RevokeSecurityGroupEgressTask extends AbstractAmazonEC2Sec
 	
 	
 	public AmazonEC2RevokeSecurityGroupEgressTask() {
-		setDescription("Revoke security group ingress.");
-		setGroup("AWS");
+		super("AWS", "Revoke security group ingress.");
 	}
 	
 	@TaskAction
@@ -54,7 +53,7 @@ public class AmazonEC2RevokeSecurityGroupEgressTask extends AbstractAmazonEC2Sec
 			throw new GradleException("ipPermissions is not specified");
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		try {

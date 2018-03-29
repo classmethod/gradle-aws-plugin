@@ -26,14 +26,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
 
-public class AWSLambdaUpdateFunctionCodeTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSLambdaUpdateFunctionCodeTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -52,8 +53,7 @@ public class AWSLambdaUpdateFunctionCodeTask extends ConventionTask {
 	
 	
 	public AWSLambdaUpdateFunctionCodeTask() {
-		setDescription("Update Lambda function code.");
-		setGroup("AWS");
+		super("AWS", "Update Lambda function code.");
 	}
 	
 	@TaskAction
@@ -69,7 +69,7 @@ public class AWSLambdaUpdateFunctionCodeTask extends ConventionTask {
 			throw new GradleException("exactly one of zipFile or s3File is required");
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		UpdateFunctionCodeRequest request = new UpdateFunctionCodeRequest()

@@ -16,6 +16,7 @@
 package jp.classmethod.aws.gradle.elasticbeanstalk;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -26,6 +27,7 @@ import org.gradle.api.tasks.bundling.War;
 import com.google.common.base.Strings;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.AwsPluginExtension;
 import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
 import jp.classmethod.aws.gradle.s3.AmazonS3ProgressiveFileUploadTask;
 
@@ -37,12 +39,14 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getPluginManager().apply(AmazonS3Plugin.class);
-		project.getExtensions().create(AwsBeanstalkPluginExtension.NAME, AwsBeanstalkPluginExtension.class, project);
+		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
+			.create(AwsBeanstalkPluginExtension.NAME, AwsBeanstalkPluginExtension.class, project);
 		applyTasks(project);
 	}
 	
 	private void applyTasks(final Project project) { // NOPMD
-		AwsBeanstalkPluginExtension ebExt = project.getExtensions().findByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ebExt = project.getExtensions().findByType(AwsPluginExtension.class)
+				.asExtensionAware().getExtensions().findByType(AwsBeanstalkPluginExtension.class);
 		
 		AWSElasticBeanstalkCreateApplicationTask awsEbMigrateApplication = project.getTasks()
 			.create("awsEbMigrateApplication", AWSElasticBeanstalkCreateApplicationTask.class, task -> {
@@ -134,7 +138,7 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 				task.doFirst(t -> {
 					task.setAppName(ebExt.getAppName());
 					task.setEnvName(ebExt.getEnvironment().getEnvName());
-					task.setSuccessStatuses(Arrays.asList("Terminated"));
+					task.setSuccessStatuses(Collections.singletonList("Terminated"));
 					task.setWaitStatuses(Arrays.asList(
 							"Launching",
 							"Updating",

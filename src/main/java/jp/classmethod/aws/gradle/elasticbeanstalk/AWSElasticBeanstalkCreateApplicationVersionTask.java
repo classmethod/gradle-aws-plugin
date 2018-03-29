@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -26,7 +25,9 @@ import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.CreateApplicationVersionRequest;
 import com.amazonaws.services.elasticbeanstalk.model.S3Location;
 
-public class AWSElasticBeanstalkCreateApplicationVersionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkCreateApplicationVersionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -46,8 +47,7 @@ public class AWSElasticBeanstalkCreateApplicationVersionTask extends ConventionT
 	
 	
 	public AWSElasticBeanstalkCreateApplicationVersionTask() {
-		setDescription("Create/Migrate ElasticBeanstalk Application Version.");
-		setGroup("AWS");
+		super("AWS", "Create/Migrate ElasticBeanstalk Application Version.");
 	}
 	
 	@TaskAction
@@ -56,7 +56,7 @@ public class AWSElasticBeanstalkCreateApplicationVersionTask extends ConventionT
 		String appName = getAppName();
 		String versionLabel = getVersionLabel();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		try {

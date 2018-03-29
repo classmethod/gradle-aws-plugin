@@ -2,8 +2,8 @@
 
 buildscript {
 	repositories {
-		mavenCentral()
 		jcenter()
+		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
@@ -16,18 +16,11 @@ buildscript {
 	}
 }
 
-group = "jp.classmethod.aws"
-ext.artifactId = "gradle-aws-plugin"
-
-apply plugin: "java"
-apply plugin: "jacoco"
-apply plugin: "com.gradle.plugin-publish"
-
-// gradle configuration
-apply from: 'gradle/version.gradle'
-apply from: 'gradle/resolveDependencies.gradle'
-
-defaultTasks "clean", "build"
+plugins {
+	id 'java-gradle-plugin'
+	id 'maven'
+	id "com.gradle.plugin-publish" version "0.9.10"
+}
 
 // ======== code quality ========
 apply plugin: "checkstyle"
@@ -38,163 +31,35 @@ apply plugin: "jacoco"
 apply plugin: "de.thetaphi.forbiddenapis"
 apply plugin: "com.diffplug.gradle.spotless"
 
+// code quality configuration
+apply from: "${rootProject.projectDir}/gradle/quality/checkstyle.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/findbugs.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/pmd.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/cpd.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/jacoco.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/forbiddenapis.gradle"
+apply from: "${rootProject.projectDir}/gradle/quality/spotless.gradle"
+
+apply from: 'gradle/version.gradle'
+apply from: 'gradle/resolveDependencies.gradle'
+
+group = "jp.classmethod.aws"
+ext.artifactId = "gradle-aws-plugin"
+
+defaultTasks "clean", "build"
+
+
 // compiler
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-tasks.withType(AbstractCompile) each {
-	it.options.encoding = "UTF-8"
-}
 
 compileJava {
-options.compilerArgs << "-Werror"
+	options.compilerArgs << "-Werror"
 	options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Xlint:-deprecation"
-}
-
-// jacoco
-jacocoTestReport {
-	reports {
-		xml.enabled false
-		csv.enabled false
-	}
-}
-
-// checkstyle
-checkstyle {
-	toolVersion = "7.1.2"
-	showViolations = true
-	configFile = project.file('config/checkstyle/checkstyle.xml')
-}
-checkstyleTest {
-	configFile = file("config/checkstyle/checkstyle-test.xml")
-}
-
-// workaround: see https://issues.gradle.org/browse/GRADLE-2888
-task verifyNoCheckstyleWarningsInMain {
-	group = "verification"
-	description = "Fail if checkstyleMain result contains warnings"
-	doLast {
-		File warningsFile = file('build/reports/checkstyle/main.xml')
-		if (warningsFile.exists() && warningsFile.text.contains("<error ")) {
-			throw new GradleException("There were checkstyle warnings! For more info check $warningsFile")
-		}
-	}
-}
-checkstyleMain.finalizedBy verifyNoCheckstyleWarningsInMain
-task verifyNoCheckstyleWarningsInTest {
-	group = "verification"
-	description = "Fail if checkstyleTest result contains warnings"
-	doLast {
-		File warningsFile = file('build/reports/checkstyle/test.xml')
-		if (warningsFile.exists() && warningsFile.text.contains("<error ")) {
-			throw new GradleException("There were checkstyle warnings! For more info check $warningsFile")
-		}
-	}
-}
-checkstyleTest.finalizedBy verifyNoCheckstyleWarningsInTest
-
-// findbugs
-findbugs {
-	toolVersion = "3.0.1"
-	effort = "max"
-	includeFilter = file("config/findbugs/includeFilter.xml")
-	excludeFilter = file("config/findbugs/excludeFilter.xml")
-}
-tasks.withType(FindBugs) {
-	reports {
-		xml.enabled = false
-		html.enabled = true
-	}
-}
-
-// pmd
-pmd {
-	consoleOutput = true
-	toolVersion = '5.5.2'
-}
-pmdMain {
-	ruleSetFiles = files("config/pmd/pmd-settings.xml")
-	ruleSets = []  // To apply only the custom rules
-}
-pmdTest {
-	ruleSetFiles = files("config/pmd/pmd-settings-test.xml")
-	ruleSets = []  // To apply only the custom rules
-}
-cpdCheck {
-	reports {
-		text.enabled = true
-		xml.enabled = false
-	}
-	source = sourceSets.main.allJava // only main source
-	ignoreFailures = true
-}
-
-// forbiddenapis
-forbiddenApisMain {
-	bundledSignatures += [
-		'jdk-system-out',
-		'jdk-unsafe-' + project.sourceCompatibility,
-		'jdk-internal-' + project.sourceCompatibility
-	]
-	signaturesFiles = fileTree(dir: "config/forbiddenapis", include: "*.txt")
-	ignoreFailures = false
-}
-forbiddenApisTest {
-	bundledSignatures += [
-		'jdk-system-out',
-		'jdk-internal-' + project.sourceCompatibility
-	]
-	signaturesFiles = fileTree(dir: "config/forbiddenapis-test", include: "*.txt")
-	ignoreFailures = false
-}
-
-// spotless
-spotless {
-	java {
-		licenseHeaderFile 'config/spotless/spotless.license.java'
-		importOrderFile   'config/spotless/spotless.importorder'
-		eclipse().configFile 'config/spotless/spotless.eclipseformat.xml'
-
-		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
-		//    @Max(value = 9_999_999 L) // what Eclipse does
-		//    @Max(value = 9_999_999L)  // what I wish Eclipse did
-		custom 'Long literal fix', { it.replaceAll('([0-9_]+) [Ll]', '$1L') }
-
-		// Eclipse formatter puts excess whitespace after lambda blocks
-		//    funcThatTakesLambdas(x -> {} , y -> {} )	// what Eclipse does
-		//    funcThatTakesLambdas(x -> {}, y -> {})	// what I wish Eclipse did
-		custom 'Lambda fix', { it.replace('} )', '})').replace('} ,', '},') }
-
-		indentWithTabs()
-		endWithNewline()
-
-		replaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
-//		customReplaceRegex 'Remove indent before line comment', '^\\t*//', '//'
-	}
-}
-
-// ======== create source and javadoc bundles ========
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
-	from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = "javadoc"
-	from javadoc.destinationDir
 }
 
 javadoc {
 	failOnError = false
-}
-
-artifacts {
-	archives sourcesJar
-	archives javadocJar
-}
-
-configurations {
-	deployerJars
 }
 
 // ======== libraries ========
@@ -230,13 +95,9 @@ dependencies {
 	testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
 	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
 
-	deployerJars "org.springframework.build:aws-maven:4.7.0.RELEASE"
+	pmd 'net.sourceforge.pmd:pmd-java:5.8.1'
+	pmd 'org.ow2.asm:asm:6.1'
 }
-
-// ======== deploy artifacts ========
-// Allows forks of the plugin to define their own deployment mechanisms
-// in separate files named according to their maven group name
-apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {

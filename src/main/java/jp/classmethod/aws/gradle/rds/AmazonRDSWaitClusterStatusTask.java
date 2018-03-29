@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -32,7 +31,9 @@ import com.amazonaws.services.rds.model.DBClusterNotFoundException;
 import com.amazonaws.services.rds.model.DescribeDBClustersRequest;
 import com.amazonaws.services.rds.model.DescribeDBClustersResult;
 
-public class AmazonRDSWaitClusterStatusTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSWaitClusterStatusTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -71,8 +72,7 @@ public class AmazonRDSWaitClusterStatusTask extends ConventionTask { // NOPMD
 	
 	
 	public AmazonRDSWaitClusterStatusTask() {
-		setDescription("Wait RDS cluster for specific status.");
-		setGroup("AWS");
+		super("AWS", "Wait RDS cluster for specific status.");
 	}
 	
 	@TaskAction
@@ -88,7 +88,7 @@ public class AmazonRDSWaitClusterStatusTask extends ConventionTask { // NOPMD
 			throw new GradleException("dbClusterIdentifier is not specified");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		long start = System.currentTimeMillis();

@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
@@ -27,7 +26,9 @@ import com.amazonaws.services.rds.model.DBCluster;
 import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
 import com.amazonaws.services.rds.model.DeleteDBClusterRequest;
 
-public class AmazonRDSDeleteDBClusterTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSDeleteDBClusterTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -46,8 +47,7 @@ public class AmazonRDSDeleteDBClusterTask extends ConventionTask {
 	
 	
 	public AmazonRDSDeleteDBClusterTask() {
-		setDescription("Delete RDS cluster.");
-		setGroup("AWS");
+		super("AWS", "Delete RDS cluster.");
 	}
 	
 	@TaskAction
@@ -58,7 +58,7 @@ public class AmazonRDSDeleteDBClusterTask extends ConventionTask {
 			throw new GradleException("dbClusterIdentifier is required");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		try {

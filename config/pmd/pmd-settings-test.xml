@@ -67,7 +67,7 @@
     <!-- coding guideline first - field order -->
     <exclude name="FieldDeclarationsShouldBeAtStartOfClass"/>
 
-    <exclude name="UseUtilityClass"/><!-- TODO exclude only main class -->
+    <exclude name="AccessorMethodGeneration"/>
   </rule>
 
   <!-- empty statements of any kind -->

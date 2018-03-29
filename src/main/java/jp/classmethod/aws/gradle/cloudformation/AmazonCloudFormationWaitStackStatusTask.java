@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -36,7 +35,9 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackEvent;
 
-public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationWaitStackStatusTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -82,8 +83,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
 	
 	public AmazonCloudFormationWaitStackStatusTask() {
-		setDescription("Wait cfn stack for specific status.");
-		setGroup("AWS");
+		super("AWS", "Wait cfn stack for specific status.");
 	}
 	
 	@TaskAction
@@ -99,8 +99,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		long start = System.currentTimeMillis();

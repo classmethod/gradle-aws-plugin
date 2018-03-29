@@ -19,14 +19,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.RebootDBInstanceRequest;
 
-public class AmazonRDSRebootDBInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSRebootDBInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -41,8 +42,7 @@ public class AmazonRDSRebootDBInstanceTask extends ConventionTask {
 	
 	
 	public AmazonRDSRebootDBInstanceTask() {
-		setDescription("Reboot RDS instance.");
-		setGroup("AWS");
+		super("AWS", "Reboot RDS instance.");
 	}
 	
 	@TaskAction
@@ -54,7 +54,7 @@ public class AmazonRDSRebootDBInstanceTask extends ConventionTask {
 			throw new GradleException("dbInstanceIdentifier is required");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		RebootDBInstanceRequest request = new RebootDBInstanceRequest()

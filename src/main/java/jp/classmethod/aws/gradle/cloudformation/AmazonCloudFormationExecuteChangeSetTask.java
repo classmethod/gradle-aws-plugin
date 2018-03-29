@@ -25,7 +25,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -38,7 +37,9 @@ import com.amazonaws.services.cloudformation.model.ListChangeSetsRequest;
 import com.amazonaws.services.cloudformation.model.ListChangeSetsResult;
 import com.amazonaws.services.cloudformation.model.Stack;
 
-public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationExecuteChangeSetTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -49,8 +50,7 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 	
 	
 	public AmazonCloudFormationExecuteChangeSetTask() {
-		setDescription("Execute the latest cfn change set.");
-		setGroup("AWS");
+		super("AWS", "Execute the latest cfn change set.");
 	}
 	
 	@TaskAction
@@ -62,8 +62,7 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		try {
@@ -93,7 +92,6 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 				throw e;
 			}
 		}
-		
 	}
 	
 	/**
@@ -114,5 +112,4 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 		changeSetSummaries.sort(Comparator.comparing(ChangeSetSummary::getCreationTime).reversed());
 		return Optional.of(changeSetSummaries.get(0));
 	}
-	
 }

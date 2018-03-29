@@ -21,17 +21,20 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
+import com.amazonaws.services.elasticbeanstalk.model.ApplicationVersionDescription;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationVersionRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationVersionsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationVersionsResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
+import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 
-public class AWSElasticBeanstalkCleanupApplicationVersionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkCleanupApplicationVersionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -43,8 +46,7 @@ public class AWSElasticBeanstalkCleanupApplicationVersionTask extends Convention
 	
 	
 	public AWSElasticBeanstalkCleanupApplicationVersionTask() {
-		setDescription("Cleanup unused SNAPSHOT ElasticBeanstalk Application Version.");
-		setGroup("AWS");
+		super("AWS", "Cleanup unused SNAPSHOT ElasticBeanstalk Application Version.");
 	}
 	
 	@TaskAction
@@ -53,20 +55,22 @@ public class AWSElasticBeanstalkCleanupApplicationVersionTask extends Convention
 		String appName = getAppName();
 		boolean deleteSourceBundle = isDeleteSourceBundle();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
 			.withApplicationName(appName));
-		List<String> usingVersions =
-				der.getEnvironments().stream().map(ed -> ed.getVersionLabel()).collect(Collectors.toList());
+		List<String> usingVersions = der.getEnvironments().stream()
+			.map(EnvironmentDescription::getVersionLabel)
+			.collect(Collectors.toList());
 		
 		DescribeApplicationVersionsResult davr = eb.describeApplicationVersions(new DescribeApplicationVersionsRequest()
 			.withApplicationName(appName));
 		List<String> versionLabelsToDelete = davr.getApplicationVersions().stream()
 			.filter(avd -> usingVersions.contains(avd.getVersionLabel()) == false
 					&& avd.getVersionLabel().contains("-SNAPSHOT-"))
-			.map(avd -> avd.getVersionLabel()).collect(Collectors.toList());
+			.map(ApplicationVersionDescription::getVersionLabel)
+			.collect(Collectors.toList());
 		
 		versionLabelsToDelete.forEach(versionLabel -> {
 			getLogger().info("version " + versionLabel + " deleted");

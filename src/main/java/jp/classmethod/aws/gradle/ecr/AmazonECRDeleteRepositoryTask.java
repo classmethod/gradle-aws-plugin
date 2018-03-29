@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.ecr;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ecr.AmazonECR;
@@ -27,7 +26,9 @@ import com.amazonaws.services.ecr.model.DeleteRepositoryResult;
 import com.amazonaws.services.ecr.model.Repository;
 import com.google.common.base.MoreObjects;
 
-public class AmazonECRDeleteRepositoryTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonECRDeleteRepositoryTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -38,13 +39,12 @@ public class AmazonECRDeleteRepositoryTask extends ConventionTask {
 	
 	
 	public AmazonECRDeleteRepositoryTask() {
-		setDescription("Delete ECR repository");
-		setGroup("AWS");
+		super("AWS", "Delete ECR repository");
 	}
 	
 	@TaskAction
 	public void createRepository() {
-		AmazonECRPluginExtension ext = getProject().getExtensions().getByType(AmazonECRPluginExtension.class);
+		AmazonECRPluginExtension ext = getPluginExtension(AmazonECRPluginExtension.class);
 		AmazonECR ecr = ext.getClient();
 		
 		String repositoryName = MoreObjects.firstNonNull(getRepositoryName(), ext.getRepositoryName());

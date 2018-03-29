@@ -43,8 +43,7 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 	
 	
 	public AmazonSQSMessageConsumerTask() {
-		setDescription("Consume/Delete SQS messages");
-		setGroup("AWS");
+		super("AWS", "Consume/Delete SQS messages");
 	}
 	
 	@TaskAction
@@ -55,7 +54,7 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 			throw new GradleException("Must specify either queueName or queueUrl");
 		}
 		
-		AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
+		AmazonSQSPluginExtension ext = getPluginExtension(AmazonSQSPluginExtension.class);
 		AmazonSQS sqs = ext.getClient();
 		
 		int counter = 0;

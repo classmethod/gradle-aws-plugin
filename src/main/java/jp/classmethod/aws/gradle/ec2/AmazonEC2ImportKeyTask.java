@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
@@ -29,7 +28,9 @@ import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.ImportKeyPairResult;
 
-public class AmazonEC2ImportKeyTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonEC2ImportKeyTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -48,8 +49,7 @@ public class AmazonEC2ImportKeyTask extends ConventionTask {
 	
 	
 	public AmazonEC2ImportKeyTask() {
-		setDescription("Start EC2 instance.");
-		setGroup("AWS");
+		super("AWS", "Start EC2 instance.");
 	}
 	
 	@TaskAction
@@ -62,12 +62,14 @@ public class AmazonEC2ImportKeyTask extends ConventionTask {
 			throw new GradleException("keyName is required");
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		if (isIfNotExists() == false || exists(ec2) == false) {
 			importKeyPairResult = ec2.importKeyPair(new ImportKeyPairRequest(keyName, publicKeyMaterial));
 			getLogger().info("KeyPair imported: {}", importKeyPairResult.getKeyFingerprint());
+		} else {
+			getLogger().info("KeyPair already exists: {}", keyName);
 		}
 	}
 	
@@ -83,5 +85,4 @@ public class AmazonEC2ImportKeyTask extends ConventionTask {
 			return false;
 		}
 	}
-	
 }

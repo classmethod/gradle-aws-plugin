@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +30,6 @@ import lombok.Setter;
 
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
@@ -43,7 +43,9 @@ import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.Tag;
 import com.google.common.base.Strings;
 
-public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationCreateChangeSetTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -80,8 +82,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	
 	
 	public AmazonCloudFormationCreateChangeSetTask() {
-		setDescription("Create cfn change set.");
-		setGroup("AWS");
+		super("AWS", "Create cfn change set.");
 	}
 	
 	@TaskAction
@@ -94,8 +95,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		DescribeStacksResult describeStackResult =
@@ -135,8 +135,8 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		if (isCapabilityIam()) {
 			Capability selectedCapability =
 					(getUseCapabilityIam() == null) ? Capability.CAPABILITY_IAM : getUseCapabilityIam();
-			getLogger().info("Using IAM capability: " + selectedCapability);
-			req.setCapabilities(Arrays.asList(selectedCapability.toString()));
+			getLogger().info("Using IAM capability: {}", selectedCapability);
+			req.setCapabilities(Collections.singleton(selectedCapability.toString()));
 		}
 		CreateChangeSetResult createChangeSetResult = cfn.createChangeSet(req);
 		getLogger().info("Create change set requested: {}", createChangeSetResult.getId());

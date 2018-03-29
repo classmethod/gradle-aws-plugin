@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
@@ -27,7 +26,9 @@ import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
 import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
 
-public class AmazonRDSDeleteDBInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSDeleteDBInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -46,8 +47,7 @@ public class AmazonRDSDeleteDBInstanceTask extends ConventionTask {
 	
 	
 	public AmazonRDSDeleteDBInstanceTask() {
-		setDescription("Delete RDS instance.");
-		setGroup("AWS");
+		super("AWS", "Delete RDS instance.");
 	}
 	
 	@TaskAction
@@ -59,7 +59,7 @@ public class AmazonRDSDeleteDBInstanceTask extends ConventionTask {
 			throw new GradleException("dbInstanceIdentifier is required");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		try {

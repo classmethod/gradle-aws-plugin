@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.route53;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.route53.AmazonRoute53;
@@ -30,7 +29,9 @@ import com.amazonaws.services.route53.model.RRType;
 import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 
-public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRoute53ChangeRecordSetTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -46,8 +47,7 @@ public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
 	
 	
 	public AmazonRoute53ChangeRecordSetTask() {
-		setDescription("Create/Migrate Route53 Record.");
-		setGroup("AWS");
+		super("AWS", "Create/Migrate Route53 Record.");
 	}
 	
 	@TaskAction
@@ -57,7 +57,7 @@ public class AmazonRoute53ChangeRecordSetTask extends ConventionTask {
 		String rrsName = getRrsName();
 		String resourceRecord = getResourceRecord();
 		
-		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
+		AmazonRoute53PluginExtension ext = getPluginExtension(AmazonRoute53PluginExtension.class);
 		AmazonRoute53 route53 = ext.getClient();
 		
 		route53.changeResourceRecordSets(new ChangeResourceRecordSetsRequest()

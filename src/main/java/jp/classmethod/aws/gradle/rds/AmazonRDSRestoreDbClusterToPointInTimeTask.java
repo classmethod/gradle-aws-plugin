@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
@@ -32,7 +31,9 @@ import com.amazonaws.services.rds.model.DBCluster;
 import com.amazonaws.services.rds.model.RestoreDBClusterToPointInTimeRequest;
 import com.amazonaws.services.rds.model.Tag;
 
-public class AmazonRDSRestoreDbClusterToPointInTimeTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSRestoreDbClusterToPointInTimeTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -89,8 +90,7 @@ public class AmazonRDSRestoreDbClusterToPointInTimeTask extends ConventionTask {
 	
 	
 	public AmazonRDSRestoreDbClusterToPointInTimeTask() {
-		setDescription("Restore DbCluster To Point In Time.");
-		setGroup("AWS");
+		super("AWS", "Restore DbCluster To Point In Time.");
 	}
 	
 	@TaskAction
@@ -102,7 +102,7 @@ public class AmazonRDSRestoreDbClusterToPointInTimeTask extends ConventionTask {
 			throw new GradleException("dbClusterIdentifier is not specified");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		RestoreDBClusterToPointInTimeRequest request = new RestoreDBClusterToPointInTimeRequest()

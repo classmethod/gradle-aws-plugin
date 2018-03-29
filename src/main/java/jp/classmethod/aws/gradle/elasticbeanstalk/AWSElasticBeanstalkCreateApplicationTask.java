@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
@@ -27,7 +26,9 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsRequest
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsResult;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateApplicationRequest;
 
-public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkCreateApplicationTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -39,8 +40,7 @@ public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
 	
 	
 	public AWSElasticBeanstalkCreateApplicationTask() {
-		setDescription("Create/Migrate ElasticBeanstalk Application.");
-		setGroup("AWS");
+		super("AWS", "Create/Migrate ElasticBeanstalk Application.");
 	}
 	
 	@TaskAction
@@ -49,7 +49,7 @@ public class AWSElasticBeanstalkCreateApplicationTask extends ConventionTask {
 		String appName = getAppName();
 		String appDesc = getAppDesc();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		DescribeApplicationsResult existingApps = eb.describeApplications(new DescribeApplicationsRequest()

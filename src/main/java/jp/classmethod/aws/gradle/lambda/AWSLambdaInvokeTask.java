@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
@@ -35,9 +34,11 @@ import com.amazonaws.services.lambda.model.LogType;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
 import groovy.lang.Closure;
 
-public class AWSLambdaInvokeTask extends ConventionTask {
+public class AWSLambdaInvokeTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -68,8 +69,7 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 	
 	
 	public AWSLambdaInvokeTask() {
-		setDescription("Invoke Lambda function.");
-		setGroup("AWS");
+		super("AWS", "Invoke Lambda function.");
 	}
 	
 	@TaskAction
@@ -81,7 +81,7 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 			throw new GradleException("functionName is required");
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		InvokeRequest request = new InvokeRequest()

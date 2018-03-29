@@ -1,50 +1,49 @@
+import jp.classmethod.aws.gradle.s3.SyncTask
+
 apply plugin: 'groovy'
 apply plugin: 'jp.classmethod.aws.cloudformation'
 
 apply from: 'deploy-dev.groovy'
 
-import jp.classmethod.aws.gradle.s3.SyncTask
-import jp.classmethod.aws.gradle.cloudformation.AmazonCloudFormationPluginExtension
-
 group 'example'
 version = "SNAPSHOT-${project.rootProject.startTime.format('yyMMddHHmm')}"
 
 repositories {
-  mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-  compile 'org.codehaus.groovy:groovy-all:2.4.4'
-  compile 'com.amazonaws:aws-lambda-java-core:1.0.0'
+	compile 'org.codehaus.groovy:groovy-all:2.4.4'
+	compile 'com.amazonaws:aws-lambda-java-core:1.0.0'
 }
 
 task buildZip(type: Zip) {
-  from compileGroovy
-  from processResources
-  into('lib') {
-    from configurations.runtime
-  }
+	from compileGroovy
+	from processResources
+	into('lib') {
+		from configurations.runtime
+	}
 }
 
 build.dependsOn buildZip
 
 task uploadLamdbdaToS3(type: SyncTask) {
-  dependsOn build
-
-  delete true
-  bucketName "${cloudFormation.stackParams['pArtifactBucket']}"
-  prefix "${cloudFormation.stackParams['pArtifactPrefix']}/"
-  source file("$buildDir/distributions")
+	dependsOn build
+	
+	delete = true
+	bucketName = "${cloudFormation.stackParams['pArtifactBucket']}"
+	prefix = "${cloudFormation.stackParams['pArtifactPrefix']}/"
+	source = file("$buildDir/distributions")
 }
 
-task updateStack (dependsOn: [uploadLamdbdaToS3, awsCfnMigrateStackAndWaitCompleted]) {
-  group 'CNN'
-  description "Creates/Updates $cloudFormation.stackName stack"
+task updateStack(dependsOn: [uploadLamdbdaToS3, awsCfnMigrateStackAndWaitCompleted]) {
+	group 'CNN'
+	description "Creates/Updates $cloudFormation.stackName stack"
 }
 
 task deleteStack (dependsOn: awsCfnDeleteStackAndWaitCompleted) {
-  group 'CNN'
-  description "Deletes $cloudFormation.stackName stack"
+	group 'CNN'
+	description "Deletes $cloudFormation.stackName stack"
 }
 
 awsCfnMigrateStack.mustRunAfter uploadLamdbdaToS3
@@ -52,12 +51,12 @@ awsCfnWaitStackComplete.loopTimeout = 10800 // = 3hr
 awsCfnWaitStackDeleted.loopTimeout = 10800 // = 3hr
 
 task getStackInfo {
-  doLast {
-    def stackName = cloudFormation.getStackOutputValue('StackName')
-    def lambdaArn = cloudFormation.getStackOutputValue('LambdaArn')
-
-    println """
+	doLast {
+		def stackName = cloudFormation.getStackOutputValue('StackName')
+		def lambdaArn = cloudFormation.getStackOutputValue('LambdaArn')
+		
+		println """
 $stackName
 $lambdaArn"""
-  }
+	}
 }

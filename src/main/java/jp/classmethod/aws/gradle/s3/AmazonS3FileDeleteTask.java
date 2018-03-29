@@ -19,16 +19,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
 
-public class AmazonS3FileDeleteTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonS3FileDeleteTask extends BaseAwsTask {
 	
 	public AmazonS3FileDeleteTask() {
-		setDescription("Delete file from the Amazon S3 bucket.");
-		setGroup("AWS");
+		super("AWS", "Delete file from the Amazon S3 bucket.");
 	}
 	
 	
@@ -54,7 +54,7 @@ public class AmazonS3FileDeleteTask extends ConventionTask {
 			throw new GradleException("key is not specified");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		getLogger().info("deleting... " + bucketName + "/" + key);

@@ -1,18 +1,19 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.ObjectMetadata
 
-import jp.classmethod.aws.gradle.s3.CreateBucketTask;
-import jp.classmethod.aws.gradle.s3.DeleteBucketTask;
-import jp.classmethod.aws.gradle.s3.SyncTask;
+import jp.classmethod.aws.gradle.s3.CreateBucketTask
+import jp.classmethod.aws.gradle.s3.DeleteBucketTask
+import jp.classmethod.aws.gradle.s3.SyncTask
 
 buildscript {
 	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
@@ -22,20 +23,22 @@ aws {
 	region = "ap-northeast-1"
 }
 
+def myBucketName = 'gradle-aws-plugin-sample' // change this
+
 task createBucket(type: CreateBucketTask) {
-	bucketName "gradle-aws-plugin-sample"
-	ifNotExists true
+	bucketName = myBucketName
+	ifNotExists = true
 }
 
 task deleteBucket(type: DeleteBucketTask) {
-	bucketName "gradle-aws-plugin-sample"
-	ifExists true
-	deleteObjects true
+	bucketName = myBucketName
+	ifExists = true
+	deleteObjects = true
 }
 
 task syncContents(type: SyncTask, dependsOn: createBucket) {
-	source file("contents") // must be directory
-	bucketName "gradle-aws-plugin-sample"
+	source = file("contents") // must be directory
+	bucketName = myBucketName
 	prefix "02-s3-sync-contents/"
 	
 	// to set all file's metadata "no-cache, no-store"

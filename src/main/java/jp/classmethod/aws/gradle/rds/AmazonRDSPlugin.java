@@ -19,11 +19,13 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.AwsPluginExtension;
 
 public class AmazonRDSPlugin implements Plugin<Project> {
 	
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
-		project.getExtensions().create(AmazonRDSPluginExtension.NAME, AmazonRDSPluginExtension.class, project);
+		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
+			.create(AmazonRDSPluginExtension.NAME, AmazonRDSPluginExtension.class, project);
 	}
 }

@@ -19,13 +19,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.model.PublishRequest;
 
-public class AmazonSNSPublishMessageTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonSNSPublishMessageTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -45,8 +46,7 @@ public class AmazonSNSPublishMessageTask extends ConventionTask {
 	
 	
 	public AmazonSNSPublishMessageTask() {
-		setDescription("Publish message to SNS");
-		setGroup("AWS");
+		super("AWS", "Publish message to SNS");
 	}
 	
 	@TaskAction
@@ -63,7 +63,7 @@ public class AmazonSNSPublishMessageTask extends ConventionTask {
 			throw new GradleException("Must provide message to send to SNS");
 		}
 		
-		AmazonSNSPluginExtension ext = getProject().getExtensions().getByType(AmazonSNSPluginExtension.class);
+		AmazonSNSPluginExtension ext = getPluginExtension(AmazonSNSPluginExtension.class);
 		AmazonSNS sns = ext.getClient();
 		
 		PublishRequest request = new PublishRequest().withTopicArn(topicArn).withMessage(message);
@@ -75,5 +75,4 @@ public class AmazonSNSPublishMessageTask extends ConventionTask {
 		}
 		sns.publish(request);
 	}
-	
 }

@@ -21,13 +21,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
-public class AmazonS3DeleteAllFilesTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonS3DeleteAllFilesTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -39,8 +40,7 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 	
 	
 	public AmazonS3DeleteAllFilesTask() {
-		setDescription("Delete all files in the S3 bucket.");
-		setGroup("AWS");
+		super("AWS", "Delete all files in the S3 bucket.");
 	}
 	
 	@TaskAction
@@ -53,7 +53,7 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 			throw new GradleException("bucketName is not specified");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		if (prefix.startsWith("/")) {

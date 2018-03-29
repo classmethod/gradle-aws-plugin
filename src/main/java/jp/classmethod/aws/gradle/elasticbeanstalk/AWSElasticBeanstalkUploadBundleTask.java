@@ -46,12 +46,12 @@ public class AWSElasticBeanstalkUploadBundleTask extends AmazonS3FileUploadTask 
 	
 	@Override
 	public void upload() throws IOException {
-		Project project = getProject();
-		AwsBeanstalkPluginExtension ext = project.getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.ENGLISH);
 		df.setTimeZone(TimeZone.getDefault());
+		Project project = getProject();
 		versionLabel = String.format(Locale.ENGLISH, "%s-%s", project.getVersion().toString(), df.format(new Date()));
 		
 		String artifactId = project.property("artifactId").toString();

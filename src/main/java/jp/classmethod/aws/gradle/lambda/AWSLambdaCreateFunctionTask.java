@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
@@ -38,7 +37,9 @@ import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.lambda.model.Runtime;
 import com.amazonaws.services.lambda.model.VpcConfig;
 
-public class AWSLambdaCreateFunctionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSLambdaCreateFunctionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -97,8 +98,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	
 	
 	public AWSLambdaCreateFunctionTask() {
-		setDescription("Create Lambda function.");
-		setGroup("AWS");
+		super("AWS", "Create Lambda function.");
 	}
 	
 	@TaskAction
@@ -117,7 +117,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 			throw new GradleException("exactly one of zipFile or s3File is required");
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		FunctionCode functionCode;

@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
@@ -31,7 +30,9 @@ import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.Tag;
 
-public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSCreateDBInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -170,8 +171,7 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 	
 	
 	public AmazonRDSCreateDBInstanceTask() {
-		setDescription("Create RDS instance.");
-		setGroup("AWS");
+		super("AWS", "Create RDS instance.");
 	}
 	
 	@TaskAction
@@ -191,7 +191,7 @@ public class AmazonRDSCreateDBInstanceTask extends ConventionTask {
 			throw new GradleException("engine is required");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		CreateDBInstanceRequest request = new CreateDBInstanceRequest()

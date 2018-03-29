@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -33,7 +32,9 @@ import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 import com.amazonaws.services.rds.model.Filter;
 
-public class AmazonRDSDescribeInstancesTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSDescribeInstancesTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -52,15 +53,14 @@ public class AmazonRDSDescribeInstancesTask extends ConventionTask { // NOPMD
 	
 	
 	public AmazonRDSDescribeInstancesTask() {
-		setDescription("Describe AWS instances.");
-		setGroup("AWS");
+		super("AWS", "Describe AWS instances.");
 	}
 	
 	@TaskAction
 	public void describeDBInstances() { // NOPMD
 		// to enable conventionMappings feature
 		String dbInstanceIdentifier = getDbInstanceIdentifier();
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		try {
 			DescribeDBInstancesRequest request = new DescribeDBInstancesRequest()

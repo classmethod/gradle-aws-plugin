@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.rds.AmazonRDS;
@@ -33,7 +32,9 @@ import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 import com.amazonaws.services.rds.model.ModifyDBInstanceRequest;
 
-public class AmazonRDSMigrateDBInstanceTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSMigrateDBInstanceTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -153,13 +154,12 @@ public class AmazonRDSMigrateDBInstanceTask extends ConventionTask {
 	
 	
 	public AmazonRDSMigrateDBInstanceTask() {
-		setDescription("Create / Migrate RDS instance.");
-		setGroup("AWS");
+		super("AWS", "Create / Migrate RDS instance.");
 	}
 	
 	@TaskAction
 	public void createOrUpdateDBInstance() throws InterruptedException {
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		try {

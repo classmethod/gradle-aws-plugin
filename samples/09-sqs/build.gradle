@@ -13,7 +13,7 @@ buildscript {
 
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
@@ -22,17 +22,17 @@ apply plugin: "jp.classmethod.aws.sqs"
 def myQueueName = 'gradle-aws-plugin-sample'
 
 task sendMessages(type: AmazonSQSSendMessagesTask) {
-	queueName myQueueName
-	messages Stream.generate { "Message ${UUID.randomUUID()}".toString() }.limit(250)
+	queueName = myQueueName
+	messages = Stream.generate { "Message ${UUID.randomUUID()}".toString() }.limit(250)
 }
 
 task deleteMessages(type: AmazonSQSMessageConsumerTask) {
-	queueName myQueueName
-	showMessages false
+	queueName = myQueueName
+	showMessages = false
 }
 
 task viewMessages(type: AmazonSQSMessageConsumerTask) {
-	queueName myQueueName
-	deleteMessages false
-	maxNumberOfMessages 50
+	queueName = myQueueName
+	deleteMessages = false
+	maxNumberOfMessages = 50
 }

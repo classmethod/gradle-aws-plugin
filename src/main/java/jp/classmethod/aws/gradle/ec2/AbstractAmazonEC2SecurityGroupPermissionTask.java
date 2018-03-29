@@ -22,15 +22,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 
 import com.amazonaws.services.ec2.model.IpPermission;
 
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
 import groovy.lang.GString;
 
-abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTask { // NOPMD
+abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends BaseAwsTask { // NOPMD
 	
-	protected Collection<IpPermission> parse(Object e) { // NOPMD
+	public AbstractAmazonEC2SecurityGroupPermissionTask(String group, String description) {
+		super(group, description);
+	}
+	
+	Collection<IpPermission> parse(Object e) { // NOPMD
 		if (e instanceof IpPermission) {
 			return Collections.singleton((IpPermission) e);
 		}

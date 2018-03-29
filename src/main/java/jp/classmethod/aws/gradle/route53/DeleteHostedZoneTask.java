@@ -18,25 +18,30 @@ package jp.classmethod.aws.gradle.route53;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.route53.AmazonRoute53;
 import com.amazonaws.services.route53.model.DeleteHostedZoneRequest;
 
-public class DeleteHostedZoneTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class DeleteHostedZoneTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
 	private String hostedZoneId;
 	
 	
+	public DeleteHostedZoneTask() {
+		super("AWS", "Delete hosted zone");
+	}
+	
 	@TaskAction
 	public void createHostedZone() {
 		// to enable conventionMappings feature
 		String hostedZoneId = getHostedZoneId();
 		
-		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
+		AmazonRoute53PluginExtension ext = getPluginExtension(AmazonRoute53PluginExtension.class);
 		AmazonRoute53 route53 = ext.getClient();
 		
 		route53.deleteHostedZone(new DeleteHostedZoneRequest(hostedZoneId));

@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -31,7 +30,9 @@ import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 
-public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonEC2WaitInstanceStatusTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -70,8 +71,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	
 	
 	public AmazonEC2WaitInstanceStatusTask() {
-		setDescription("Wait EC2 instance for specific status.");
-		setGroup("AWS");
+		super("AWS", "Wait EC2 instance for specific status.");
 	}
 	
 	@TaskAction
@@ -87,7 +87,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 			throw new GradleException("instanceId is not specified");
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		long start = System.currentTimeMillis();

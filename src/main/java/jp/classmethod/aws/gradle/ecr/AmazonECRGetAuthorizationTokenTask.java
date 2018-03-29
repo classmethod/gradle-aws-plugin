@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ecr.AmazonECR;
@@ -29,7 +28,9 @@ import com.amazonaws.services.ecr.model.AuthorizationData;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenRequest;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenResult;
 
-public class AmazonECRGetAuthorizationTokenTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonECRGetAuthorizationTokenTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -40,8 +41,7 @@ public class AmazonECRGetAuthorizationTokenTask extends ConventionTask {
 	
 	
 	public AmazonECRGetAuthorizationTokenTask() {
-		setDescription("Get authorization token for ECR repository");
-		setGroup("AWS");
+		super("AWS", "Get authorization token for ECR repository");
 	}
 	
 	@TaskAction
@@ -52,7 +52,7 @@ public class AmazonECRGetAuthorizationTokenTask extends ConventionTask {
 			throw new GradleException("Must specify ECR repositoryIds");
 		}
 		
-		AmazonECRPluginExtension ext = getProject().getExtensions().getByType(AmazonECRPluginExtension.class);
+		AmazonECRPluginExtension ext = getPluginExtension(AmazonECRPluginExtension.class);
 		AmazonECR ecr = ext.getClient();
 		
 		GetAuthorizationTokenResult result = ecr.getAuthorizationToken(new GetAuthorizationTokenRequest()

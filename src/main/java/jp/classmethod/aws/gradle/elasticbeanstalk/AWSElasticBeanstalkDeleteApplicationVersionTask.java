@@ -18,13 +18,14 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationVersionRequest;
 
-public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkDeleteApplicationVersionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -44,8 +45,7 @@ public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionT
 	
 	
 	public AWSElasticBeanstalkDeleteApplicationVersionTask() {
-		setDescription("Delete ElasticBeanstalk Application Version.");
-		setGroup("AWS");
+		super("AWS", "Delete ElasticBeanstalk Application Version.");
 	}
 	
 	@TaskAction
@@ -55,7 +55,7 @@ public class AWSElasticBeanstalkDeleteApplicationVersionTask extends ConventionT
 		String versionLabel = getVersionLabel();
 		boolean deleteSourceBundle = isDeleteSourceBundle();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteApplicationVersion(new DeleteApplicationVersionRequest()

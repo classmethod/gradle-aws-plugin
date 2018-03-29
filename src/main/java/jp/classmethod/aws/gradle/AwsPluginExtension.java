@@ -25,6 +25,7 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.ExtensionAware;
 
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
@@ -168,5 +169,12 @@ public class AwsPluginExtension {
 			return null;
 		}
 		
+	}
+	
+	public ExtensionAware asExtensionAware() {
+		if (this instanceof ExtensionAware) {
+			return (ExtensionAware) this;
+		}
+		throw new AssertionError();
 	}
 }

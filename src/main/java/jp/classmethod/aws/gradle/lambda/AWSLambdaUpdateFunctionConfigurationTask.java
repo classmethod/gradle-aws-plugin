@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
@@ -37,7 +36,9 @@ import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
-public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSLambdaUpdateFunctionConfigurationTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -76,8 +77,7 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 	
 	
 	public AWSLambdaUpdateFunctionConfigurationTask() {
-		setDescription("Update Lambda function configuration.");
-		setGroup("AWS");
+		super("AWS", "Update Lambda function configuration.");
 	}
 	
 	@TaskAction
@@ -89,7 +89,7 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 			throw new GradleException("functionName is required");
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		UpdateFunctionConfigurationRequest request = new UpdateFunctionConfigurationRequest()

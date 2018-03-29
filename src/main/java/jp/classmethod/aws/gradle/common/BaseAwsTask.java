@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.gradle.identitymanagement;
+package jp.classmethod.aws.gradle.common;
 
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import org.gradle.api.internal.ConventionTask;
 
-import jp.classmethod.aws.gradle.AwsPlugin;
 import jp.classmethod.aws.gradle.AwsPluginExtension;
 
-public class AmazonIdentityManagementPlugin implements Plugin<Project> {
+/**
+ * TODO daisuke.
+ *
+ * @author daisuke
+ * @since #version#
+ */
+public abstract class BaseAwsTask extends ConventionTask {
 	
-	public void apply(Project project) {
-		project.getPluginManager().apply(AwsPlugin.class);
-		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
-			.create(AmazonIdentityManagementPluginExtension.NAME, AmazonIdentityManagementPluginExtension.class,
-					project);
+	public BaseAwsTask(String group, String description) {
+		setGroup(group);
+		setDescription(description);
+	}
+	
+	public <T> T getPluginExtension(Class<T> type) {
+		return getProject().getExtensions().getByType(AwsPluginExtension.class)
+			.asExtensionAware().getExtensions().getByType(type);
 	}
 }

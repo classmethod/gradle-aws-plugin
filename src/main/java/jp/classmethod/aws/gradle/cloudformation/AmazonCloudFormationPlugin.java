@@ -30,6 +30,8 @@ import com.amazonaws.services.cloudformation.model.Parameter;
 import com.amazonaws.services.cloudformation.model.Tag;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
+import jp.classmethod.aws.gradle.AwsPluginExtension;
+import jp.classmethod.aws.gradle.elasticbeanstalk.AwsBeanstalkPluginExtension;
 import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
 import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
 
@@ -39,15 +41,15 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getPluginManager().apply(AmazonS3Plugin.class);
-		project.getExtensions().create(AmazonCloudFormationPluginExtension.NAME,
-				AmazonCloudFormationPluginExtension.class,
-				project);
+		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware()
+			.getExtensions().create(AmazonCloudFormationPluginExtension.NAME,
+					AmazonCloudFormationPluginExtension.class, project);
 		applyTasks(project);
 	}
 	
 	private void applyTasks(Project project) { // NOPMD
-		AmazonCloudFormationPluginExtension cfnExt =
-				project.getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension cfnExt = project.getExtensions().findByType(AwsPluginExtension.class)
+				.asExtensionAware().getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
 		
 		AmazonS3FileUploadTask awsCfnUploadTemplate =
 				project.getTasks().create("awsCfnUploadTemplate", AmazonS3FileUploadTask.class, task -> {

@@ -1,0 +1,43 @@
+spotless {
+	java {
+		licenseHeaderFile "${rootProject.projectDir}/config/spotless/spotless.license.java"
+		importOrderFile   "${rootProject.projectDir}/config/spotless/spotless.importorder"
+		eclipse().configFile "${rootProject.projectDir}/config/spotless/spotless.eclipseformat.xml"
+		removeUnusedImports()
+		endWithNewline()
+		indentWithTabs()
+		
+		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
+		//    @Max(value = 9_999_999 L) // what Eclipse does
+		//    @Max(value = 9_999_999L)  // what I wish Eclipse did
+		custom 'Long literal fix', { it.replaceAll('([0-9_]+) [Ll]', '$1L') }
+		
+		// Eclipse formatter puts excess whitespace after lambda blocks
+		//    funcThatTakesLambdas(x -> {} , y -> {} )	// what Eclipse does
+		//    funcThatTakesLambdas(x -> {}, y -> {})	// what I wish Eclipse did
+		custom 'Lambda fix', { it.replace('} )', '})').replace('} ,', '},') }
+		
+		custom 'Trim trailing whitespace', { it.endsWith('* ') ? it : it.replaceAll('(?<=[^ \\t])[ \\t]+$', '') }
+		replaceRegex 'Add space before comment asterisk', '^(\\t*)\\*', '$1 *'
+	}
+	
+	// this will create two tasks: spotlessMiscCheck and spotlessMiscApply
+	format 'misc', {
+		// target determines which files this format will apply to
+		// - if you pass a string or a list of strings, they will be treated
+		//	   as 'include' parameters to a fileTree in the root directory
+		// - if you pass a FileCollection, it will pass through untouched
+		//	   e.g. project.files('build.gradle', 'settings.gradle')
+		// - if you pass anything else, it will be sent to project.files(yourArg)
+		target '**/*.gradle', '**/.gitignore'
+		
+		// spotless has built-in rules for the most basic formatting tasks
+		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
+
+	// cannot use freshmark on Java 9
+	// freshmark {
+	// 	target '**/*.md'
+	// }
+}

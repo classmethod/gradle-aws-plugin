@@ -20,13 +20,13 @@ import java.io.File;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
-public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public abstract class AbstractAmazonS3FileUploadTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -57,12 +57,16 @@ public abstract class AbstractAmazonS3FileUploadTask extends ConventionTask {
 	private boolean overwrite = false;
 	
 	
+	public AbstractAmazonS3FileUploadTask(String group, String description) {
+		super(group, description);
+	}
+	
 	protected ObjectMetadata existingObjectMetadata() {
 		// to enable conventionMappings feature
 		String bucketName = getBucketName();
 		String key = getKey();
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		try {

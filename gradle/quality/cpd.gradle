@@ -1,0 +1,8 @@
+cpdCheck {
+	reports {
+		text.enabled = true
+		xml.enabled = false
+	}
+	source = sourceSets.main.allJava // only main source
+	ignoreFailures = true
+}

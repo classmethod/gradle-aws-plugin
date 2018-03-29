@@ -19,14 +19,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.Region;
 
-public class CreateBucketTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class CreateBucketTask extends BaseAwsTask {
 	
 	private static final String AWS_DEFAULT_REGION_NAME = "us-east-1 (default)";
 	
@@ -58,8 +60,7 @@ public class CreateBucketTask extends ConventionTask {
 	
 	
 	public CreateBucketTask() {
-		setDescription("Create the Amazon S3 bucket.");
-		setGroup("AWS");
+		super("AWS", "Create the Amazon S3 bucket.");
 	}
 	
 	@TaskAction
@@ -71,7 +72,7 @@ public class CreateBucketTask extends ConventionTask {
 			throw new GradleException("bucketName is not specified");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		if (isIfNotExists() && exists(s3)) {
@@ -84,7 +85,7 @@ public class CreateBucketTask extends ConventionTask {
 			s3.createBucket(bucketName);
 		} else {
 			regionName = getAwsRegionName(region);
-			s3.createBucket(bucketName, region);
+			s3.createBucket(new CreateBucketRequest(bucketName, region));
 		}
 		getLogger().info("S3 Bucket '{}' created at region '{}'", bucketName, regionName);
 	}

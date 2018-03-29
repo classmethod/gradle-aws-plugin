@@ -2,17 +2,18 @@
 
 buildscript {
 	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
 apply plugin: 'java'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 apply plugin: "jp.classmethod.aws.beanstalk"
 
 // ==== Project settings
@@ -31,15 +32,13 @@ tasks.withType(AbstractCompile) each {
 }
 
 repositories {
+	jcenter()
 	mavenCentral()
 	maven { url 'http://repo.spring.io/release' }
 }
 
 dependencies {
-	compile "org.springframework.boot:spring-boot-starter-actuator"
 	compile "org.springframework.boot:spring-boot-starter-web"
-	compile "org.apache.tomcat.embed:tomcat-embed-jasper"
-	compile "javax.servlet:jstl"
 }
 
 
@@ -48,39 +47,39 @@ dependencies {
 aws {
 	profileName = "default"
 	region = "ap-northeast-1"
-}
+	
+	beanstalk {
+		appName = "05-beanstalk"
+		appDesc = "gradle-aws-plugin demo application"
 
-beanstalk {
-	appName "05-beanstalk"
-	appDesc "gradle-aws-plugin demo application"
-
-	version {
-		label = "05-beanstalk-${versionDesc}"
-		description = "${artifactId} v${version}"
-		bucket = "elasticbeanstalk-${aws.region}-${aws.accountId}"
-		key = "eb-apps/${artifactId}/${artifactId}-${versionDesc}.zip"
-	}
-
-	configurationTemplates {
-		production {
-			optionSettings = file("src/main/config/production.json")
-			solutionStackName = "64bit Amazon Linux 2015.03 v1.4.0 running Docker 1.6.0"
+		version {
+			label = "05-beanstalk-${versionDesc}"
+			description = "${artifactId} v${version}"
+			bucket = "elasticbeanstalk-${aws.region}-${aws.accountId}"
+			key = "eb-apps/${artifactId}/${artifactId}-${versionDesc}.zip"
 		}
-		development {
-			optionSettings = file("src/main/config/development.json")
-			solutionStackName = "64bit Amazon Linux 2015.03 v1.4.0 running Docker 1.6.0"
-		}
-	}
 
-	environment {
-		envName = "05-beanstalk-blue"
-		envDesc = "foobar demo application blue environemnt"
-		templateName = "development"
-		versionLabel = "05-beanstalk-${versionDesc}"
-		tags = [
-				VERSION: "${versionDesc}".toString(),
-				GROUP: "Eng"
-		]
+		configurationTemplates {
+			production {
+				optionSettings = file("src/main/config/production.json")
+				solutionStackName = "64bit Amazon Linux 2017.09 v2.9.1 running Docker 17.12.0-ce"
+			}
+			development {
+				optionSettings = file("src/main/config/development.json")
+				solutionStackName = "64bit Amazon Linux 2017.09 v2.9.1 running Docker 17.12.0-ce"
+			}
+		}
+
+		environment {
+			envName = "05-beanstalk-blue"
+			envDesc = "foobar demo application blue environment"
+			templateName = "development"
+			versionLabel = "05-beanstalk-${versionDesc}"
+			tags = [
+					VERSION: "${versionDesc}".toString(),
+					GROUP  : "Eng"
+			]
+		}
 	}
 }
 

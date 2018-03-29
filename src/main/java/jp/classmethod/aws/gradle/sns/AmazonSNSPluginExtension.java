@@ -29,5 +29,4 @@ public class AmazonSNSPluginExtension extends BaseRegionAwarePluginExtension<Ama
 	public AmazonSNSPluginExtension(Project project) {
 		super(project, AmazonSNSClient.class);
 	}
-	
 }

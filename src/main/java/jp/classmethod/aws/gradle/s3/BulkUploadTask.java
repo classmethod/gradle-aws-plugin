@@ -21,16 +21,17 @@ import lombok.Setter;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.FileVisitDetails;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
 import groovy.lang.Closure;
 
-public class BulkUploadTask extends ConventionTask {
+public class BulkUploadTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -49,6 +50,10 @@ public class BulkUploadTask extends ConventionTask {
 	private Closure<ObjectMetadata> metadataProvider;
 	
 	
+	public BulkUploadTask() {
+		super("AWS", "Upload bulk");
+	}
+	
 	@TaskAction
 	public void upload() {
 		// to enable conventionMappings feature
@@ -56,7 +61,7 @@ public class BulkUploadTask extends ConventionTask {
 		String prefix = getNormalizedPrefix();
 		FileTree source = getSource();
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		getLogger().info("uploading... {} to s3://{}/{}", source, bucketName, prefix);

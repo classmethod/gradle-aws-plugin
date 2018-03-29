@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -28,7 +27,9 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 import com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest;
 
-public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkTerminateEnvironmentTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -44,8 +45,7 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 	
 	
 	public AWSElasticBeanstalkTerminateEnvironmentTask() {
-		setDescription("Terminate(Delete) ElasticBeanstalk Environment.");
-		setGroup("AWS");
+		super("AWS", "Terminate(Delete) ElasticBeanstalk Environment.");
 	}
 	
 	@TaskAction
@@ -55,7 +55,7 @@ public class AWSElasticBeanstalkTerminateEnvironmentTask extends ConventionTask 
 		String envName = getEnvName();
 		String envId = getEnvId();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		if (envId == null) {

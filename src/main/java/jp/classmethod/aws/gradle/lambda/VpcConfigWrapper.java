@@ -42,7 +42,7 @@ public class VpcConfigWrapper {
 	
 	/**
 	 * Validates that at least one subnet and one security group are provided.
-	 * @throws {@link GradleException} if at least one subnet and one security group are not set
+	 * @throws GradleException if at least one subnet and one security group are not set
 	 */
 	public void validate() {
 		boolean missingSubnet = subnetIds == null || subnetIds.isEmpty();
@@ -54,7 +54,7 @@ public class VpcConfigWrapper {
 	
 	/**
 	 * @return {@link VpcConfig} instance
-	 * @throws {@link GradleException} if at least one subnet and one security group are not set
+	 * @throws GradleException if at least one subnet and one security group are not set
 	 */
 	public VpcConfig toVpcConfig() {
 		this.validate();

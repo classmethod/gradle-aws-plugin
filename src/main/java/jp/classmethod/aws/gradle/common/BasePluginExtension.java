@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.common;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.Nullable;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonWebServiceClient;
@@ -38,9 +37,16 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	@Setter
 	private String profileName;
 	
-	@Getter(lazy = true, onMethod = @__(@SuppressWarnings("unchecked")))
-	private final T client = initClient();
+	private T client;
 	
+	
+	@SuppressWarnings("unchecked")
+	public T getClient() {
+		if (client == null) {
+			client = initClient();
+		}
+		return client;
+	}
 	
 	public BasePluginExtension(Project project, Class<T> awsClientClass) {
 		this.project = project;
@@ -57,9 +63,7 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	 *
 	 * @return  AWS ClientConfiguration
 	 */
-	@Nullable
 	protected ClientConfiguration buildClientConfiguration() { // NOPMD
 		return null;
 	}
-	
 }

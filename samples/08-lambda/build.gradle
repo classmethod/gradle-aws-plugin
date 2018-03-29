@@ -1,24 +1,24 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-import com.amazonaws.services.lambda.model.InvocationType;
+import com.amazonaws.services.lambda.model.InvocationType
 
-import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaPublishVersionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateAliasTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaUpdateAliasTask;
-
+import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaPublishVersionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateAliasTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaUpdateAliasTask
 import jp.classmethod.aws.gradle.lambda.VpcConfigWrapper
 
 buildscript {
 	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
@@ -27,11 +27,12 @@ apply plugin: "jp.classmethod.aws.lambda"
 aws {
 	profileName = "default"
 	region = "ap-northeast-1"
+	
+	lambda {
+		region = "us-east-1"
+	}
 }
 
-lambda {
-	region = "us-east-1"
-}
 
 task zip(type: Zip) {
 	from "function/"

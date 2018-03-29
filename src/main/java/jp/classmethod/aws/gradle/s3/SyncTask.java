@@ -27,7 +27,6 @@ import lombok.Setter;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.TaskAction;
 
@@ -40,9 +39,11 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
 import groovy.lang.Closure;
 
-public class SyncTask extends ConventionTask {
+public class SyncTask extends BaseAwsTask {
 	
 	private static String md5(File file) {
 		try {
@@ -85,6 +86,10 @@ public class SyncTask extends ConventionTask {
 	private CannedAccessControlList acl;
 	
 	
+	public SyncTask() {
+		super("AWS", "Synchronize the Amazon S3 bucket.");
+	}
+	
 	public void setAcl(String aclName) {
 		acl = CannedAccessControlList.valueOf(aclName);
 	}
@@ -108,7 +113,7 @@ public class SyncTask extends ConventionTask {
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		upload(s3, prefix);

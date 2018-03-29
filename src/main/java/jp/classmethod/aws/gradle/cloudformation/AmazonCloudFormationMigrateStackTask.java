@@ -26,7 +26,6 @@ import lombok.Setter;
 
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -44,7 +43,9 @@ import com.amazonaws.services.cloudformation.model.UpdateStackRequest;
 import com.amazonaws.services.cloudformation.model.UpdateStackResult;
 import com.google.common.base.Strings;
 
-public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationMigrateStackTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -93,8 +94,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	
 	public AmazonCloudFormationMigrateStackTask() {
-		setDescription("Create / Migrate cfn stack.");
-		setGroup("AWS");
+		super("AWS", "Create / Migrate cfn stack.");
 	}
 	
 	@TaskAction
@@ -109,8 +109,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
 		try {

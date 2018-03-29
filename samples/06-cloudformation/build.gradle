@@ -2,18 +2,18 @@
 
 buildscript {
 	repositories {
-		mavenCentral()
 		mavenLocal()
+		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
 apply plugin: 'java'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 apply plugin: "jp.classmethod.aws.s3"
 apply plugin: "jp.classmethod.aws.cloudformation"
 
@@ -37,10 +37,7 @@ repositories {
 }
 
 dependencies {
-	compile "org.springframework.boot:spring-boot-starter-actuator"
 	compile "org.springframework.boot:spring-boot-starter-web"
-	compile "org.apache.tomcat.embed:tomcat-embed-jasper"
-	compile "javax.servlet:jstl"
 }
 
 
@@ -49,39 +46,37 @@ dependencies {
 aws {
 	profileName = "default"
 	region = "ap-northeast-1"
-}
-
-cloudFormation {
-	final String STACK_PARAMS_PREFIX = 'barista.aws.cfn.stackParams.'
 	
-	templateFile project.file('src/main/cloudformation/06-cloudformation.template')
-	templateBucket "cf-templates-1r72h3gknbax2-${aws.region}"
-	templateKeyPrefix "06-cloudformation"
-	stackPolicyFile project.file('src/main/cloudformation/stackpolicy.json')
-	stackPolicyBucket "cf-templates-1r72h3gknbax2-${aws.region}"
-	stackPolicyKeyPrefix "06-cloudformation"
-	stackName "gradlecfn"
-	conventionMapping.stackParams = {
-		def stackParams
-		def stack = cloudFormation.getStack()
-		if (stack.isPresent()) {
-			// existing parameter values
-			stackParams = cloudFormation.toMap(stack.get().parameters)
-		} else {
-			assert project.uploadBundle.didWork
-			// default values
-			stackParams = [
-				KeyName: "sample-key",
-				EnvironmentType: "local"
-			]
+	cloudFormation {
+		templateFile = project.file('src/main/cloudformation/06-cloudformation.template')
+		templateBucket = "cf-templates-1r72h3gknbax2-${aws.region}"
+		templateKeyPrefix = "06-cloudformation"
+		stackPolicyFile = project.file('src/main/cloudformation/stackpolicy.json')
+		stackPolicyBucket = "cf-templates-1r72h3gknbax2-${aws.region}"
+		stackPolicyKeyPrefix = "06-cloudformation"
+		stackName = "gradlecfn"
+		conventionMapping.stackParams = {
+			def stackParams
+			def stack = cloudFormation.getStack()
+			if (stack.isPresent()) {
+				// existing parameter values
+				stackParams = cloudFormation.toMap(stack.get().parameters)
+			} else {
+				assert project.uploadBundle.didWork
+				// default values
+				stackParams = [
+						KeyName        : "sample-key",
+						EnvironmentType: "local"
+				]
+			}
+			if (project.uploadBundle.didWork) {
+				stackParams["AppVersionLabel"] = project.uploadBundle.versionDesc
+			}
+			return stackParams
 		}
-		if (project.uploadBundle.didWork) {
-			stackParams["AppVersionLabel"] = project.uploadBundle.versionDesc
-		}
-		return stackParams
+		stackTags << [MyTag: 'myValue']
+		capabilityIam = true
 	}
-	stackTags << [MyTag: 'myValue']
-	capabilityIam true
 }
 
 //==== Other tasks

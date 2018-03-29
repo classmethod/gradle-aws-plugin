@@ -21,10 +21,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
-public class AmazonCloudFormationValidateTemplateUrlTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonCloudFormationValidateTemplateUrlTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -32,18 +33,16 @@ public class AmazonCloudFormationValidateTemplateUrlTask extends ConventionTask 
 	
 	
 	public AmazonCloudFormationValidateTemplateUrlTask() {
-		setDescription("Validate template URL.");
-		setGroup("AWS");
+		super("AWS", "Validate template URL.");
 	}
 	
 	@TaskAction
 	public void validateTemplateUrl() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		String cfnTemplateUrl = getCfnTemplateUrl();
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		AmazonCloudFormationPluginExtension ext = getPluginExtension(AmazonCloudFormationPluginExtension.class);
 		
-		if (!ext.isValidTemplateUrl(cfnTemplateUrl)) {
+		if (ext.isValidTemplateUrl(cfnTemplateUrl) == false) {
 			throw new GradleException("cloudFormation template has invalid format");
 		}
 	}

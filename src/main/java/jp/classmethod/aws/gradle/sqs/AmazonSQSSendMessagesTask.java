@@ -41,8 +41,7 @@ public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 	
 	
 	public AmazonSQSSendMessagesTask() {
-		setDescription("Send messages to SQS");
-		setGroup("AWS");
+		super("AWS", "Send messages to SQS");
 	}
 	
 	@TaskAction
@@ -57,7 +56,7 @@ public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 			throw new GradleException("Must provide messages to send to SQS");
 		}
 		
-		AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
+		AmazonSQSPluginExtension ext = getPluginExtension(AmazonSQSPluginExtension.class);
 		AmazonSQS sqs = ext.getClient();
 		
 		final AtomicInteger counter = new AtomicInteger(0);
@@ -69,5 +68,4 @@ public class AmazonSQSSendMessagesTask extends AbstractAmazonSQSTask {
 		Lists.partition(messageEntries, MAX_MESSAGE_SEND_BATCH_SIZE).parallelStream().forEach(messagesToSend -> sqs
 			.sendMessageBatch(new SendMessageBatchRequest().withQueueUrl(queueUrl).withEntries(messagesToSend)));
 	}
-	
 }

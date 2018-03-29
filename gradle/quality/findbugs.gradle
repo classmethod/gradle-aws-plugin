@@ -1,0 +1,14 @@
+findbugs {
+	toolVersion = "3.0.1"
+	effort = "max"
+}
+findbugsMain.excludeFilter = file("${rootProject.projectDir}/config/findbugs/excludeFilter.xml")
+findbugsTest.excludeFilter = file("${rootProject.projectDir}/config/findbugs/excludeFilter-test.xml")
+
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+	pluginClasspath = project.configurations.findbugsPlugins
+}

@@ -24,7 +24,6 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
@@ -35,9 +34,11 @@ import com.amazonaws.services.elasticbeanstalk.model.DeleteConfigurationTemplate
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateConfigurationTemplateRequest;
 
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
 import groovy.json.JsonParserType;
 
-public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends ConventionTask {
+public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -53,8 +54,7 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 	
 	
 	public AWSElasticBeanstalkCreateConfigurationTemplateTask() {
-		setDescription("Create / Migrate ElasticBeanstalk Configuration Templates.");
-		setGroup("AWS");
+		super("AWS", "Create / Migrate ElasticBeanstalk Configuration Templates.");
 	}
 	
 	@TaskAction
@@ -62,7 +62,7 @@ public class AWSElasticBeanstalkCreateConfigurationTemplateTask extends Conventi
 		// to enable conventionMappings feature
 		String appName = getAppName();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		configurationTemplates.forEach(config -> {

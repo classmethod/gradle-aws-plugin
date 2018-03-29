@@ -1,15 +1,16 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-import jp.classmethod.aws.gradle.route53.CreateHostedZoneTask;
-import jp.classmethod.aws.gradle.route53.DeleteHostedZoneTask;
+import jp.classmethod.aws.gradle.route53.CreateHostedZoneTask
+import jp.classmethod.aws.gradle.route53.DeleteHostedZoneTask
 
 buildscript {
 	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
 	}
 }
 
@@ -20,10 +21,10 @@ aws {
 }
 
 task createHostedZone(type: CreateHostedZoneTask) {
-	hostedZoneName "foobar.example.com"
-	callerReference "0BF44985-9D79-BF3B-A9B0-5AE24D6E86E2"
+	hostedZoneName = "foobar.example.com"
+	callerReference = "0BF44985-9D79-BF3B-A9B0-5AE24D6E86E2"
 }
 
 task deleteHostedZone(type: DeleteHostedZoneTask) {
-	hostedZoneId "XXXXXXXXXXXXX"
+	hostedZoneId = "XXXXXXXXXXXXX"
 }

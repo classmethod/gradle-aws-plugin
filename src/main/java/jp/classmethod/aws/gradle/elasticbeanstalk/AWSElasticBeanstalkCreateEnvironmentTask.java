@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
@@ -34,7 +33,9 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.Tag;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest;
 
-public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkCreateEnvironmentTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -70,8 +71,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { /
 	
 	
 	public AWSElasticBeanstalkCreateEnvironmentTask() {
-		setDescription("Create/Migrate ElasticBeanstalk Environment.");
-		setGroup("AWS");
+		super("AWS", "Create/Migrate ElasticBeanstalk Environment.");
 	}
 	
 	@TaskAction
@@ -86,7 +86,7 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { /
 		Tier tier = getTier();
 		Map<String, String> tags = getTags();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		DescribeEnvironmentsResult der = eb.describeEnvironments(new DescribeEnvironmentsRequest()
@@ -153,6 +153,6 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { /
 	
 	// simple helper method to not include apache commons lang's StringUtils only for this
 	private boolean isNotBlank(String str) {
-		return str != null && !str.trim().isEmpty();
+		return str != null && !str.trim().isEmpty(); // NOPMD
 	}
 }

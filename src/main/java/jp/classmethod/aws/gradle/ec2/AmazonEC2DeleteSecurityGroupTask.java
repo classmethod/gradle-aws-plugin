@@ -19,14 +19,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
 
-public class AmazonEC2DeleteSecurityGroupTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonEC2DeleteSecurityGroupTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -38,8 +39,7 @@ public class AmazonEC2DeleteSecurityGroupTask extends ConventionTask {
 	
 	
 	public AmazonEC2DeleteSecurityGroupTask() {
-		setDescription("Delete security group.");
-		setGroup("AWS");
+		super("AWS", "Delete security group.");
 	}
 	
 	@TaskAction
@@ -48,7 +48,7 @@ public class AmazonEC2DeleteSecurityGroupTask extends ConventionTask {
 		String groupName = getGroupName();
 		String groupId = getGroupId();
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		AmazonEC2PluginExtension ext = getPluginExtension(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
 		
 		if (groupName == null && groupId == null) {

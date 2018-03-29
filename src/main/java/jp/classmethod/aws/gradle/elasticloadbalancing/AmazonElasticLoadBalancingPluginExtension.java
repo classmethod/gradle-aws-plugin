@@ -30,5 +30,4 @@ public class AmazonElasticLoadBalancingPluginExtension
 	public AmazonElasticLoadBalancingPluginExtension(Project project) {
 		super(project, AmazonElasticLoadBalancingClient.class);
 	}
-	
 }

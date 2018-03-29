@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -32,7 +31,9 @@ import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 
-public class AmazonRDSDescribeInstanceTask extends ConventionTask { // NOPMD
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AmazonRDSDescribeInstanceTask extends BaseAwsTask { // NOPMD
 	
 	@Getter
 	@Setter
@@ -74,8 +75,7 @@ public class AmazonRDSDescribeInstanceTask extends ConventionTask { // NOPMD
 	
 	
 	public AmazonRDSDescribeInstanceTask() {
-		setDescription("Wait RDS instance for specific status.");
-		setGroup("AWS");
+		super("AWS", "Wait RDS instance for specific status.");
 	}
 	
 	@TaskAction
@@ -91,7 +91,7 @@ public class AmazonRDSDescribeInstanceTask extends ConventionTask { // NOPMD
 			throw new GradleException("dbInstanceIdentifier is not specified");
 		}
 		
-		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
+		AmazonRDSPluginExtension ext = getPluginExtension(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
 		long start = System.currentTimeMillis();

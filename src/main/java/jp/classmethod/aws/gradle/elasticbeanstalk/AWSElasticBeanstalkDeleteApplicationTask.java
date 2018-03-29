@@ -18,13 +18,14 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
 import com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationRequest;
 
-public class AWSElasticBeanstalkDeleteApplicationTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSElasticBeanstalkDeleteApplicationTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -32,8 +33,7 @@ public class AWSElasticBeanstalkDeleteApplicationTask extends ConventionTask {
 	
 	
 	public AWSElasticBeanstalkDeleteApplicationTask() {
-		setDescription("Delete ElasticBeanstalk Application.");
-		setGroup("AWS");
+		super("AWS", "Delete ElasticBeanstalk Application.");
 	}
 	
 	@TaskAction
@@ -41,7 +41,7 @@ public class AWSElasticBeanstalkDeleteApplicationTask extends ConventionTask {
 		// to enable conventionMappings feature
 		String appName = getAppName();
 		
-		AwsBeanstalkPluginExtension ext = getProject().getExtensions().getByType(AwsBeanstalkPluginExtension.class);
+		AwsBeanstalkPluginExtension ext = getPluginExtension(AwsBeanstalkPluginExtension.class);
 		AWSElasticBeanstalk eb = ext.getClient();
 		
 		eb.deleteApplication(new DeleteApplicationRequest(appName));

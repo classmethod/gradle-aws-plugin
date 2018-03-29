@@ -22,13 +22,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.DeleteFunctionRequest;
 
-public class AWSLambdaDeleteFunctionTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class AWSLambdaDeleteFunctionTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -36,8 +37,7 @@ public class AWSLambdaDeleteFunctionTask extends ConventionTask {
 	
 	
 	public AWSLambdaDeleteFunctionTask() {
-		setDescription("Delete Lambda function.");
-		setGroup("AWS");
+		super("AWS", "Delete Lambda function.");
 	}
 	
 	@TaskAction
@@ -49,7 +49,7 @@ public class AWSLambdaDeleteFunctionTask extends ConventionTask {
 			throw new GradleException("functionName is required");
 		}
 		
-		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
+		AWSLambdaPluginExtension ext = getPluginExtension(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
 		
 		DeleteFunctionRequest request = new DeleteFunctionRequest()

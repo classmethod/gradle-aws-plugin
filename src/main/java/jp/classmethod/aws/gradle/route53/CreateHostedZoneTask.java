@@ -22,7 +22,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.route53.AmazonRoute53;
@@ -31,7 +30,9 @@ import com.amazonaws.services.route53.model.CreateHostedZoneResult;
 import com.amazonaws.services.route53.model.HostedZoneAlreadyExistsException;
 import com.amazonaws.services.route53.model.HostedZoneConfig;
 
-public class CreateHostedZoneTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class CreateHostedZoneTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -57,6 +58,10 @@ public class CreateHostedZoneTask extends ConventionTask {
 	private List<String> nameServers;
 	
 	
+	public CreateHostedZoneTask() {
+		super("AWS", "Create hosted zone.");
+	}
+	
 	@TaskAction
 	public void createHostedZone() throws UnknownHostException {
 		// to enable conventionMappings feature
@@ -65,7 +70,7 @@ public class CreateHostedZoneTask extends ConventionTask {
 				getCallerReference() != null ? getCallerReference() : InetAddress.getLocalHost().getHostName();
 		String comment = getComment();
 		
-		AmazonRoute53PluginExtension ext = getProject().getExtensions().getByType(AmazonRoute53PluginExtension.class);
+		AmazonRoute53PluginExtension ext = getPluginExtension(AmazonRoute53PluginExtension.class);
 		AmazonRoute53 route53 = ext.getClient();
 		
 		getLogger().info("callerRef = {}", callerReference);

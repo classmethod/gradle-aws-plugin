@@ -31,8 +31,7 @@ import com.amazonaws.services.s3.transfer.Upload;
 public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploadTask {
 	
 	public AmazonS3ProgressiveFileUploadTask() {
-		setDescription("Upload file to the Amazon S3 bucket.");
-		setGroup("AWS");
+		super("AWS", "Upload file to the Amazon S3 bucket.");
 	}
 	
 	@TaskAction
@@ -55,7 +54,7 @@ public class AmazonS3ProgressiveFileUploadTask extends AbstractAmazonS3FileUploa
 			throw new GradleException("file must be regular file");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		TransferManager s3mgr = TransferManagerBuilder.standard().withS3Client(s3).build();

@@ -19,13 +19,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.services.s3.AmazonS3;
 
-public class BucketPolicyTask extends ConventionTask {
+import jp.classmethod.aws.gradle.common.BaseAwsTask;
+
+public class BucketPolicyTask extends BaseAwsTask {
 	
 	@Getter
 	@Setter
@@ -37,8 +38,7 @@ public class BucketPolicyTask extends ConventionTask {
 	
 	
 	public BucketPolicyTask() {
-		setDescription("Set an S3 bucket policy");
-		setGroup("AWS");
+		super("AWS", "Set an S3 bucket policy");
 	}
 	
 	@TaskAction
@@ -54,7 +54,7 @@ public class BucketPolicyTask extends ConventionTask {
 			throw new GradleException("policy is not specified");
 		}
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		AmazonS3PluginExtension ext = getPluginExtension(AmazonS3PluginExtension.class);
 		AmazonS3 s3 = ext.getClient();
 		
 		String policyJson = policy.toJson();
