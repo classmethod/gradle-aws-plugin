@@ -17,17 +17,18 @@ package jp.classmethod.aws.gradle.rds;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.rds.AmazonRDSClient;
+import com.amazonaws.services.rds.AmazonRDS;
+import com.amazonaws.services.rds.AmazonRDSClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonRDSPluginExtension extends BaseRegionAwarePluginExtension<AmazonRDSClient> {
+public class AmazonRDSPluginExtension extends BasePluginExtension<AmazonRDS> {
 	
 	public static final String NAME = "rds";
 	
 	
 	public AmazonRDSPluginExtension(Project project) {
-		super(project, AmazonRDSClient.class);
+		super(project, AmazonRDSClientBuilder.standard());
 	}
 	
 }

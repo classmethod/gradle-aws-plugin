@@ -17,17 +17,17 @@ package jp.classmethod.aws.gradle.sqs;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonSQSPluginExtension extends BaseRegionAwarePluginExtension<AmazonSQSClient> {
+public class AmazonSQSPluginExtension extends BasePluginExtension<AmazonSQS> {
 	
 	public static final String NAME = "sqs";
 	
 	
 	public AmazonSQSPluginExtension(Project project) {
-		super(project, AmazonSQSClient.class);
+		super(project, AmazonSQSClientBuilder.standard());
 	}
-	
 }

@@ -17,17 +17,18 @@ package jp.classmethod.aws.gradle.ec2;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonEC2PluginExtension extends BaseRegionAwarePluginExtension<AmazonEC2Client> {
+public class AmazonEC2PluginExtension extends BasePluginExtension<AmazonEC2> {
 	
 	public static final String NAME = "ec2";
 	
 	
 	public AmazonEC2PluginExtension(Project project) {
-		super(project, AmazonEC2Client.class);
+		super(project, AmazonEC2ClientBuilder.standard());
 	}
 	
 }

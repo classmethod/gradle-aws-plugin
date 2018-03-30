@@ -46,7 +46,7 @@ public class AwsBeanstalkPlugin implements Plugin<Project> {
 	
 	private void applyTasks(final Project project) { // NOPMD
 		AwsBeanstalkPluginExtension ebExt = project.getExtensions().findByType(AwsPluginExtension.class)
-				.asExtensionAware().getExtensions().findByType(AwsBeanstalkPluginExtension.class);
+			.asExtensionAware().getExtensions().findByType(AwsBeanstalkPluginExtension.class);
 		
 		AWSElasticBeanstalkCreateApplicationTask awsEbMigrateApplication = project.getTasks()
 			.create("awsEbMigrateApplication", AWSElasticBeanstalkCreateApplicationTask.class, task -> {

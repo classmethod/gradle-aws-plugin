@@ -1,5 +1,7 @@
 // -*- coding: utf-8; mode: groovy -*-
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+
 import jp.classmethod.aws.gradle.ec2.AmazonEC2ImportKeyTask
 import jp.classmethod.aws.gradle.ec2.AmazonEC2RunInstanceTask
 import jp.classmethod.aws.gradle.ec2.AmazonEC2StartInstanceTask
@@ -9,19 +11,27 @@ import jp.classmethod.aws.gradle.ec2.AmazonEC2WaitInstanceStatusTask
 
 buildscript {
 	repositories {
-		mavenLocal()
+		jcenter()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
 apply plugin: "jp.classmethod.aws.ec2"
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
+	clientBuilderConfig {
+		region = "ap-northeast-1"
+		credentials = new ProfileCredentialsProvider("default")
+	}
+	
+	ec2 {
+		clientBuilderConfig {
+			region = "ca-central-1" // override
+		}
+	}
 }
 
 task importKey(type: AmazonEC2ImportKeyTask) {

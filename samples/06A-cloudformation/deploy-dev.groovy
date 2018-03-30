@@ -1,6 +1,7 @@
 aws {
-  profileName = "default"
-  region = "ap-northeast-1"
+  clientBuilderConfig {
+    region = "ap-northeast-1"
+  }
   cloudFormation {
     stackName = "HelloWorld-stack"
     capabilityIam = true

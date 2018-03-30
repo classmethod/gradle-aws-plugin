@@ -1,5 +1,16 @@
 import jp.classmethod.aws.gradle.s3.SyncTask
 
+buildscript {
+	repositories {
+		jcenter()
+		mavenCentral()
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
+	}
+}
+
 apply plugin: 'groovy'
 apply plugin: 'jp.classmethod.aws.cloudformation'
 

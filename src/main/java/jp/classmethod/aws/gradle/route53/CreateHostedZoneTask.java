@@ -86,12 +86,13 @@ public class CreateHostedZoneTask extends BaseAwsTask {
 			createHostedZoneResult = route53.createHostedZone(req);
 			nameServers = createHostedZoneResult.getDelegationSet().getNameServers();
 			hostedZoneId = createHostedZoneResult.getHostedZone().getId();
-			getLogger().info("HostedZone {} ({} - {})  is created.", hostedZoneId, hostedZoneName, callerReference);
+			getLogger().info("HostedZone {} ({} by caller {})  is created.", hostedZoneId, hostedZoneName,
+					callerReference);
 			nameServers.forEach(it -> {
 				getLogger().info("  NS {}", it);
 			});
 		} catch (HostedZoneAlreadyExistsException e) {
-			getLogger().error("HostedZone {} - {} is already created.", hostedZoneName, callerReference);
+			getLogger().error("HostedZone {} by caller {} is already created.", hostedZoneName, callerReference);
 		}
 	}
 }

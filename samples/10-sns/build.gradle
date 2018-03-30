@@ -5,26 +5,27 @@ import jp.classmethod.aws.gradle.sns.AmazonSNSPublishMessageTask
 
 buildscript {
 	repositories {
-		mavenLocal()
+		jcenter()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
-
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
 apply plugin: "jp.classmethod.aws.sns"
 
+def myTopicArn = 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+
 task publishMessage(type: AmazonSNSPublishMessageTask) {
-	topicArn = 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	topicArn = myTopicArn
 	message = 'Test body'
 	subject = 'Optional test subject'
 }
 
 task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
-	topicArn = 'arn:aws:sns:us-east-1:000000000000:gradle-aws-plugin-sns-topic'
+	topicArn = myTopicArn
 	message = JsonOutput.toJson(['default': 'Default message body.',
 							'email'  : 'Email message body.',
 							'sms': 'SMS message body.'])

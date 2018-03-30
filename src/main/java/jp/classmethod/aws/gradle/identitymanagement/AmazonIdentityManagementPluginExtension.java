@@ -17,17 +17,18 @@ package jp.classmethod.aws.gradle.identitymanagement;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
 
 import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonIdentityManagementPluginExtension extends BasePluginExtension<AmazonIdentityManagementClient> {
+public class AmazonIdentityManagementPluginExtension extends BasePluginExtension<AmazonIdentityManagement> {
 	
 	public static final String NAME = "iam";
 	
 	
 	public AmazonIdentityManagementPluginExtension(Project project) {
-		super(project, AmazonIdentityManagementClient.class);
+		super(project, AmazonIdentityManagementClientBuilder.standard());
 	}
 	
 }

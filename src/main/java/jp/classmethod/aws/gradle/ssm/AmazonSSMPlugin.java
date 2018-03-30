@@ -26,6 +26,6 @@ public class AmazonSSMPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
 		project.getExtensions().getByType(AwsPluginExtension.class).asExtensionAware().getExtensions()
-			.create(AmazonSSMPluginExtention.NAME, AmazonSSMPluginExtention.class, project);
+			.create(AmazonSSMPluginExtension.NAME, AmazonSSMPluginExtension.class, project);
 	}
 }

@@ -2,13 +2,12 @@
 
 buildscript {
 	repositories {
-		mavenLocal()
+		jcenter()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE"
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
@@ -44,9 +43,10 @@ dependencies {
 // ==== AWS settings
 
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
-	
+	clientBuilderConfig {
+		region = "ap-northeast-1"
+	}
+
 	cloudFormation {
 		templateFile = project.file('src/main/cloudformation/06-cloudformation.template')
 		templateBucket = "cf-templates-1r72h3gknbax2-${aws.region}"

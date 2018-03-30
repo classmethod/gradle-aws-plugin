@@ -23,17 +23,18 @@ import lombok.Setter;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 
-import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient;
+import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
+import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClientBuilder;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksResult;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
 import groovy.lang.Closure;
 
-public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<AWSElasticBeanstalkClient> {
+public class AwsBeanstalkPluginExtension extends BasePluginExtension<AWSElasticBeanstalk> {
 	
 	public static final String NAME = "beanstalk";
 	
@@ -80,7 +81,7 @@ public class AwsBeanstalkPluginExtension extends BaseRegionAwarePluginExtension<
 	
 	
 	public AwsBeanstalkPluginExtension(Project project) {
-		super(project, AWSElasticBeanstalkClient.class);
+		super(project, AWSElasticBeanstalkClientBuilder.standard());
 		this.version = new EbAppVersionExtension();
 		this.configurationTemplates = project.container(EbConfigurationTemplateExtension.class);
 		this.environment = new EbEnvironmentExtension();

@@ -8,20 +8,17 @@ buildscript {
 		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
+
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
 apply plugin: "jp.classmethod.aws.route53"
-aws {
-	profileName = "default"
-	region = "ap-northeast-1"
-}
 
 task createHostedZone(type: CreateHostedZoneTask) {
-	hostedZoneName = "foobar.example.com"
+	hostedZoneName = "foobar.example.local"
 	callerReference = "0BF44985-9D79-BF3B-A9B0-5AE24D6E86E2"
 }
 

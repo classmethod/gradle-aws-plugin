@@ -18,17 +18,14 @@ buildscript {
 		mavenLocal()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
+
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
 apply plugin: "jp.classmethod.aws.s3"
-aws {
-	profileName = "default"
-	region = "us-west-1"
-}
 
 def myBucketName = 'gradle-aws-plugin-sample' // change this
 

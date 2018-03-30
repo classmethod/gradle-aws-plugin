@@ -20,12 +20,13 @@ import lombok.Setter;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.client.builder.AwsSyncClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonS3PluginExtension extends BaseRegionAwarePluginExtension<AmazonS3Client> {
+public class AmazonS3PluginExtension extends BasePluginExtension<AmazonS3> {
 	
 	public static final String NAME = "s3";
 	
@@ -35,21 +36,14 @@ public class AmazonS3PluginExtension extends BaseRegionAwarePluginExtension<Amaz
 	
 	
 	public AmazonS3PluginExtension(Project project) {
-		super(project, AmazonS3Client.class);
+		super(project, AmazonS3ClientBuilder.standard());
 	}
 	
 	@Override
-	protected ClientConfiguration buildClientConfiguration() {
-		ClientConfiguration clientConfiguration = new ClientConfiguration();
+	protected void configureBuilder(AwsSyncClientBuilder<?, AmazonS3> builder) {
+		super.configureBuilder(builder);
 		if (maxErrorRetry > 0) {
-			clientConfiguration.setMaxErrorRetry(maxErrorRetry);
+			builder.getClientConfiguration().setMaxErrorRetry(maxErrorRetry);
 		}
-		
-		return clientConfiguration;
-	}
-	
-	@Override
-	protected boolean isRegionRequired() {
-		return false;
 	}
 }

@@ -20,11 +20,12 @@ import lombok.Setter;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.ecr.AmazonECRClient;
+import com.amazonaws.services.ecr.AmazonECR;
+import com.amazonaws.services.ecr.AmazonECRClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonECRPluginExtension extends BaseRegionAwarePluginExtension<AmazonECRClient> {
+public class AmazonECRPluginExtension extends BasePluginExtension<AmazonECR> {
 	
 	public static final String NAME = "ecr";
 	
@@ -34,6 +35,6 @@ public class AmazonECRPluginExtension extends BaseRegionAwarePluginExtension<Ama
 	
 	
 	public AmazonECRPluginExtension(Project project) {
-		super(project, AmazonECRClient.class);
+		super(project, AmazonECRClientBuilder.standard());
 	}
 }

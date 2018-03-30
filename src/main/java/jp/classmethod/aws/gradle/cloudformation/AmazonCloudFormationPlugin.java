@@ -31,7 +31,6 @@ import com.amazonaws.services.cloudformation.model.Tag;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
 import jp.classmethod.aws.gradle.AwsPluginExtension;
-import jp.classmethod.aws.gradle.elasticbeanstalk.AwsBeanstalkPluginExtension;
 import jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask;
 import jp.classmethod.aws.gradle.s3.AmazonS3Plugin;
 
@@ -49,7 +48,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 	
 	private void applyTasks(Project project) { // NOPMD
 		AmazonCloudFormationPluginExtension cfnExt = project.getExtensions().findByType(AwsPluginExtension.class)
-				.asExtensionAware().getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
+			.asExtensionAware().getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
 		
 		AmazonS3FileUploadTask awsCfnUploadTemplate =
 				project.getTasks().create("awsCfnUploadTemplate", AmazonS3FileUploadTask.class, task -> {

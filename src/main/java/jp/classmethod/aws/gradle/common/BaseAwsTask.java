@@ -19,12 +19,6 @@ import org.gradle.api.internal.ConventionTask;
 
 import jp.classmethod.aws.gradle.AwsPluginExtension;
 
-/**
- * TODO daisuke.
- *
- * @author daisuke
- * @since #version#
- */
 public abstract class BaseAwsTask extends ConventionTask {
 	
 	public BaseAwsTask(String group, String description) {

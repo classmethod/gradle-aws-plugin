@@ -7,19 +7,20 @@ import jp.classmethod.aws.gradle.rds.AmazonRDSWaitInstanceStatusTask
 
 buildscript {
 	repositories {
-		mavenLocal()
+		jcenter()
 		mavenCentral()
 		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.37-2-+"
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:+'
 	}
 }
 
 apply plugin: "jp.classmethod.aws.rds"
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
+	clientBuilderConfig {
+		region = "ap-northeast-1"
+	}
 }
 
 task migrateDBInstance(type: AmazonRDSMigrateDBInstanceTask) {

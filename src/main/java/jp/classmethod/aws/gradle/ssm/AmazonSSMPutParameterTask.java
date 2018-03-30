@@ -23,7 +23,7 @@ import lombok.Setter;
 
 import org.gradle.api.tasks.TaskAction;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
 import com.amazonaws.services.simplesystemsmanagement.model.Parameter;
 import com.amazonaws.services.simplesystemsmanagement.model.ParameterAlreadyExistsException;
 import com.amazonaws.services.simplesystemsmanagement.model.PutParameterRequest;
@@ -76,8 +76,8 @@ public class AmazonSSMPutParameterTask extends BaseAwsTask {
 			setPrefix("");
 		}
 		
-		AmazonSSMPluginExtention ext = getPluginExtension(AmazonSSMPluginExtention.class);
-		AWSSimpleSystemsManagementClient ssm = ext.getClient();
+		AmazonSSMPluginExtension ext = getPluginExtension(AmazonSSMPluginExtension.class);
+		AWSSimpleSystemsManagement ssm = ext.getClient();
 		
 		parameters.stream()
 			.map(param -> new PutParameterRequest()

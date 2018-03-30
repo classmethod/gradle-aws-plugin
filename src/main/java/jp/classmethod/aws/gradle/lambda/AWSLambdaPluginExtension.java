@@ -17,17 +17,18 @@ package jp.classmethod.aws.gradle.lambda;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.lambda.AWSLambdaClient;
+import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AWSLambdaPluginExtension extends BaseRegionAwarePluginExtension<AWSLambdaClient> {
+public class AWSLambdaPluginExtension extends BasePluginExtension<AWSLambda> {
 	
 	public static final String NAME = "lambda";
 	
 	
 	public AWSLambdaPluginExtension(Project project) {
-		super(project, AWSLambdaClient.class);
+		super(project, AWSLambdaClientBuilder.standard());
 	}
 	
 }

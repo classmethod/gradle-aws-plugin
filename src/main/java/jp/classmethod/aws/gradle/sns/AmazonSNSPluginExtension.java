@@ -17,16 +17,17 @@ package jp.classmethod.aws.gradle.sns;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonSNSPluginExtension extends BaseRegionAwarePluginExtension<AmazonSNSClient> {
+public class AmazonSNSPluginExtension extends BasePluginExtension<AmazonSNS> {
 	
 	public static final String NAME = "sns";
 	
 	
 	public AmazonSNSPluginExtension(Project project) {
-		super(project, AmazonSNSClient.class);
+		super(project, AmazonSNSClientBuilder.standard());
 	}
 }

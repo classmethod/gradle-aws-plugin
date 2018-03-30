@@ -25,15 +25,14 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
+import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+import com.amazonaws.services.cloudformation.AmazonCloudFormationClientBuilder;
 import com.amazonaws.services.cloudformation.model.AmazonCloudFormationException;
 import com.amazonaws.services.cloudformation.model.Capability;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourcesRequest;
@@ -46,11 +45,10 @@ import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackResource;
 import com.amazonaws.services.cloudformation.model.ValidateTemplateRequest;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginExtension<AmazonCloudFormationClient> {
-	
-	private static Logger logger = LoggerFactory.getLogger(AmazonCloudFormationPluginExtension.class);
+@Slf4j
+public class AmazonCloudFormationPluginExtension extends BasePluginExtension<AmazonCloudFormation> {
 	
 	public static final String NAME = "cloudFormation";
 	
@@ -112,7 +110,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
-		super(project, AmazonCloudFormationClient.class);
+		super(project, AmazonCloudFormationClientBuilder.standard());
 	}
 	
 	public Optional<Stack> getStack() {
@@ -148,7 +146,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			Optional<Stack> stack = getStack(stackName);
 			return stack.map(Stack::getParameters).orElse(Collections.emptyList());
 		}
-		logger.info("offline mode: return empty parameters");
+		log.info("offline mode: return empty parameters");
 		return Collections.emptyList();
 	}
 	
@@ -161,7 +159,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			Optional<Stack> stack = getStack(stackName);
 			return stack.map(Stack::getOutputs).orElse(Collections.emptyList());
 		}
-		logger.info("offline mode: return empty outputs");
+		log.info("offline mode: return empty outputs");
 		return Collections.emptyList();
 	}
 	
@@ -184,7 +182,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 				}
 			}
 		}
-		logger.info("offline mode: return empty resources");
+		log.info("offline mode: return empty resources");
 		return Collections.emptyList();
 	}
 	
@@ -201,7 +199,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			.filter(p -> p.getParameterKey().equals(key))
 			.findAny();
 		if (param.isPresent() == false) {
-			logger.warn("WARN: param {} for stack {} is not found", key, stackName);
+			log.warn("WARN: param {} for stack {} is not found", key, stackName);
 		}
 		return param.map(Parameter::getParameterValue).orElse(null);
 	}
@@ -219,7 +217,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			.filter(p -> p.getOutputKey().equals(key))
 			.findAny();
 		if (output.isPresent() == false) {
-			logger.warn("WARN: output {} for stack {} is not found", key, stackName);
+			log.warn("WARN: output {} for stack {} is not found", key, stackName);
 		}
 		return output.map(Output::getOutputValue).orElse(null);
 	}
@@ -237,7 +235,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			.filter(r -> r.getLogicalResourceId().equals(logicalResourceId))
 			.findAny();
 		if (physicalResource.isPresent() == false) {
-			logger.warn("WARN: physical resource {} for stack {} is not found", logicalResourceId, stackName);
+			log.warn("WARN: physical resource {} for stack {} is not found", logicalResourceId, stackName);
 		}
 		return physicalResource.map(StackResource::getPhysicalResourceId).orElse(null);
 	}
@@ -249,7 +247,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			getClient().validateTemplate(validateTemplateRequest);
 			return true;
 		} catch (AmazonClientException e) {
-			logger.error("validateTemplateBody failed: {}", e.getMessage());
+			log.error("validateTemplateBody failed: {}", e.getMessage());
 			return false;
 		}
 	}
@@ -261,7 +259,7 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 			getClient().validateTemplate(validateTemplateRequest);
 			return true;
 		} catch (AmazonClientException e) {
-			logger.error("validateTemplateUrl failed: {}", e.getMessage());
+			log.error("validateTemplateUrl failed: {}", e.getMessage());
 			return false;
 		}
 	}

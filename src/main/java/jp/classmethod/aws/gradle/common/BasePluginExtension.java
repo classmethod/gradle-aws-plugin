@@ -16,26 +16,28 @@
 package jp.classmethod.aws.gradle.common;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.AmazonWebServiceClient;
-import com.amazonaws.ClientConfiguration;
+import com.amazonaws.client.builder.AwsSyncClientBuilder;
 
 import jp.classmethod.aws.gradle.AwsPluginExtension;
 
-public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
+import groovy.lang.Closure;
+
+@RequiredArgsConstructor
+public abstract class BasePluginExtension<T> {
 	
-	private final Class<T> awsClientClass;
+	@Getter
+	private final Project project;
+	
+	private final AwsSyncClientBuilder<?, T> builder;
 	
 	@Getter
 	@Setter
-	private Project project;
-	
-	@Getter
-	@Setter
-	private String profileName;
+	private Closure<?> clientBuilderConfig;
 	
 	private T client;
 	
@@ -43,27 +45,24 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	@SuppressWarnings("unchecked")
 	public T getClient() {
 		if (client == null) {
-			client = initClient();
+			configureBuilder(builder);
+			client = builder.build();
 		}
 		return client;
 	}
 	
-	public BasePluginExtension(Project project, Class<T> awsClientClass) {
-		this.project = project;
-		this.awsClientClass = awsClientClass;
-	}
-	
-	protected T initClient() {
-		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(awsClientClass, profileName, buildClientConfiguration());
-	}
-	
 	/**
 	 * Allow subclasses to build a custom client configuration.
-	 *
-	 * @return  AWS ClientConfiguration
 	 */
-	protected ClientConfiguration buildClientConfiguration() { // NOPMD
-		return null;
+	protected void configureBuilder(AwsSyncClientBuilder<?, T> builder) { // NOPMD
+		Closure<?> commonConfig = project.getExtensions().getByType(AwsPluginExtension.class).getClientBuilderConfig();
+		if (commonConfig != null) {
+			commonConfig.setDelegate(builder);
+			commonConfig.call();
+		}
+		if (clientBuilderConfig != null) {
+			clientBuilderConfig.setDelegate(builder);
+			clientBuilderConfig.call();
+		}
 	}
 }

@@ -17,17 +17,17 @@ package jp.classmethod.aws.gradle.elasticloadbalancing;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonElasticLoadBalancingPluginExtension
-		extends BaseRegionAwarePluginExtension<AmazonElasticLoadBalancingClient> {
+public class AmazonElasticLoadBalancingPluginExtension extends BasePluginExtension<AmazonElasticLoadBalancing> {
 	
 	public static final String NAME = "elb";
 	
 	
 	public AmazonElasticLoadBalancingPluginExtension(Project project) {
-		super(project, AmazonElasticLoadBalancingClient.class);
+		super(project, AmazonElasticLoadBalancingClientBuilder.standard());
 	}
 }

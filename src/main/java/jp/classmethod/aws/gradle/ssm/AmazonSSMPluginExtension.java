@@ -17,17 +17,17 @@ package jp.classmethod.aws.gradle.ssm;
 
 import org.gradle.api.Project;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
 
-import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 
-public class AmazonSSMPluginExtention extends BaseRegionAwarePluginExtension<AWSSimpleSystemsManagementClient> {
+public class AmazonSSMPluginExtension extends BasePluginExtension<AWSSimpleSystemsManagement> {
 	
 	public static final String NAME = "ssm";
 	
 	
-	public AmazonSSMPluginExtention(Project project) {
-		super(project, AWSSimpleSystemsManagementClient.class);
+	public AmazonSSMPluginExtension(Project project) {
+		super(project, AWSSimpleSystemsManagementClientBuilder.standard());
 	}
-	
 }
