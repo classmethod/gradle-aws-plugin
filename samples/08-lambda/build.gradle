@@ -5,6 +5,10 @@ import com.amazonaws.services.lambda.model.InvocationType;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
 import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
+import jp.classmethod.aws.gradle.lambda.AWSLambdaPublishVersionTask;
+import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateAliasTask;
+import jp.classmethod.aws.gradle.lambda.AWSLambdaUpdateAliasTask;
+
 import jp.classmethod.aws.gradle.lambda.VpcConfigWrapper
 
 buildscript {
@@ -76,3 +80,22 @@ task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
 	functionName = "foobar"
 }
 
+task publishVersionFunction(type: AWSLambdaPublishVersionTask, dependsOn: migrateFunction) {
+	functionName = "foobar"
+}
+
+task createAlias(type: AWSLambdaCreateAliasTask, dependsOn: publishVersionFunction) {
+	functionName = "foobar"
+	aliasName = "alias"
+	functionVersion = "1"
+}
+
+task updateAlias(type: AWSLambdaUpdateAliasTask, dependsOn: createAlias) {
+	functionName = "foobar"
+    aliasName = "alias"
+	functionVersion = "1"
+    routingConfig {
+        additionalVersionWeight = 0.7
+		useNextVersion = true
+    }
+}
