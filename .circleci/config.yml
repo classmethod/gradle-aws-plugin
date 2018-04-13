@@ -5,7 +5,7 @@ jobs:
       - image: openjdk:8-jdk
     environment:
       _JAVA_OPTIONS: -Xmx3G
-      GRADLE_OPTS: org.gradle.daemon=false
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
       TERM: dumb
     steps:
       - checkout
