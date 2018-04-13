@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: openjdk:8-jdk
+    environment:
+      _JAVA_OPTIONS: -Xmx3G
+      GRADLE_OPTS: org.gradle.daemon=false
+      TERM: dumb
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
+            - gradle-aws-plugin-{{ .Branch }}
+            - gradle-aws-plugin-develop
+            - gradle-aws-plugin-master
+      - run:
+          name: Show version
+          command: ./gradlew -v
+      - run:
+          name: Resolve dependencies
+          command: ./gradlew resolveDependencies
+      - run:
+          name: Run tests
+          command: ./gradlew check jacocoTestReport
+      - store_artifacts:
+          name: Store artifacts
+          path: build/reports
+          destination: artifacts
+      - store_test_results:
+          path: build/test-results
+      - save_cache:
+          key: gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - "~/.gradle"
+            - "~/.m2"
