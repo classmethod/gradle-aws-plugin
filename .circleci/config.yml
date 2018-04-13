@@ -11,7 +11,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
             - gradle-aws-plugin-{{ .Branch }}
             - gradle-aws-plugin-develop
@@ -32,7 +32,7 @@ jobs:
       - store_test_results:
           path: build/test-results
       - save_cache:
-          key: gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-aws-plugin-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
             - "~/.gradle"
             - "~/.m2"
