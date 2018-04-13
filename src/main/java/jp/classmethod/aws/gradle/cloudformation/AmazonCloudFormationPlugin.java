@@ -45,6 +45,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		applyTasks(project);
 	}
 	
+	//CHECKSTYLE:OFF
 	private void applyTasks(Project project) { // NOPMD
 		AmazonCloudFormationPluginExtension cfnExt =
 				project.getExtensions().findByType(AmazonCloudFormationPluginExtension.class);
@@ -110,7 +111,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						task.dependsOn(awsCfnUploadTemplate);
 					});
 		
-		project.getTasks()
+		AmazonCloudFormationCreateChangeSetTask awsCfnCreateChangeSet = project.getTasks()
 			.create("awsCfnCreateChangeSet", AmazonCloudFormationCreateChangeSetTask.class, task -> {
 				task.setDescription("Create cfn change set.");
 				task.mustRunAfter(awsCfnUploadTemplate);
@@ -131,8 +132,28 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
 			});
 		
-		project.getTasks()
+		AmazonCloudFormationWaitStackStatusTask awsCfnWaitStackCompleteAfterCreateChangeSet = project.getTasks().create(
+				"awsCfnWaitStackCompleteAfterCreateChangeSet", AmazonCloudFormationWaitStackStatusTask.class,
+				task -> {
+					task.setDescription(
+							"Wait cfn stack for CREATE_COMPLETE, UPDATE_COMPLETE or REVIEW_IN_PROGRESS status.");
+					task.mustRunAfter(awsCfnCreateChangeSet);
+					task.setSuccessStatuses(Arrays.asList("CREATE_COMPLETE", "UPDATE_COMPLETE", "REVIEW_IN_PROGRESS"));
+					task.conventionMapping("stackName", () -> cfnExt.getStackName());
+				});
+		
+		AmazonCloudFormationWaitChangeSetStatusTask awsCfnWaitCreateChangeSetComplete = project.getTasks().create(
+				"awsWaitCreateChangeSetComplete", AmazonCloudFormationWaitChangeSetStatusTask.class,
+				task -> {
+					task.setDescription("Wait cfn change set for CREATE_COMPLETE status");
+					task.mustRunAfter(awsCfnWaitStackCompleteAfterCreateChangeSet);
+					task.setSuccessStatuses(Arrays.asList("CREATE_COMPLETE"));
+					task.conventionMapping("stackName", () -> cfnExt.getStackName());
+				});
+		
+		AmazonCloudFormationExecuteChangeSetTask awsCfnExecuteChangeSet = project.getTasks()
 			.create("awsCfnExecuteChangeSet", AmazonCloudFormationExecuteChangeSetTask.class, task -> {
+				task.mustRunAfter(awsCfnWaitCreateChangeSetComplete);
 				task.setDescription("execute latest cfn change set.");
 				task.conventionMapping("stackName", () -> cfnExt.getStackName());
 			});
@@ -148,6 +169,7 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						task -> {
 							task.setDescription("Wait cfn stack for CREATE_COMPLETE or UPDATE_COMPLETE status.");
 							task.mustRunAfter(awsCfnMigrateStack);
+							task.mustRunAfter(awsCfnExecuteChangeSet);
 							task.setSuccessStatuses(Arrays.asList("CREATE_COMPLETE", "UPDATE_COMPLETE"));
 							task.conventionMapping("stackName", () -> cfnExt.getStackName());
 						});
@@ -155,6 +177,14 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		project.getTasks().create("awsCfnMigrateStackAndWaitCompleted")
 			.dependsOn(awsCfnMigrateStack, awsCfnWaitStackComplete)
 			.setDescription("Create/Migrate cfn stack, and wait stack for CREATE_COMPLETE or UPDATE_COMPLETE status.");
+		
+		project.getTasks().create("awsCfnDeploy")
+			.dependsOn(awsCfnCreateChangeSet, awsCfnWaitStackCompleteAfterCreateChangeSet,
+					awsCfnWaitCreateChangeSetComplete, awsCfnExecuteChangeSet,
+					awsCfnWaitStackComplete)
+			.setDescription(
+					"Create and execute a change set, waiting for completion. Useful for deploying CloudFormation templates"
+							+ "containing transforms.");
 		
 		AmazonCloudFormationDeleteStackTask awsCfnDeleteStack =
 				project.getTasks().create("awsCfnDeleteStack", AmazonCloudFormationDeleteStackTask.class, task -> {
@@ -174,7 +204,9 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 		project.getTasks().create("awsCfnDeleteStackAndWaitCompleted")
 			.dependsOn(awsCfnDeleteStack, awsCfnWaitStackDeleted)
 			.setDescription("Delete cfn stack, and wait stack for DELETE_COMPLETE status.");
+		
 	}
+	//CHECKSTYLE:ON
 	
 	private String createKey(String name, Object version, String prefix) {
 		String path = name.substring(FilenameUtils.getPrefix(name).length());

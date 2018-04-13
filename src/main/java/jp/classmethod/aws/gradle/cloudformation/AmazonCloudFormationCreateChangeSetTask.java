@@ -33,7 +33,9 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+import com.amazonaws.services.cloudformation.model.AmazonCloudFormationException;
 import com.amazonaws.services.cloudformation.model.Capability;
+import com.amazonaws.services.cloudformation.model.ChangeSetType;
 import com.amazonaws.services.cloudformation.model.CreateChangeSetRequest;
 import com.amazonaws.services.cloudformation.model.CreateChangeSetResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
@@ -76,7 +78,8 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<String> stableStatuses = Arrays.asList(
-			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
+			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE",
+			"REVIEW_IN_PROGRESS");
 	
 	
 	public AmazonCloudFormationCreateChangeSetTask() {
@@ -98,17 +101,26 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
-		DescribeStacksResult describeStackResult =
-				cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
-		Stack stack = describeStackResult.getStacks().get(0);
-		if (stableStatuses.contains(stack.getStackStatus())) {
-			createChangeSet(cfn);
-		} else {
-			throw new GradleException("invalid status for create change set: " + stack.getStackStatus());
+		try {
+			DescribeStacksResult describeStackResult =
+					cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
+			Stack stack = describeStackResult.getStacks().get(0);
+			if (stableStatuses.contains(stack.getStackStatus())) {
+				createChangeSet(cfn, ChangeSetType.UPDATE);
+			} else {
+				throw new GradleException("invalid status for create change set: " + stack.getStackStatus());
+			}
+		} catch (AmazonCloudFormationException e) {
+			if (e.getMessage().contains("does not exist")) {
+				// stack does not exist; create change set in CREATE mode
+				createChangeSet(cfn, ChangeSetType.CREATE);
+			} else {
+				throw new GradleException("Failed to describe stack " + stackName, e);
+			}
 		}
 	}
 	
-	private void createChangeSet(AmazonCloudFormation cfn) throws IOException {
+	private void createChangeSet(AmazonCloudFormation cfn, ChangeSetType changeSetType) throws IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		String cfnTemplateUrl = getCfnTemplateUrl();
@@ -122,7 +134,8 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 			.withChangeSetName(changeSetName)
 			.withStackName(stackName)
 			.withParameters(cfnStackParams)
-			.withTags(cfnStackTags);
+			.withTags(cfnStackTags)
+			.withChangeSetType(changeSetType);
 		
 		// If template URL is specified, then use it
 		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
