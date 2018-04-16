@@ -205,6 +205,13 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 			.dependsOn(awsCfnDeleteStack, awsCfnWaitStackDeleted)
 			.setDescription("Delete cfn stack, and wait stack for DELETE_COMPLETE status.");
 		
+		project.getTasks().create("awsCfnUpdateStackTerminationProtection",
+				AmazonCloudFormationStackTerminationProtectionTask.class, task -> {
+					task.setDescription("Update CloudFormation stack termination protection");
+					task.conventionMapping("stackName", () -> cfnExt.getStackName());
+					task.conventionMapping("terminationProtected", () -> cfnExt.isTerminationProtected());
+				});
+		
 	}
 	//CHECKSTYLE:ON
 	
