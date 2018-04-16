@@ -212,6 +212,14 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 					task.conventionMapping("terminationProtected", () -> cfnExt.isTerminationProtected());
 				});
 		
+		project.getTasks().create("awsCfnSetStackPolicy",
+				AmazonCloudFormationStackPolicyTask.class, task -> {
+					task.setDescription("Set CloudFormation stack policy");
+					task.conventionMapping("stackName", () -> cfnExt.getStackName());
+					task.conventionMapping("cfnStackPolicyUrl", () -> cfnExt.getStackPolicyURL());
+					task.conventionMapping("cfnStackPolicyFile", () -> cfnExt.getStackPolicyFile());
+				});
+		
 	}
 	//CHECKSTYLE:ON
 	
