@@ -313,6 +313,10 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	    p1: "Value",
 	    p2: "Value2"
 	]
+	tags = [
+	    p1: "Value",
+	    p2: "Value2"    
+	]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
