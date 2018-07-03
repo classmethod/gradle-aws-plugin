@@ -153,6 +153,7 @@ spotless {
 		licenseHeaderFile 'config/spotless/spotless.license.java'
 		importOrderFile   'config/spotless/spotless.importorder'
 		eclipse().configFile 'config/spotless/spotless.eclipseformat.xml'
+		removeUnusedImports()
 
 		// Eclipse formatter screws up long literals with underscores inside of annotations (see issue #14)
 		//    @Max(value = 9_999_999 L) // what Eclipse does
