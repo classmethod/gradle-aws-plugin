@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +33,6 @@ import com.amazonaws.services.lambda.model.InvocationType;
 import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.lambda.model.LogType;
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 import groovy.lang.Closure;
@@ -105,7 +105,7 @@ public class AWSLambdaInvokeTask extends ConventionTask {
 		if (payload != null) {
 			if (payload instanceof File) {
 				File file = (File) payload;
-				str = Files.toString(file, Charsets.UTF_8);
+				str = Files.asCharSource(file, StandardCharsets.UTF_8).read();
 			} else if (payload instanceof Closure) {
 				Closure<?> closure = (Closure<?>) payload;
 				str = closure.call().toString();

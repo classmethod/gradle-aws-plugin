@@ -15,16 +15,17 @@
  */
 package jp.classmethod.aws.gradle.ec2;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 
 import com.amazonaws.services.ec2.model.IpPermission;
+import com.amazonaws.services.ec2.model.IpRange;
 
 import groovy.lang.GString;
 
@@ -82,13 +83,15 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 					}
 				}
 				
-				List<String> ranges = Arrays.asList(rangeExpression.split(","));
+				List<IpRange> ranges = Stream.of(rangeExpression.split(","))
+					.map(range -> new IpRange().withCidrIp(range))
+					.collect(Collectors.toList());
 				
 				return new IpPermission()
 					.withIpProtocol(protocol)
 					.withFromPort(fromPort)
 					.withToPort(toPort)
-					.withIpRanges(ranges);
+					.withIpv4Ranges(ranges);
 			} else {
 				throw new GradleException("ipPermission type only supports IpPermission or String: " + it.getClass());
 			}
