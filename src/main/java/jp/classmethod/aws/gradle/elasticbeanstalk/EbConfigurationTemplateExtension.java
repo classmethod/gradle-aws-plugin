@@ -17,13 +17,13 @@ package jp.classmethod.aws.gradle.elasticbeanstalk;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.Named;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 import groovy.lang.Closure;
@@ -61,7 +61,7 @@ public class EbConfigurationTemplateExtension implements Named {
 		}
 		if (optionSettings instanceof File) {
 			File file = (File) optionSettings;
-			return Files.toString(file, Charsets.UTF_8);
+			return Files.asCharSource(file, StandardCharsets.UTF_8).read();
 		}
 		return optionSettings.toString();
 	}

@@ -46,7 +46,7 @@ public class SyncTask extends ConventionTask {
 	
 	private static String md5(File file) {
 		try {
-			return Files.hash(file, Hashing.md5()).toString();
+			return Files.asByteSource(file).hash(Hashing.md5()).toString();
 		} catch (IOException e) {
 			return "";
 		}

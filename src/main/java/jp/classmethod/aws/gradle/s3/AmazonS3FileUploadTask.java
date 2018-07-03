@@ -78,7 +78,7 @@ public class AmazonS3FileUploadTask extends AbstractAmazonS3FileUploadTask {
 	}
 	
 	private String md5() throws IOException {
-		return Files.hash(getFile(), Hashing.md5()).toString();
+		return Files.asByteSource(getFile()).hash(Hashing.md5()).toString();
 	}
 	
 	private void putObject(String bucketName, String key, File file, AmazonS3 s3) {
