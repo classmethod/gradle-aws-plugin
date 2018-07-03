@@ -15,10 +15,11 @@
  */
 package jp.classmethod.aws.gradle.common;
 
+import javax.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.Nullable;
 import org.gradle.api.Project;
 
 import com.amazonaws.AmazonWebServiceClient;
@@ -55,7 +56,7 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	/**
 	 * Allow subclasses to build a custom client configuration.
 	 *
-	 * @return  AWS ClientConfiguration
+	 * @return AWS ClientConfiguration
 	 */
 	@Nullable
 	protected ClientConfiguration buildClientConfiguration() { // NOPMD
