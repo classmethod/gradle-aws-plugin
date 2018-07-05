@@ -28,8 +28,14 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.Environment;
+import com.amazonaws.services.lambda.model.ListTagsRequest;
+import com.amazonaws.services.lambda.model.ListTagsResult;
+import com.amazonaws.services.lambda.model.TagResourceRequest;
+import com.amazonaws.services.lambda.model.UntagResourceRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 
 public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 	
@@ -60,6 +66,10 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 	@Getter
 	@Setter
 	private Map<String, String> environment;
+	
+	@Getter
+	@Setter
+	private Map<String, String> tags;
 	
 	@Getter
 	private UpdateFunctionConfigurationResult updateFunctionConfiguration;
@@ -93,5 +103,36 @@ public class AWSLambdaUpdateFunctionConfigurationTask extends ConventionTask {
 		updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());
+		
+		tagFunction(lambda);
+	}
+	
+	private void tagFunction(AWSLambda lambda) {
+		if (getTags() != null) {
+			ListTagsRequest listTagsRequest = new ListTagsRequest()
+				.withResource(getUpdateFunctionConfiguration().getFunctionArn());
+			
+			ListTagsResult listTagsResult = lambda.listTags(listTagsRequest);
+			
+			if (!listTagsResult.getTags().isEmpty()) {
+				MapDifference<String, String> tagDifferences =
+						Maps.difference(listTagsResult.getTags(), getTags());
+				
+				UntagResourceRequest untagResourceRequest = new UntagResourceRequest()
+					.withResource(getUpdateFunctionConfiguration().getFunctionArn())
+					.withTagKeys(tagDifferences.entriesOnlyOnLeft().keySet());
+				lambda.untagResource(untagResourceRequest);
+			}
+			
+			if (!getTags().isEmpty()) {
+				TagResourceRequest tagResourceRequest = new TagResourceRequest()
+					.withTags(getTags())
+					.withResource(getUpdateFunctionConfiguration().getFunctionArn());
+				
+				lambda.tagResource(tagResourceRequest);
+				getLogger().info("Update Lambda function tags requested: {}",
+						getUpdateFunctionConfiguration().getFunctionArn());
+			}
+		}
 	}
 }

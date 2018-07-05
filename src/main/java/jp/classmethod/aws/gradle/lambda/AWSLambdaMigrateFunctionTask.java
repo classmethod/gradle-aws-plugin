@@ -40,8 +40,12 @@ import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.lambda.model.FunctionConfiguration;
 import com.amazonaws.services.lambda.model.GetFunctionRequest;
 import com.amazonaws.services.lambda.model.GetFunctionResult;
+import com.amazonaws.services.lambda.model.ListTagsRequest;
+import com.amazonaws.services.lambda.model.ListTagsResult;
 import com.amazonaws.services.lambda.model.ResourceNotFoundException;
 import com.amazonaws.services.lambda.model.Runtime;
+import com.amazonaws.services.lambda.model.TagResourceRequest;
+import com.amazonaws.services.lambda.model.UntagResourceRequest;
 import com.amazonaws.services.lambda.model.UpdateAliasRequest;
 import com.amazonaws.services.lambda.model.UpdateAliasResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
@@ -49,6 +53,8 @@ import com.amazonaws.services.lambda.model.UpdateFunctionCodeResult;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationResult;
 import com.amazonaws.services.lambda.model.VpcConfig;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 
 public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	
@@ -95,6 +101,10 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	@Getter
 	@Setter
 	private Map<String, String> environment;
+	
+	@Getter
+	@Setter
+	private Map<String, String> tags;
 	
 	@Getter
 	@Setter
@@ -183,6 +193,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			.withPublish(getPublish())
 			.withVpcConfig(getVpcConfig())
 			.withEnvironment(new Environment().withVariables(getEnvironment()))
+			.withTags(getTags())
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
@@ -276,6 +287,8 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		UpdateFunctionConfigurationResult updateFunctionConfiguration = lambda.updateFunctionConfiguration(request);
 		getLogger().info("Update Lambda function configuration requested: {}",
 				updateFunctionConfiguration.getFunctionArn());
+		
+		tagFunction(lambda, config);
 	}
 	
 	private void createOrUpdateAlias(AWSLambda lambda, String functionVersion) {
@@ -316,5 +329,33 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			return getVpc().toVpcConfig();
 		}
 		return null;
+	}
+	
+	private void tagFunction(AWSLambda lambda, FunctionConfiguration config) {
+		if (getTags() != null) {
+			ListTagsRequest listTagsRequest = new ListTagsRequest()
+				.withResource(config.getFunctionArn());
+			
+			ListTagsResult listTagsResult = lambda.listTags(listTagsRequest);
+			
+			if (!listTagsResult.getTags().isEmpty()) {
+				MapDifference<String, String> tagDifferences =
+						Maps.difference(listTagsResult.getTags(), getTags());
+				
+				UntagResourceRequest untagResourceRequest = new UntagResourceRequest()
+					.withResource(config.getFunctionArn())
+					.withTagKeys(tagDifferences.entriesOnlyOnLeft().keySet());
+				lambda.untagResource(untagResourceRequest);
+			}
+			
+			if (!getTags().isEmpty()) {
+				TagResourceRequest tagResourceRequest = new TagResourceRequest()
+					.withTags(getTags())
+					.withResource(config.getFunctionArn());
+				
+				lambda.tagResource(tagResourceRequest);
+				getLogger().info("Update Lambda function tags requested: {}", config.getFunctionArn());
+			}
+		}
 	}
 }
