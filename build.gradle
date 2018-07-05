@@ -10,7 +10,7 @@ buildscript {
 		classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
 		classpath "de.thetaphi:forbiddenapis:2.2"
 		classpath "de.aaschmid:gradle-cpd-plugin:1.0"
-		classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.8"
+		classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.14"
 		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
 		classpath "com.gradle.publish:plugin-publish-plugin:0.9.10"
 	}
