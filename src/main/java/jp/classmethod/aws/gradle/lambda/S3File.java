@@ -33,7 +33,8 @@ public class S3File {
 	@Getter
 	@Setter
 	private String objectVersion;
-
+	
+	
 	protected S3File() {
 		/*
 		An empty constructor is needed so that gradle can resolve variable to an instance,
