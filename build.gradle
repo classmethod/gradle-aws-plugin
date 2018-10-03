@@ -223,6 +223,7 @@ dependencies {
 	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-ecr:$awsJavaSdkVersion"
 	compile "com.amazonaws:aws-java-sdk-ssm:$awsJavaSdkVersion"
+	compile "com.amazonaws:aws-java-sdk-cloudwatch:$awsJavaSdkVersion"
 
 	// tests
 	testCompile "junit:junit:$junitVersion"
