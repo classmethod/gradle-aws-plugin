@@ -28,6 +28,7 @@ import org.gradle.api.Project;
 
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -146,14 +147,26 @@ public class AwsPluginExtension {
 	}
 	
 	public String getAccountId() {
-		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
-		sts.setRegion(getActiveRegion(region));
-		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
+		try {
+            AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+            sts.setRegion(getActiveRegion(region));
+            return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
+		} catch (SdkClientException e) {
+            project.getLogger().lifecycle("AWS credentials not configured!");
+            return null;
+        }
+
 	}
 	
 	public String getUserArn() {
-		AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
-		sts.setRegion(getActiveRegion(region));
-		return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
+	    try {
+            AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+            sts.setRegion(getActiveRegion(region));
+            return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
+        } catch (SdkClientException e) {
+            project.getLogger().lifecycle("AWS credentials not configured!");
+            return null;
+        }
+
 	}
 }
