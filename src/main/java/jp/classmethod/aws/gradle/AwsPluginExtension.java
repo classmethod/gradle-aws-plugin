@@ -148,25 +148,25 @@ public class AwsPluginExtension {
 	
 	public String getAccountId() {
 		try {
-            AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
-            sts.setRegion(getActiveRegion(region));
-            return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
+			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+			sts.setRegion(getActiveRegion(region));
+			return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
 		} catch (SdkClientException e) {
-            project.getLogger().lifecycle("AWS credentials not configured!");
-            return null;
-        }
-
+			project.getLogger().lifecycle("AWS credentials not configured!");
+			return null;
+		}
+		
 	}
 	
 	public String getUserArn() {
-	    try {
-            AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
-            sts.setRegion(getActiveRegion(region));
-            return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
-        } catch (SdkClientException e) {
-            project.getLogger().lifecycle("AWS credentials not configured!");
-            return null;
-        }
-
+		try {
+			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+			sts.setRegion(getActiveRegion(region));
+			return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
+		} catch (SdkClientException e) {
+			project.getLogger().lifecycle("AWS credentials not configured!");
+			return null;
+		}
+		
 	}
 }
