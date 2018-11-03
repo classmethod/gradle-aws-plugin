@@ -351,6 +351,11 @@ task updateAlias(type: AWSLambdaUpdateAliasTask, dependsOn: createAlias) {
 		useNextVersion = true
     }
 }
+
+task updateLambdaFunctionCode(type: AWSLambdaUpdateFunctionCodeTask) {
+    functionName = "fooBar"
+    zipFile = zip.archivePath
+}
 ```
 
 Look at [Lambda example](samples/08-lambda) for more information.
