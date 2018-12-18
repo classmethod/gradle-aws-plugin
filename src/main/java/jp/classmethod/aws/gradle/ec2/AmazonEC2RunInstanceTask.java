@@ -28,6 +28,7 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.google.common.base.Strings;
@@ -63,6 +64,10 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 	private String subnetId;
 	
 	@Getter
+	@Setter
+	private String iamInstanceProfileName;
+	
+	@Getter
 	private RunInstancesResult runInstancesResult;
 	
 	
@@ -74,12 +79,14 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 	@TaskAction
 	public void runInstance() {
 		// to enable conventionMappings feature
+		
 		String ami = getAmi();
 		String keyName = getKeyName();
 		List<String> securityGroupIds = getSecurityGroupIds();
 		String userData = getUserData();
 		String instanceType = getInstanceType();
 		String subnetId = getSubnetId();
+		String iamInstanceProfileName = getIamInstanceProfileName();
 		List<String> securityGroups = getSecurityGroups();
 		
 		if (ami == null) {
@@ -97,7 +104,8 @@ public class AmazonEC2RunInstanceTask extends ConventionTask {
 			.withSecurityGroupIds(securityGroupIds)
 			.withSecurityGroups(securityGroups)
 			.withInstanceType(instanceType)
-			.withSubnetId(subnetId);
+			.withSubnetId(subnetId)
+			.withIamInstanceProfile(new IamInstanceProfileSpecification().withName(iamInstanceProfileName));
 		if (Strings.isNullOrEmpty(this.userData) == false) {
 			request.setUserData(new String(Base64.getEncoder()
 				.encode(userData.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
