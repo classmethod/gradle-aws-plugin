@@ -27,37 +27,38 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 
 public class BucketWebsiteConfigurationTask extends ConventionTask {
-    @Getter
-    @Setter
-    private String bucketName;
-
-    @Getter
-    @Setter
-    private String indexDoc;
-
-    @Getter
-    @Setter
-    private String errorDoc;
-
-    @TaskAction
-    public void applyWebsiteConfiguration() {
-        BucketWebsiteConfiguration websiteConfig = null;
-
-        if (getIndexDoc() == null) {
-            websiteConfig = new BucketWebsiteConfiguration();
-        } else if (errorDoc == null) {
-            websiteConfig = new BucketWebsiteConfiguration(getIndexDoc());
-        } else {
-            websiteConfig = new BucketWebsiteConfiguration(getIndexDoc(), getErrorDoc());
-        }
-
-        AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-        final AmazonS3 s3 = ext.getClient();
-
-        try {
-            s3.setBucketWebsiteConfiguration(getBucketName(), websiteConfig);
-        } catch (AmazonServiceException ex) {
-            throw new GradleException("Failed to set website configuration for bucket " + getBucketName(), ex);
-        }
-    }
+	@Getter
+	@Setter
+	private String bucketName;
+	
+	@Getter
+	@Setter
+	private String indexDoc;
+	
+	@Getter
+	@Setter
+	private String errorDoc;
+	
+	
+	@TaskAction
+	public void applyWebsiteConfiguration() {
+		BucketWebsiteConfiguration websiteConfig = null;
+		
+		if (getIndexDoc() == null) {
+			websiteConfig = new BucketWebsiteConfiguration();
+		} else if (errorDoc == null) {
+			websiteConfig = new BucketWebsiteConfiguration(getIndexDoc());
+		} else {
+			websiteConfig = new BucketWebsiteConfiguration(getIndexDoc(), getErrorDoc());
+		}
+		
+		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+		final AmazonS3 s3 = ext.getClient();
+		
+		try {
+			s3.setBucketWebsiteConfiguration(getBucketName(), websiteConfig);
+		} catch (AmazonServiceException ex) {
+			throw new GradleException("Failed to set website configuration for bucket " + getBucketName(), ex);
+		}
+	}
 }
