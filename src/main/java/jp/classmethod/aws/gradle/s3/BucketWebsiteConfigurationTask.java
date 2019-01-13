@@ -40,6 +40,11 @@ public class BucketWebsiteConfigurationTask extends ConventionTask {
 	private String errorDoc;
 	
 	
+	public BucketWebsiteConfigurationTask() {
+		setDescription("Enable S3 bucket as public website");
+		setGroup("AWS");
+	}
+	
 	@TaskAction
 	public void applyWebsiteConfiguration() {
 		BucketWebsiteConfiguration websiteConfig = null;
