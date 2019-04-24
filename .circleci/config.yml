@@ -20,9 +20,6 @@ jobs:
           name: Show version
           command: ./gradlew -v
       - run:
-          name: Resolve dependencies
-          command: ./gradlew resolveDependencies
-      - run:
           name: Run tests
           command: ./gradlew check jacocoTestReport
       - store_artifacts:

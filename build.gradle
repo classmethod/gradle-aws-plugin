@@ -41,7 +41,6 @@ apply from: "${rootProject.projectDir}/gradle/quality/forbiddenapis.gradle"
 apply from: "${rootProject.projectDir}/gradle/quality/spotless.gradle"
 
 apply from: 'gradle/version.gradle'
-apply from: 'gradle/resolveDependencies.gradle'
 
 group = "jp.classmethod.aws"
 ext.artifactId = "gradle-aws-plugin"
