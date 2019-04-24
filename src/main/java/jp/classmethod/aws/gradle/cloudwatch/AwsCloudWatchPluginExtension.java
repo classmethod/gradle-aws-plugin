@@ -17,17 +17,20 @@ package jp.classmethod.aws.gradle.cloudwatch;
 
 import org.gradle.api.Project;
 
+import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
 
+import jp.classmethod.aws.gradle.common.BasePluginExtension;
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
-public class AwsCloudWatchPluginExtension extends BaseRegionAwarePluginExtension<AmazonCloudWatchClient> {
+public class AwsCloudWatchPluginExtension extends BasePluginExtension<AmazonCloudWatch> {
 	
 	public static final String NAME = "cloudwatch";
 	
 	
 	public AwsCloudWatchPluginExtension(Project project) {
-		super(project, AmazonCloudWatchClient.class);
+		super(project, AmazonCloudWatchClientBuilder.standard());
 	}
 	
 }
