@@ -313,6 +313,10 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
 	    p1: "Value",
 	    p2: "Value2"
 	]
+	tags = [
+	    p1: "Value",
+	    p2: "Value2"    
+	]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
@@ -346,6 +350,11 @@ task updateAlias(type: AWSLambdaUpdateAliasTask, dependsOn: createAlias) {
         additionalVersionWeight = 0.7
 		useNextVersion = true
     }
+}
+
+task updateLambdaFunctionCode(type: AWSLambdaUpdateFunctionCodeTask) {
+    functionName = "fooBar"
+    zipFile = zip.archivePath
 }
 ```
 

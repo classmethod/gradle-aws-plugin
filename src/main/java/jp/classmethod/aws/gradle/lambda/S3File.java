@@ -35,6 +35,13 @@ public class S3File {
 	private String objectVersion;
 	
 	
+	protected S3File() {
+		/*
+		An empty constructor is needed so that gradle can resolve variable to an instance,
+		eg to make this work as a nested task property
+		 */
+	}
+	
 	/**
 	 * Validates that both bucketName and key are provided.
 	 */

@@ -37,6 +37,7 @@ task runInstance(type: AmazonEC2RunInstanceTask, dependsOn: importKey) {
 	keyName "sample-key"
 	instanceType "t2.micro"
 	userData "#! /bin/bash\nyum -y update"
+	iamInstanceProfileName "profile-name"
 }
 
 task stopInstance(type: AmazonEC2StopInstanceTask) {

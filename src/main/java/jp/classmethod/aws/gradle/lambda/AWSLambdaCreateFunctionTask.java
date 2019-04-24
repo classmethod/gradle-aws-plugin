@@ -86,6 +86,10 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private Map<String, String> tags;
+	
+	@Getter
+	@Setter
 	private Boolean publish;
 	
 	@Getter
@@ -143,6 +147,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 			.withPublish(getPublish())
 			.withVpcConfig(getVpcConfig())
 			.withEnvironment(new Environment().withVariables(getEnvironment()))
+			.withTags(getTags())
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
