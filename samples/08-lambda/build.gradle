@@ -1,101 +1,123 @@
 // -*- coding: utf-8; mode: groovy -*-
-
-import com.amazonaws.services.lambda.model.InvocationType;
-
-import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaPublishVersionTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateAliasTask;
-import jp.classmethod.aws.gradle.lambda.AWSLambdaUpdateAliasTask;
-
+import com.amazonaws.services.lambda.model.InvocationType
+import jp.classmethod.aws.gradle.lambda.AWSLambdaDeleteFunctionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaPublishVersionTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaCreateAliasTask
+import jp.classmethod.aws.gradle.lambda.AWSLambdaUpdateAliasTask
 import jp.classmethod.aws.gradle.lambda.VpcConfigWrapper
 
 buildscript {
-	repositories {
-		mavenCentral()
-		maven { url "https://plugins.gradle.org/m2/" }
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
 
-	}
-	dependencies {
-		classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
-	}
+    }
+    dependencies {
+        classpath "jp.classmethod.aws:gradle-aws-plugin:0.+"
+    }
 }
 
-apply plugin:'base'
+apply plugin: 'base'
 apply plugin: "jp.classmethod.aws.lambda"
 aws {
-	profileName = "default"
-	region = "ap-northeast-1"
+    profileName = "default"
+    region = "ap-northeast-1"
 }
 
 lambda {
-	region = "us-east-1"
+    region = "us-east-1"
 }
 
 task zip(type: Zip) {
-	from "function/"
-	destinationDir file("build")
+    from "function/"
+    destinationDir file("build")
 }
 
 task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-	functionName = "foobar"
-	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
-	zipFile = zip.archivePath
-	handler = "DecodeBase64.handler"
-	runtime = "Nodejs43"
+    functionName = "foobar"
+    role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+    zipFile = zip.archivePath
+    handler = "DecodeBase64.handler"
+    runtime = "Nodejs43"
 
-	environment = [
-		TARGET: "ascii"
-	]
+    environment = [
+            TARGET: "ascii"
+    ]
 
-	// optional publish value
-	publish = true
+    // optional publish value
+    publish = true
 }
 
 task migrateFunctionWithVpc(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-	functionName = "foobar"
-	role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
-	zipFile = zip.archivePath
-	handler = "DecodeBase64.handler"
-	runtime = "Nodejs43"
+    functionName = "foobar"
+    role = "arn:aws:iam::${aws.accountId}:role/lambda-poweruser"
+    zipFile = zip.archivePath
+    handler = "DecodeBase64.handler"
+    runtime = "Nodejs43"
 
-	// optional VPC config
-	vpc = new VpcConfigWrapper()
-	vpc.subnetIds = ["subnet-A", "subnet-B"]
-	vpc.securityGroupIds = ["sg-A", "sg-B"]
+    // optional VPC config
+    vpc = new VpcConfigWrapper()
+    vpc.subnetIds = ["subnet-A", "subnet-B"]
+    vpc.securityGroupIds = ["sg-A", "sg-B"]
 
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
-	functionName = "foobar"
-	invocationType = InvocationType.RequestResponse
-	payload = file("sample-input/input.txt")
-	doLast {
-		println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
-	}
+    functionName = "foobar"
+    invocationType = InvocationType.RequestResponse
+    payload = file("sample-input/input.txt")
+    doLast {
+        println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
+    }
+}
+
+class MyLambdaInvokeTask extends AWSLambdaInvokeTask {
+    private static String DEFAULT_DATA = 'SGVsbG8sIHRoaXMgaXMgYW5vdGhlciB0ZXN0IDEyMy4='
+    String functionName = "foobar"
+    InvocationType invocationType = InvocationType.RequestResponse
+
+    @Input
+    @Option(option = "data", description = "Data to send")
+    String data = DEFAULT_DATA
+
+    Object getPayload() {
+        return '{"data": "' + data + '"}'
+    }
+}
+
+/*
+ * Invoke the function/lambda with a custom (optional) parameter "data".
+ * Invoke:                  gradle invokeFunctionWithCustomDataParameter --data "SGVsbG8gd29ybGQh"
+ * Get task description:    gradle -q help --task invokeFunctionWithCustomDataParameter
+ */
+task invokeFunctionWithCustomDataParameter(type: MyLambdaInvokeTask) {
+    doLast {
+        println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
+    }
 }
 
 task deleteFunction(type: AWSLambdaDeleteFunctionTask) {
-	functionName = "foobar"
+    functionName = "foobar"
 }
 
 task publishVersionFunction(type: AWSLambdaPublishVersionTask, dependsOn: migrateFunction) {
-	functionName = "foobar"
+    functionName = "foobar"
 }
 
 task createAlias(type: AWSLambdaCreateAliasTask, dependsOn: publishVersionFunction) {
-	functionName = "foobar"
-	aliasName = "alias"
-	functionVersion = "1"
+    functionName = "foobar"
+    aliasName = "alias"
+    functionVersion = "1"
 }
 
 task updateAlias(type: AWSLambdaUpdateAliasTask, dependsOn: createAlias) {
-	functionName = "foobar"
+    functionName = "foobar"
     aliasName = "alias"
-	functionVersion = "1"
+    functionVersion = "1"
     routingConfig {
         additionalVersionWeight = 0.7
-		useNextVersion = true
+        useNextVersion = true
     }
 }
