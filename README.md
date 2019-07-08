@@ -15,6 +15,7 @@ Current Features / Supported AWS Products
   * Delete object(s)
   * File sync
   * Set bucket policy
+  * Set website configuration
 * EC2
   * Run instance
   * Start instance

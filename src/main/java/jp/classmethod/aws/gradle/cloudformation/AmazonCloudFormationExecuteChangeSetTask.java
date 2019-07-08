@@ -17,7 +17,6 @@ package jp.classmethod.aws.gradle.cloudformation;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,11 +30,11 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.ChangeSetSummary;
+import com.amazonaws.services.cloudformation.model.DescribeChangeSetRequest;
+import com.amazonaws.services.cloudformation.model.DescribeChangeSetResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.ExecuteChangeSetRequest;
-import com.amazonaws.services.cloudformation.model.ListChangeSetsRequest;
-import com.amazonaws.services.cloudformation.model.ListChangeSetsResult;
 import com.amazonaws.services.cloudformation.model.Stack;
 
 public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
@@ -45,7 +44,8 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 	String stackName;
 	
 	private List<String> stableStatuses = Arrays.asList(
-			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
+			"CREATE_COMPLETE", "REVIEW_IN_PROGRESS", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE",
+			"UPDATE_ROLLBACK_COMPLETE");
 	
 	
 	public AmazonCloudFormationExecuteChangeSetTask() {
@@ -72,10 +72,16 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 			Stack stack = describeStackResult.getStacks().get(0);
 			
 			if (stableStatuses.contains(stack.getStackStatus())) {
-				Optional<ChangeSetSummary> summary = getLatestChangeSetSummary(cfn);
+				Optional<ChangeSetSummary> summary = new ChangeSetFetcher(cfn).getLatestChangeSetSummary(stackName);
+				
 				String changeSetName = summary
 					.orElseThrow(() -> new GradleException("ChangeSet for stack " + stackName + " was not found."))
 					.getChangeSetName();
+				
+				if (isNoUpdateRequired(cfn, stackName, changeSetName)) {
+					return;
+				}
+				
 				ExecuteChangeSetRequest req = new ExecuteChangeSetRequest()
 					.withStackName(stackName)
 					.withChangeSetName(changeSetName);
@@ -87,32 +93,21 @@ public class AmazonCloudFormationExecuteChangeSetTask extends ConventionTask {
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
 				getLogger().warn("stack {} not found", stackName);
-			} else if (e.getMessage().contains("No updates are to be performed.")) {
-				getLogger().trace(e.getMessage());
 			} else {
 				throw e;
 			}
 		}
-		
 	}
 	
-	/**
-	 *
-	 * Return the latest ChangeSet Summary for the specified CloudFormation stack.
-	 * @param cfn AmazonCloudFormation
-	 * @return Optional
-	 */
-	private Optional<ChangeSetSummary> getLatestChangeSetSummary(AmazonCloudFormation cfn) {
+	private boolean isNoUpdateRequired(AmazonCloudFormation cfn, String stackName, String changeSetName) {
+		DescribeChangeSetRequest describeChangeSetRequest =
+				new DescribeChangeSetRequest().withChangeSetName(changeSetName).withStackName(stackName);
+		DescribeChangeSetResult describeChangeSetResult = cfn.describeChangeSet(describeChangeSetRequest);
 		
-		ListChangeSetsResult changeSetsResult =
-				cfn.listChangeSets(new ListChangeSetsRequest().withStackName(getStackName()));
-		List<ChangeSetSummary> changeSetSummaries = changeSetsResult.getSummaries();
-		if (changeSetSummaries.isEmpty()) {
-			return Optional.empty();
+		if ("FAILED".equals(describeChangeSetResult.getStatus()) && describeChangeSetResult.getChanges().isEmpty()) {
+			getLogger().info("No updates to be performed.");
+			return true;
 		}
-		
-		changeSetSummaries.sort(Comparator.comparing(ChangeSetSummary::getCreationTime).reversed());
-		return Optional.of(changeSetSummaries.get(0));
+		return false;
 	}
-	
 }
