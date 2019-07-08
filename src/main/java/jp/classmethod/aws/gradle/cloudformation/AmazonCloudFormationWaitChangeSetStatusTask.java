@@ -27,7 +27,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 
-public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
+public class AmazonCloudFormationWaitChangeSetStatusTask extends ConventionTask {
 	
 	@Getter
 	@Setter
@@ -37,19 +37,13 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Setter
 	private List<String> successStatuses = Arrays.asList(
 			"CREATE_COMPLETE",
-			"UPDATE_COMPLETE",
 			"DELETE_COMPLETE");
 	
 	@Getter
 	@Setter
 	private List<String> waitStatuses = Arrays.asList(
 			"CREATE_IN_PROGRESS",
-			"ROLLBACK_IN_PROGRESS",
-			"DELETE_IN_PROGRESS",
-			"UPDATE_IN_PROGRESS",
-			"UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
-			"UPDATE_ROLLBACK_IN_PROGRESS",
-			"UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS");
+			"CREATE_PENDING");
 	
 	@Getter
 	@Setter
@@ -59,14 +53,26 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Setter
 	private int loopWait = 10; // sec
 	
+	@Getter
+	@Setter
+	private boolean found;
 	
-	public AmazonCloudFormationWaitStackStatusTask() {
-		setDescription("Wait cfn stack for specific status.");
+	@Getter
+	@Setter
+	private String lastStatus;
+	
+	@Getter
+	@Setter
+	private List<String> printedEvents;
+	
+	
+	public AmazonCloudFormationWaitChangeSetStatusTask() {
+		setDescription("Wait cfn change set for specific status.");
 		setGroup("AWS");
 	}
 	
 	@TaskAction
-	public void waitStackForStatus() throws InterruptedException {
+	public void waitChangeSetForStatus() throws InterruptedException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
 		List<String> successStatuses = getSuccessStatuses();
@@ -82,11 +88,10 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
 		AmazonCloudFormation cfn = ext.getClient();
 		
-		StackStatusWaiter stackStatusWaiter =
-				new StackStatusWaiter(cfn, stackName, getLogger(), successStatuses, waitStatuses, loopTimeout,
+		ChangeSetStatusWaiter changeSetStatusWaiter =
+				new ChangeSetStatusWaiter(cfn, stackName, getLogger(), successStatuses, waitStatuses, loopTimeout,
 						loopWait);
-		stackStatusWaiter.waitForSuccessStatus();
 		
+		changeSetStatusWaiter.waitForSuccessStatus();
 	}
-	
 }

@@ -110,6 +110,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	@Setter
 	private Capability useCapabilityIam;
 	
+	@Getter
+	@Setter
+	private boolean terminationProtected;
+	
 	
 	public AmazonCloudFormationPluginExtension(Project project) {
 		super(project, AmazonCloudFormationClient.class);
