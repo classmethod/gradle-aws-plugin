@@ -130,9 +130,9 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		String cfnTemplateUrl = getCfnTemplateUrl();
 		List<Parameter> cfnStackParams = getCfnStackParams();
 		List<Tag> cfnStackTags = getCfnStackTags();
-		File cfnTemplateFile = getCfnTemplateFile();
 		String cfnRoleArn = getCfnRoleArn();
-		
+		File cfnTemplateFile = getCfnTemplateFile();
+
 		String changeSetName = changeSetName(stackName);
 		getLogger().info("Create change set '{}' for stack '{}'", changeSetName, stackName);
 		CreateChangeSetRequest req = new CreateChangeSetRequest()
