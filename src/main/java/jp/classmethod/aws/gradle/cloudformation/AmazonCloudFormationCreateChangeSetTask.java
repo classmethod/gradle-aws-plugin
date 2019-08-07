@@ -66,7 +66,11 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Tag> cfnStackTags = new ArrayList<>();
-	
+
+	@Getter
+	@Setter
+	private String cfnRoleArn;
+
 	@Getter
 	@Setter
 	private boolean capabilityIam;
@@ -74,10 +78,6 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private Capability useCapabilityIam;
-
-	@Getter
-	@Setter
-	private String cfnRoleArn;
 
 	@Getter
 	@Setter
@@ -140,8 +140,8 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 			.withStackName(stackName)
 			.withParameters(cfnStackParams)
 			.withTags(cfnStackTags)
-			.withChangeSetType(changeSetType)
-			.withRoleARN(cfnRoleArn);
+			.withRoleARN(cfnRoleArn)
+			.withChangeSetType(changeSetType);
 
 		// If template URL is specified, then use it
 		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {

@@ -128,9 +128,9 @@ public class AmazonCloudFormationPlugin implements Plugin<Project> {
 						.withKey(it.getKey().toString())
 						.withValue(it.getValue().toString()))
 					.collect(Collectors.toList()));
+				task.conventionMapping("cfnRoleArn", () -> cfnExt.getCfnRoleArn());
 				task.conventionMapping("cfnTemplateUrl", () -> cfnExt.getTemplateURL());
 				task.conventionMapping("cfnTemplateFile", () -> cfnExt.getTemplateFile());
-				task.conventionMapping("cfnRoleArn", () -> cfnExt.getRoleArn());
 			});
 		
 		AmazonCloudFormationWaitStackStatusTask awsCfnWaitStackCompleteAfterCreateChangeSet = project.getTasks().create(
