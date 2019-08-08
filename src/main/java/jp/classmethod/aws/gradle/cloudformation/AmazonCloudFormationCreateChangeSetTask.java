@@ -66,11 +66,11 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Tag> cfnStackTags = new ArrayList<>();
-
+	
 	@Getter
 	@Setter
 	private String cfnRoleArn;
-
+	
 	@Getter
 	@Setter
 	private boolean capabilityIam;
@@ -78,7 +78,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 	@Getter
 	@Setter
 	private Capability useCapabilityIam;
-
+	
 	@Getter
 	@Setter
 	private List<String> stableStatuses = Arrays.asList(
@@ -132,7 +132,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 		List<Tag> cfnStackTags = getCfnStackTags();
 		String cfnRoleArn = getCfnRoleArn();
 		File cfnTemplateFile = getCfnTemplateFile();
-
+		
 		String changeSetName = changeSetName(stackName);
 		getLogger().info("Create change set '{}' for stack '{}'", changeSetName, stackName);
 		CreateChangeSetRequest req = new CreateChangeSetRequest()
@@ -142,7 +142,7 @@ public class AmazonCloudFormationCreateChangeSetTask extends ConventionTask {
 			.withTags(cfnStackTags)
 			.withRoleARN(cfnRoleArn)
 			.withChangeSetType(changeSetType);
-
+		
 		// If template URL is specified, then use it
 		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
 			req.setTemplateURL(cfnTemplateUrl);
