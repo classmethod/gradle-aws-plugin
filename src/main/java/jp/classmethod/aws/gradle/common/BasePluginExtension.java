@@ -38,10 +38,6 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	@Setter
 	private String profileName;
 	
-	@Getter
-	@Setter
-	private String roleArn;
-	
 	@Getter(lazy = true, onMethod = @__(@SuppressWarnings("unchecked")))
 	private final T client = initClient();
 	
@@ -53,7 +49,7 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	
 	protected T initClient() {
 		AwsPluginExtension aws = project.getExtensions().getByType(AwsPluginExtension.class);
-		return aws.createClient(awsClientClass, profileName, roleArn, buildClientConfiguration());
+		return aws.createClient(awsClientClass, profileName, buildClientConfiguration());
 	}
 	
 	/**
