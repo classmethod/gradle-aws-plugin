@@ -68,6 +68,10 @@ public class AmazonCloudFormationPluginExtension extends BaseRegionAwarePluginEx
 	
 	@Getter
 	@Setter
+	private String cfnRoleArn;
+	
+	@Getter
+	@Setter
 	private String templateURL;
 	
 	@Getter
