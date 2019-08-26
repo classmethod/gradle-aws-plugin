@@ -31,9 +31,9 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -58,6 +58,10 @@ public class AwsPluginExtension {
 	
 	@Getter
 	@Setter
+	private String roleArn;
+	
+	@Getter
+	@Setter
 	private String region = Regions.US_EAST_1.getName();
 	
 	@Setter
@@ -70,29 +74,39 @@ public class AwsPluginExtension {
 	private AWSCredentialsProvider credentialsProvider;
 	
 	
-	public AWSCredentialsProvider newCredentialsProvider(String profileName) {
-		if (credentialsProvider != null) {
-			return credentialsProvider;
-		}
-		String profileNameToUse = profileName != null ? profileName : this.profileName;
-		if (Strings.isNullOrEmpty(profileNameToUse) == false) {
-			List<AWSCredentialsProvider> providers = new ArrayList<AWSCredentialsProvider>();
-			providers.add(new EnvironmentVariableCredentialsProvider());
-			providers.add(new SystemPropertiesCredentialsProvider());
-			providers.add(new ProfileCredentialsProvider(profileNameToUse));
-			providers.add(new EC2ContainerCredentialsProviderWrapper());
-			return new AWSCredentialsProviderChain(providers);
-		}
-		return DefaultAWSCredentialsProviderChain.getInstance();
+	public AWSCredentialsProvider newCredentialsProvider(String profileName, String roleArn) {
+		return credentialsProvider != null ? credentialsProvider : buildCredentialsProvider(profileName, roleArn);
 	}
 	
-	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName) {
-		return createClient(serviceClass, profileName, null);
+	private AWSCredentialsProvider buildCredentialsProvider(String profileName, String roleArn) {
+		List<AWSCredentialsProvider> providers = new ArrayList<>();
+		providers.add(new EnvironmentVariableCredentialsProvider());
+		providers.add(new SystemPropertiesCredentialsProvider());
+		
+		String profileNameToUse = profileName != null ? profileName : this.profileName;
+		if (!Strings.isNullOrEmpty(profileNameToUse)) {
+			providers.add(new ProfileCredentialsProvider(profileNameToUse));
+		}
+		
+		String roleArnToUse = roleArn != null ? roleArn : this.roleArn;
+		if (!Strings.isNullOrEmpty(roleArnToUse)) {
+			STSAssumeRoleSessionCredentialsProvider assumeRoleProvider =
+					new STSAssumeRoleSessionCredentialsProvider.Builder(roleArnToUse, "gradle").build();
+			providers.add(assumeRoleProvider);
+		}
+		providers.add(new ProfileCredentialsProvider());
+		providers.add(new EC2ContainerCredentialsProviderWrapper());
+		return new AWSCredentialsProviderChain(providers);
 	}
 	
 	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName,
+			String roleArn) {
+		return createClient(serviceClass, profileName, roleArn, null);
+	}
+	
+	public <T extends AmazonWebServiceClient> T createClient(Class<T> serviceClass, String profileName, String roleArn,
 			ClientConfiguration config) {
-		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName);
+		AWSCredentialsProvider credentialsProvider = newCredentialsProvider(profileName, roleArn);
 		ClientConfiguration configToUse = config == null ? new ClientConfiguration() : config;
 		if (this.proxyHost != null && this.proxyPort > 0) {
 			configToUse.setProxyHost(this.proxyHost);
@@ -148,7 +162,7 @@ public class AwsPluginExtension {
 	
 	public String getAccountId() {
 		try {
-			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName, roleArn);
 			sts.setRegion(getActiveRegion(region));
 			return sts.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
 		} catch (SdkClientException e) {
@@ -160,7 +174,7 @@ public class AwsPluginExtension {
 	
 	public String getUserArn() {
 		try {
-			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName);
+			AWSSecurityTokenService sts = createClient(AWSSecurityTokenServiceClient.class, profileName, roleArn);
 			sts.setRegion(getActiveRegion(region));
 			return sts.getCallerIdentity(new GetCallerIdentityRequest()).getArn();
 		} catch (SdkClientException e) {
