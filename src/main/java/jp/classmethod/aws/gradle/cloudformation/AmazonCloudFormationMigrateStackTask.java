@@ -65,7 +65,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<Tag> cfnStackTags = new ArrayList<>();
-
+	
 	@Getter
 	@Setter
 	private String cfnRoleArn;
@@ -171,7 +171,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			.withStackName(stackName)
 			.withParameters(cfnStackParams)
 			.withTags(cfnStackTags)
-			.withRoleARN( cfnRoleArn );
+			.withRoleARN(cfnRoleArn);
 		
 		// If template URL is specified, then use it
 		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
