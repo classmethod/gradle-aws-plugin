@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
 import java.util.Map;
 
 import lombok.Getter;
@@ -28,6 +29,8 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.lambda.AWSLambda;
@@ -97,6 +100,11 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 	@Getter
 	@Setter
 	private VpcConfigWrapper vpc;
+	
+	@Getter
+	@Setter
+	@Optional
+	private Collection<ResourcePermission> resourcePermissions;
 	
 	@Getter
 	@Setter
@@ -196,11 +204,19 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			.withTags(getTags())
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
-		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
+		final Logger logger = getLogger();
+		logger.info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
 		
 		if (getAlias() != null) {
 			createOrUpdateAlias(lambda, createFunctionResult.getVersion());
 		}
+		
+		final Collection<ResourcePermission> resourcePermissions = getResourcePermissions();
+		if (resourcePermissions != null) {
+			ResourcePermission.createOrUpdateResourcePermissions(lambda, logger, getFunctionName(),
+					resourcePermissions);
+		}
+		
 	}
 	
 	private void updateFunctionCode(AWSLambda lambda) throws IOException {
@@ -230,10 +246,17 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		}
 		
 		UpdateFunctionCodeResult updateFunctionCode = lambda.updateFunctionCode(request);
-		getLogger().info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
+		final Logger logger = getLogger();
+		logger.info("Update Lambda function requested: {}", updateFunctionCode.getFunctionArn());
 		
 		if (getAlias() != null) {
 			createOrUpdateAlias(lambda, updateFunctionCode.getVersion());
+		}
+		
+		final Collection<ResourcePermission> resourcePermissions = getResourcePermissions();
+		if (resourcePermissions != null) {
+			ResourcePermission.createOrUpdateResourcePermissions(lambda, logger, getFunctionName(),
+					resourcePermissions);
 		}
 	}
 	
