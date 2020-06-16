@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
@@ -90,6 +91,10 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private List<String> layers;
+	
+	@Getter
+	@Setter
 	private Boolean publish;
 	
 	@Getter
@@ -148,6 +153,7 @@ public class AWSLambdaCreateFunctionTask extends ConventionTask {
 			.withVpcConfig(getVpcConfig())
 			.withEnvironment(new Environment().withVariables(getEnvironment()))
 			.withTags(getTags())
+			.withLayers(getLayers())
 			.withCode(functionCode);
 		createFunctionResult = lambda.createFunction(request);
 		getLogger().info("Create Lambda function requested: {}", createFunctionResult.getFunctionArn());
