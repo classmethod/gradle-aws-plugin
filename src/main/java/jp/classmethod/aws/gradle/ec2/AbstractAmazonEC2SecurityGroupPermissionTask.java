@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.model.IpPermission;
 
@@ -93,5 +94,15 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 				throw new GradleException("ipPermission type only supports IpPermission or String: " + it.getClass());
 			}
 		}).collect(Collectors.toList());
+	}
+	
+	@TaskAction
+	protected void checkGroupsAndIpPermissions(String groupId, String groupName, Object ipPermissions) {
+		if (groupId == null && groupName == null) {
+			throw new GradleException("groupId nor groupName is not specified");
+		}
+		if (ipPermissions == null) {
+			throw new GradleException("ipPermissions is not specified");
+		}
 	}
 }

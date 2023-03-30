@@ -15,6 +15,8 @@
  */
 package jp.classmethod.aws.gradle.lambda;
 
+import static groovy.lang.Closure.DELEGATE_FIRST;
+
 import java.util.Collections;
 
 import lombok.Getter;
@@ -25,6 +27,8 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 
 import com.amazonaws.services.lambda.model.AliasRoutingConfiguration;
+
+import groovy.lang.Closure;
 
 /**
  * Created by frankfarrell on 16/01/2018.
@@ -62,6 +66,14 @@ public class RoutingConfig {
 	@Setter
 	private String additionalVersion;
 	
+	@Getter
+	@Setter
+	private RoutingConfig routingConfig;
+	
+	@Getter
+	@Setter
+	private Version version;
+	
 	
 	protected RoutingConfig() {
 		/*
@@ -80,34 +92,28 @@ public class RoutingConfig {
 		final AliasRoutingConfiguration aliasRoutingConfiguration = new AliasRoutingConfiguration();
 		
 		if (getAdditionalVersion() != null) {
-			validateFunctionVersion(getAdditionalVersion());
+			version.validateFunctionVersion(getAdditionalVersion());
 			
 			aliasRoutingConfiguration.withAdditionalVersionWeights(
 					Collections.singletonMap(getAdditionalVersion(), additionalVersionWeight));
 		} else if (getUsePreviousVersion() != null && getUsePreviousVersion()) {
 			
-			validateFunctionVersion(functionVersion);
+			version.validateFunctionVersion(functionVersion);
 			
 			final Long functionVersionAsLong = Long.valueOf(functionVersion);
-			final Long prevVersion = getPreviousVersion(functionName, functionVersionAsLong);
+			final Long prevVersion = version.getPreviousVersion(functionName, functionVersionAsLong);
 			aliasRoutingConfiguration.withAdditionalVersionWeights(
 					Collections.singletonMap(prevVersion.toString(), additionalVersionWeight));
 			
 		} else if (getUseNextVersion() != null && getUseNextVersion()) {
-			validateFunctionVersion(functionVersion);
+			version.validateFunctionVersion(functionVersion);
 			final Long functionVersionAsLong = Long.valueOf(functionVersion);
-			final Long nextVersion = getNextVersion(functionVersionAsLong);
+			final Long nextVersion = version.getNextVersion(functionVersionAsLong);
 			aliasRoutingConfiguration.withAdditionalVersionWeights(
 					Collections.singletonMap(nextVersion.toString(), additionalVersionWeight));
 			
 		}
 		return aliasRoutingConfiguration;
-	}
-	
-	private void validateFunctionVersion(final String functionVersion) {
-		if (!functionVersion.matches("[0-9]+")) {
-			throw new GradleException("functionVersion must be a number if usePreviousVersion is true");
-		}
 	}
 	
 	private void validateRequiredProperties() throws GradleException {
@@ -122,17 +128,12 @@ public class RoutingConfig {
 		}
 	}
 	
-	private Long getNextVersion(final Long functionVersion) {
-		return functionVersion + 1;
-	}
-	
-	private Long getPreviousVersion(final String functionName,
-			final Long functionVersion) {
-		if (functionVersion <= 1L) {
-			throw new GradleException("There is no older version for "
-					+ functionName);
-		} else {
-			return functionVersion - 1;
+	public void routingConfig(final Closure<RoutingConfig> c) {
+		c.setResolveStrategy(DELEGATE_FIRST);
+		if (routingConfig == null) {
+			routingConfig = new RoutingConfig();
 		}
+		c.setDelegate(routingConfig);
+		c.call();
 	}
 }
