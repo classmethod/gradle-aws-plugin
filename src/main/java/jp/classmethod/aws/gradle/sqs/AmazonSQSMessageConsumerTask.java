@@ -58,8 +58,8 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 		AmazonSQSPluginExtension ext = getProject().getExtensions().getByType(AmazonSQSPluginExtension.class);
 		AmazonSQS sqs = ext.getClient();
 		
-		int counter = 0;
-		while (counter < maxNumberOfMessages) {
+		int messageCounter = 0;
+		while (messageCounter < maxNumberOfMessages) {
 			ReceiveMessageRequest request = new ReceiveMessageRequest().withQueueUrl(queueUrl)
 				.withMaxNumberOfMessages(MAX_MESSAGE_CONSUME_BATCH_SIZE).withVisibilityTimeout(30);
 			List<DeleteMessageBatchRequestEntry> messagesToDelete =
@@ -77,10 +77,10 @@ public class AmazonSQSMessageConsumerTask extends AbstractAmazonSQSTask {
 			}
 			
 			deleteMessages(sqs, queueUrl, messagesToDelete);
-			counter += messagesToDelete.size();
+			messageCounter += messagesToDelete.size();
 		}
 		
-		getLogger().lifecycle("Consumed a total of {} messages from {}", counter, queueUrl);
+		getLogger().lifecycle("Consumed a total of {} messages from {}", messageCounter, queueUrl);
 	}
 	
 	private void deleteMessages(AmazonSQS sqs, String queueUrl, List<DeleteMessageBatchRequestEntry> messagesToDelete) {

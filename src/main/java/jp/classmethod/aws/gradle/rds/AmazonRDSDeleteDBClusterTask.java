@@ -51,7 +51,7 @@ public class AmazonRDSDeleteDBClusterTask extends ConventionTask {
 	}
 	
 	@TaskAction
-	public void deleteDBInstance() {
+	public void deleteDBCluster() {
 		String dbClusterIdentifier = getDbClusterIdentifier();
 		
 		if (dbClusterIdentifier == null) {

@@ -15,8 +15,6 @@
  */
 package jp.classmethod.aws.gradle.lambda;
 
-import static groovy.lang.Closure.DELEGATE_FIRST;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,8 +26,6 @@ import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.model.AliasRoutingConfiguration;
 import com.amazonaws.services.lambda.model.CreateAliasRequest;
 import com.amazonaws.services.lambda.model.CreateAliasResult;
-
-import groovy.lang.Closure;
 
 /**
  * Created by frankfarrell on 16/01/2018.
@@ -119,12 +115,4 @@ public class AWSLambdaCreateAliasTask extends ConventionTask {
 		return ext.getClient();
 	}
 	
-	public void routingConfig(final Closure<RoutingConfig> c) {
-		c.setResolveStrategy(DELEGATE_FIRST);
-		if (routingConfig == null) {
-			routingConfig = new RoutingConfig();
-		}
-		c.setDelegate(routingConfig);
-		c.call();
-	}
 }

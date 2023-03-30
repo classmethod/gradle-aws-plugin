@@ -81,7 +81,6 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask { // NOPMD
 		String dbInstanceIdentifier = getDbInstanceIdentifier();
 		List<String> successStatuses = getSuccessStatuses();
 		List<String> waitStatuses = getWaitStatuses();
-		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
 		
 		if (dbInstanceIdentifier == null) {
@@ -91,9 +90,8 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask { // NOPMD
 		AmazonRDSPluginExtension ext = getProject().getExtensions().getByType(AmazonRDSPluginExtension.class);
 		AmazonRDS rds = ext.getClient();
 		
-		long start = System.currentTimeMillis();
 		while (true) {
-			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
+			if (checkTimeout()) {
 				throw new GradleException("Timeout");
 			}
 			try {
@@ -128,5 +126,13 @@ public class AmazonRDSWaitInstanceStatusTask extends ConventionTask { // NOPMD
 				}
 			}
 		}
+	}
+	
+	@TaskAction
+	public boolean checkTimeout() { // NOPMD
+		// to enable conventionMappings feature
+		long start = System.currentTimeMillis();
+		int loopTimeout = getLoopTimeout();
+		return start > start + (loopTimeout * 1000L);
 	}
 }

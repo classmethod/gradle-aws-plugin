@@ -60,31 +60,44 @@ public class AmazonIdentityManagementCreateRoleTask extends ConventionTask {
 	@TaskAction
 	public void createRole() {
 		// to enable conventionMappings feature
-		String roleName = getRoleName();
-		String assumeRolePolicyDocument = getAssumeRolePolicyDocument();
-		
-		if (roleName == null) {
-			throw new GradleException("roleName is required");
-		}
-		if (assumeRolePolicyDocument == null) {
-			throw new GradleException("assumeRolePolicyDocument is required");
-		}
-		
+		checkRoleParams();
 		AmazonIdentityManagementPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonIdentityManagementPluginExtension.class);
 		AmazonIdentityManagement iam = ext.getClient();
-		
-		CreateRoleRequest request = new CreateRoleRequest()
-			.withRoleName(roleName)
-			.withPath(getPath())
-			.withAssumeRolePolicyDocument(assumeRolePolicyDocument);
-		createRole = iam.createRole(request);
+		createRole = createIAMRole(iam);
 		getLogger().info("Create Role requested: {}", createRole.getRole().getArn());
+		attachPoliciesToRole(iam);
+	}
+	
+	@TaskAction
+	private void checkRoleParams() { // NOPMD
+		// to enable conventionMappings feature
+		if (getRoleName() == null) {
+			throw new GradleException("roleName is required");
+		}
+		if (getAssumeRolePolicyDocument() == null) {
+			throw new GradleException("assumeRolePolicyDocument is required");
+		}
+	}
+	
+	@TaskAction
+	private CreateRoleResult createIAMRole(AmazonIdentityManagement iam) { // NOPMD
+		// to enable conventionMappings feature
+		CreateRoleRequest request = new CreateRoleRequest()
+			.withRoleName(getRoleName())
+			.withPath(getPath())
+			.withAssumeRolePolicyDocument(getAssumeRolePolicyDocument());
+		return iam.createRole(request);
+	}
+	
+	@TaskAction
+	private void attachPoliciesToRole(AmazonIdentityManagement iam) { // NOPMD
+		// to enable conventionMappings feature
 		policyArns.stream().forEach(policyArn -> {
 			iam.attachRolePolicy(new AttachRolePolicyRequest()
-				.withRoleName(roleName)
+				.withRoleName(getRoleName())
 				.withPolicyArn(policyArn));
-			getLogger().info("Attach Managed policy {} to Role {} requested", policyArn, roleName);
+			getLogger().info("Attach Managed policy {} to Role {} requested", policyArn, getRoleName());
 		});
 	}
 }

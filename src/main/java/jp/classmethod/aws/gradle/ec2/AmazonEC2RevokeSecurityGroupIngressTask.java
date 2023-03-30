@@ -18,7 +18,6 @@ package jp.classmethod.aws.gradle.ec2;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -52,12 +51,7 @@ public class AmazonEC2RevokeSecurityGroupIngressTask extends AbstractAmazonEC2Se
 		String groupName = getGroupName();
 		Object ipPermissions = getIpPermissions();
 		
-		if (groupId == null && groupName == null) {
-			throw new GradleException("groupId nor groupName is not specified");
-		}
-		if (ipPermissions == null) {
-			throw new GradleException("ipPermissions is not specified");
-		}
+		checkGroupsAndIpPermissions(groupId, groupName, ipPermissions);
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
